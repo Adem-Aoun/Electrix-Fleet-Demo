@@ -8,7 +8,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
 /* ═══════════════════════════════════════════════════════════════════
-   1. TOKENS + RESET
+   TOKENS + RESET
    ═══════════════════════════════════════════════════════════════════ */
 :root{
   --bg:#F4F5F7;--bg-deep:#E9EBEF;--surface:#FFF;--surface-2:#F7F8FA;
@@ -23,6 +23,8 @@
   --safe-right:env(safe-area-inset-right,0px);
   --nav-h:60px;
   --header-h:56px;
+  --widget-radius:10px;
+  --widget-pad:16px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#14171C;--bg-deep:#0F1216;--surface:#1B1F26;--surface-2:#21262E;
@@ -40,8 +42,7 @@ html,body{margin:0;padding:0;width:100%;overflow-x:clip}
 body{
   background:var(--bg);color:var(--content);font-family:var(--sans);font-size:14px;
   line-height:1.45;-webkit-font-smoothing:antialiased;
-  height:100dvh;min-height:100vh;
-  overscroll-behavior-y:none;
+  height:100dvh;min-height:100vh;overscroll-behavior-y:none;
 }
 @supports not (height:100dvh){body{height:100vh}}
 img,svg{max-width:100%;display:block}
@@ -52,7 +53,6 @@ button,input,select,textarea{font-family:inherit;color:inherit;font-size:inherit
 a{color:var(--accent);text-decoration:none}
 button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
-/* Lucide sizing */
 .lucide{width:16px;height:16px;stroke-width:1.9;display:inline-block;vertical-align:middle;flex-shrink:0;color:currentColor}
 .navbtn .lucide{width:20px;height:20px;stroke-width:1.8}
 .btn .lucide{width:15px;height:15px}
@@ -64,16 +64,14 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .bn-inner .lucide{width:22px;height:22px}
 .icon-picker .lucide{width:18px;height:18px}
 .fav-btn .lucide{width:13px;height:13px}
-.drag-handle .lucide{width:14px;height:14px}
 
 /* ═══════════════════════════════════════════════════════════════════
-   2. LAYOUT SHELL
+   LAYOUT SHELL
    ═══════════════════════════════════════════════════════════════════ */
 .shell{display:none;min-height:100dvh;flex-direction:row}
 .shell.active{display:flex}
 @supports not (min-height:100dvh){.shell{min-height:100vh}}
 
-/* Desktop nav rail */
 .nav-rail{
   width:64px;flex-shrink:0;background:var(--bg-deep);border-right:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;padding:14px 0;
@@ -110,9 +108,6 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .main-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:100dvh}
 @supports not (min-height:100dvh){.main-col{min-height:100vh}}
 
-/* ═══════════════════════════════════════════════════════════════════
-   3. HEADER
-   ═══════════════════════════════════════════════════════════════════ */
 .app-header{
   display:flex;align-items:center;gap:12px;
   padding:10px max(18px,var(--safe-left)) 10px max(18px,var(--safe-right));
@@ -137,7 +132,6 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .header-right{display:flex;align-items:center;gap:6px;margin-left:auto}
 .mobile-menu-btn{display:none}
 
-/* Breadcrumbs */
 .breadcrumbs{
   display:flex;align-items:center;gap:6px;padding:8px max(18px,var(--safe-left)) 8px max(18px,var(--safe-right));
   font-size:12px;color:var(--content-faint);border-bottom:1px solid var(--border);background:var(--bg);
@@ -149,9 +143,6 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .breadcrumbs .cur{color:var(--content)}
 .breadcrumbs:empty{display:none}
 
-/* ═══════════════════════════════════════════════════════════════════
-   4. BODY WRAP
-   ═══════════════════════════════════════════════════════════════════ */
 .body-wrap{display:flex;flex:1;min-height:0}
 .sites-aside{
   width:210px;flex-shrink:0;background:var(--bg-deep);border-right:1px solid var(--border);
@@ -182,13 +173,9 @@ select.sortsel{
 main.main-content{
   flex:1;overflow-y:auto;overflow-x:hidden;
   padding:18px max(20px,var(--safe-left)) 18px max(20px,var(--safe-right));
-  min-width:0;min-height:0;
-  -webkit-overflow-scrolling:touch;
+  min-width:0;min-height:0;-webkit-overflow-scrolling:touch;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   5. HEADINGS
-   ═══════════════════════════════════════════════════════════════════ */
 .main-head{
   display:flex;align-items:baseline;justify-content:space-between;
   margin-bottom:14px;flex-wrap:wrap;gap:8px;
@@ -199,9 +186,6 @@ main.main-content{
 .empty{text-align:center;padding:60px 20px;color:var(--content-faint);font-size:13px}
 .empty .cta{margin-top:12px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   6. BUTTONS
-   ═══════════════════════════════════════════════════════════════════ */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:10px 14px;border-radius:6px;border:1px solid var(--border);
@@ -220,9 +204,6 @@ main.main-content{
 .btn.sm{padding:8px 11px;font-size:12px;min-height:38px}
 .btn.icon{padding:10px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   7. STATUS / FRESHNESS
-   ═══════════════════════════════════════════════════════════════════ */
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;vertical-align:middle}
 .status-dot.st-ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}
 .status-dot.st-alarm{background:var(--alarm);box-shadow:0 0 6px var(--alarm)}
@@ -247,9 +228,6 @@ main.main-content{
 .freshness.stale{--c:var(--warn)}
 .freshness.dead{--c:var(--alarm)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   8. GRIDS + CARDS
-   ═══════════════════════════════════════════════════════════════════ */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
 .card{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -293,13 +271,7 @@ main.main-content{
 .fav-btn.on{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .fav-btn.on .lucide{fill:var(--accent)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   9. DRAWER
-   ═══════════════════════════════════════════════════════════════════ */
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;opacity:0;
-  pointer-events:none;transition:opacity .15s;
-}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .15s}
 .overlay.open{opacity:1;pointer-events:auto}
 .drawer{
   position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);
@@ -378,79 +350,165 @@ main.main-content{
 .kv dd{margin:0;font-family:var(--mono);text-align:right;overflow:hidden;text-overflow:ellipsis}
 
 /* ═══════════════════════════════════════════════════════════════════
-   10. WIDGETS
+   WIDGET SYSTEM — unified for consistency
    ═══════════════════════════════════════════════════════════════════ */
-.widget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-items:start}
+.widget-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+  align-items:stretch;
+}
 .widget{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  padding:16px;transition:outline .12s;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--widget-radius);
+  padding:var(--widget-pad);
+  display:flex;
+  flex-direction:column;
+  min-height:160px;
+  transition:outline .12s;
 }
 .widget.drag-over{outline:2px dashed var(--accent);outline-offset:2px}
-.widget-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.widget-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  height:22px;flex-shrink:0;margin-bottom:12px;
+}
 .widget-head h3{
-  font-size:11.5px;margin:0;font-weight:700;color:var(--content-dim);
-  letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:6px;
+  font-size:11px;margin:0;font-weight:700;color:var(--content-faint);
+  letter-spacing:.5px;text-transform:uppercase;
+  display:flex;align-items:center;gap:7px;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.drag-handle{color:var(--content-faint);user-select:none;display:flex;align-items:center}
-.widget-big-num{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1}
-.widget-big-num .suffix{font-size:13px;font-weight:400;color:var(--content-faint)}
-.widget-stats{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap}
-.widget-stat{font-size:11px;color:var(--content-dim)}
-.widget-stat b{display:block;font-family:var(--mono);font-size:16px;color:var(--content);margin-top:2px}
-.widget-stat.ok b{color:var(--ok)}
-.widget-stat.alarm b{color:var(--alarm)}
-.widget-stat.offline b{color:var(--offline)}
-.quick-row{
-  display:flex;align-items:center;justify-content:space-between;padding:10px 0;
-  font-size:12.5px;border-bottom:1px solid var(--border);gap:8px;min-height:44px;
+.widget-head h3 .lucide{width:14px;height:14px;color:var(--content-dim);flex-shrink:0}
+.drag-handle{
+  color:var(--content-faint);cursor:grab;user-select:none;
+  display:flex;align-items:center;flex-shrink:0;
 }
-.quick-row:last-child{border-bottom:none}
-.quick-row>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.activity-row{
-  font-size:11.5px;color:var(--content-dim);padding:8px 0;display:flex;gap:8px;
-  border-bottom:1px solid var(--border);align-items:baseline;
+.widget-body{
+  flex:1;display:flex;flex-direction:column;
+  min-height:0;min-width:0;
 }
-.activity-row:last-child{border-bottom:none}
-.activity-row .mono{color:var(--content-faint);flex-shrink:0;font-size:10.5px}
-.mini-alarm{
-  display:flex;align-items:center;gap:8px;padding:8px 0;
-  border-bottom:1px solid var(--border);font-size:12px;
+
+/* Unified row — used by every widget */
+.wrow{
+  display:flex;align-items:center;gap:10px;
+  min-height:38px;padding:9px 0;
+  border-bottom:1px solid var(--border);
+  font-size:12.5px;line-height:1.35;
 }
-.mini-alarm:last-child{border-bottom:none}
+.wrow:last-child{border-bottom:none}
+.wrow .wl{
+  flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--content);
+}
+.wrow .wl .wsub{color:var(--content-faint);font-size:11px;font-weight:400}
+.wrow .wm{
+  font-family:var(--mono);font-size:11px;color:var(--content-faint);
+  flex-shrink:0;
+}
+.wrow .wv{font-family:var(--mono);font-size:12.5px;color:var(--content);flex-shrink:0}
+.wrow .wv.ok{color:var(--ok)}
+.wrow .wv.alarm{color:var(--alarm)}
+.wrow .wv.warn{color:var(--warn)}
+.wrow .wv.off{color:var(--offline)}
+.wrow .wchip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;
+}
+.wrow .wchip.sev-critical{background:rgba(217,59,59,.15);color:var(--alarm)}
+.wrow .wchip.sev-warn{background:rgba(201,138,31,.15);color:var(--warn)}
+.wrow .wchip.sev-info{background:rgba(59,125,217,.15);color:var(--info)}
+.wrow .wdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.wrow .wdot.alarm{background:var(--alarm);box-shadow:0 0 6px var(--alarm)}
+.wrow .wdot.ok{background:var(--ok)}
+.wrow .wdot.warn{background:var(--warn)}
+.wrow .wdot.off{background:var(--offline)}
+.wrow .wact{margin-left:auto;flex-shrink:0}
+
+/* Empty state inside a widget — same visual floor as one row */
+.widget-empty{
+  display:flex;align-items:center;justify-content:center;
+  min-height:60px;padding:12px 4px;
+  font-size:12px;color:var(--content-faint);text-align:center;
+}
+
+/* Fleet status big number */
+.widget-big-num{
+  font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;
+  color:var(--content);margin-bottom:4px;
+}
+.widget-big-num .suffix{font-size:13px;font-weight:400;color:var(--content-faint);margin-left:2px}
+.widget-stat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(60px,1fr));
+  gap:6px;margin-top:12px;
+}
+.widget-stat{
+  padding:10px;border-radius:7px;background:var(--surface-2);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  text-align:center;min-width:0;
+}
+.widget-stat .n{
+  font-family:var(--mono);font-size:20px;font-weight:700;line-height:1;
+  color:var(--content);
+}
+.widget-stat .l{
+  font-size:10px;color:var(--content-faint);
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.widget-stat.ok .n{color:var(--ok)}
+.widget-stat.alarm .n{color:var(--alarm)}
+.widget-stat.offline .n{color:var(--offline)}
+.widget-stat.warn .n{color:var(--warn)}
 
 /* ═══════════════════════════════════════════════════════════════════
-   11. ANNUNCIATOR
+   ANNUNCIATOR — consistent tiles
    ═══════════════════════════════════════════════════════════════════ */
 .annunciator{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;
-  padding:10px;background:var(--surface);border:1px solid var(--border);
-  border-radius:8px;margin-bottom:14px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:8px;
+  padding:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--widget-radius);
+  margin-bottom:14px;
 }
 .ann-tile{
-  display:flex;flex-direction:column;gap:3px;padding:9px 11px;border-radius:5px;
-  background:var(--surface-2);border:1px solid var(--border);font-size:11px;
-  cursor:pointer;color:var(--content-dim);transition:all .12s;position:relative;
-  min-height:60px;justify-content:space-between;
+  display:flex;flex-direction:column;gap:6px;
+  padding:10px 11px;border-radius:6px;
+  background:var(--surface-2);border:1px solid var(--border);
+  font-size:11px;cursor:pointer;color:var(--content-dim);
+  transition:border-color .12s,background .12s;
+  position:relative;
+  height:72px;
+  justify-content:space-between;
+  min-width:0;
 }
 .ann-tile:hover{border-color:var(--content-faint)}
 .ann-tile .ann-label{
-  font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.3px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   display:flex;align-items:center;gap:5px;
+  min-width:0;
 }
-.ann-tile .ann-label .lucide{width:12px;height:12px}
-.ann-tile .ann-count{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--content)}
-.ann-tile.st-normal{opacity:.7}
+.ann-tile .ann-label .lucide{width:12px;height:12px;flex-shrink:0}
+.ann-tile .ann-label>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ann-tile .ann-count{
+  font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;
+  color:var(--content);
+}
+.ann-tile.st-normal{opacity:.75}
 .ann-tile.st-normal .ann-count{color:var(--content-faint)}
-.ann-tile.st-warn{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border-color:var(--warn)}
+.ann-tile.st-warn{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border-color:color-mix(in srgb,var(--warn) 60%,var(--border))}
 .ann-tile.st-warn .ann-count{color:var(--warn)}
-.ann-tile.st-critical{background:color-mix(in srgb,var(--alarm) 14%,var(--surface));border-color:var(--alarm)}
+.ann-tile.st-critical{background:color-mix(in srgb,var(--alarm) 14%,var(--surface));border-color:color-mix(in srgb,var(--alarm) 60%,var(--border))}
 .ann-tile.st-critical .ann-count{color:var(--alarm)}
 .ann-tile.selected-type{outline:2px solid var(--accent);outline-offset:-2px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   12. ALARMS
-   ═══════════════════════════════════════════════════════════════════ */
 .alarm-item{
   display:flex;align-items:flex-start;gap:12px;padding:14px 14px;
   border:1px solid var(--border);border-left:3px solid var(--content-faint);
@@ -481,9 +539,6 @@ main.main-content{
 .latch-tag{color:var(--content-faint);border:1px solid var(--border)}
 .shelve-tag{color:var(--warn);border:1px solid var(--warn)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   13. TABS + CHIPS
-   ═══════════════════════════════════════════════════════════════════ */
 .tabs{
   display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;
   overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
@@ -507,9 +562,6 @@ main.main-content{
 .chip .n{opacity:.7;margin-left:3px}
 .chip .lucide{width:12px;height:12px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   14. DEVICE PAGE
-   ═══════════════════════════════════════════════════════════════════ */
 .dev-page-head{
   display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
   flex-wrap:wrap;margin-bottom:16px;
@@ -567,9 +619,6 @@ main.main-content{
 .log-row .lv.error{color:var(--alarm)}
 .log-row .ts{color:var(--content-faint)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   15. TELEMETRY
-   ═══════════════════════════════════════════════════════════════════ */
 .tele-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
 .tele-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
 .tele-card .tc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;flex-wrap:wrap}
@@ -587,9 +636,6 @@ main.main-content{
 }
 .tele-filters label{font-size:11.5px;color:var(--content-faint);margin-right:4px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   16. AUTOMATION
-   ═══════════════════════════════════════════════════════════════════ */
 .automation-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto}
 .auto-card{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
@@ -625,9 +671,6 @@ main.main-content{
 .icon-picker button:hover{border-color:var(--content-faint);color:var(--content)}
 .icon-picker button.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,var(--surface-2));color:var(--accent)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   17. OTA
-   ═══════════════════════════════════════════════════════════════════ */
 .ota-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:0 0 8px 8px}
 .ota-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
 .ota-table th{
@@ -658,9 +701,6 @@ main.main-content{
 .ota-fw-card .notes{font-size:12px;color:var(--content-dim);margin-top:4px;line-height:1.5}
 .ota-fw-card .meta{font-size:10.5px;color:var(--content-faint);font-family:var(--mono);margin-top:6px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   18. INTERLOCKS
-   ═══════════════════════════════════════════════════════════════════ */
 .rule-card{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
   padding:14px 16px;margin-bottom:8px;display:flex;gap:14px;align-items:flex-start;
@@ -696,9 +736,6 @@ main.main-content{
 .toggle-small.on{background:var(--ok)}
 .toggle-small.on::after{left:21px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   19. TOASTS
-   ═══════════════════════════════════════════════════════════════════ */
 .toast-stack{
   position:fixed;right:20px;bottom:20px;z-index:100;display:flex;flex-direction:column;gap:8px;
   max-width:min(380px,calc(100vw - 40px));
@@ -725,9 +762,6 @@ main.main-content{
 .toast .tx .lucide{width:14px;height:14px}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-/* ═══════════════════════════════════════════════════════════════════
-   20. MODALS / SHEETS
-   ═══════════════════════════════════════════════════════════════════ */
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;
   display:flex;align-items:center;justify-content:center;padding:20px;
@@ -760,9 +794,6 @@ main.main-content{
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes modalIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 
-/* ═══════════════════════════════════════════════════════════════════
-   21. PALETTE
-   ═══════════════════════════════════════════════════════════════════ */
 .palette-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:70;
   display:flex;align-items:flex-start;justify-content:center;padding-top:14vh;
@@ -789,9 +820,6 @@ main.main-content{
 .palette-item .pi-meta{margin-left:auto;font-size:10.5px;color:var(--content-faint);font-family:var(--mono)}
 .palette-empty{padding:28px 18px;text-align:center;color:var(--content-faint);font-size:13px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   22. BOTTOM NAV (mobile)
-   ═══════════════════════════════════════════════════════════════════ */
 .bottom-nav{
   display:none;position:fixed;bottom:0;left:0;right:0;
   background:var(--bg-deep);border-top:1px solid var(--border);z-index:30;
@@ -815,9 +843,6 @@ main.main-content{
   border:2px solid var(--bg-deep);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   23. TOPIC INSPECTOR
-   ═══════════════════════════════════════════════════════════════════ */
 .topic-inspector{
   position:fixed;left:0;right:0;bottom:0;height:260px;background:var(--bg-deep);
   border-top:1px solid var(--border);z-index:39;transform:translateY(100%);
@@ -856,9 +881,6 @@ main.main-content{
 .ti-row .ti-opts{color:var(--content-faint);font-size:10px;margin-left:6px}
 .ti-empty{color:var(--content-faint);text-align:center;padding:30px 0;font-family:var(--sans)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   24. BULK BAR
-   ═══════════════════════════════════════════════════════════════════ */
 .card .sel-check{
   position:absolute;top:12px;left:12px;width:24px;height:24px;border-radius:5px;
   border:1.5px solid var(--border);background:var(--surface);display:none;
@@ -881,9 +903,6 @@ body.bulk-mode .card{padding-left:48px}
 .bulk-bar .bb-count{font-size:12.5px;font-weight:600;white-space:nowrap}
 .bulk-bar .bb-count .mono{color:var(--accent)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   25. LOGIN
-   ═══════════════════════════════════════════════════════════════════ */
 .login-screen{
   min-height:100dvh;display:flex;align-items:center;justify-content:center;
   background:var(--bg-deep);
@@ -928,10 +947,9 @@ body.bulk-mode .card{padding-left:48px}
 .login-hint .mono{color:var(--content-dim)}
 
 /* ═══════════════════════════════════════════════════════════════════
-   26. MOBILE — the actual fix
+   MOBILE
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width:820px){
-  /* Hide desktop-only */
   .sites-aside{display:none!important}
   .nav-rail{display:none}
   .brand-name{display:none}
@@ -948,7 +966,6 @@ body.bulk-mode .card{padding-left:48px}
   .shell.active{flex-direction:column}
   .main-col{min-height:0;width:100%}
 
-  /* Header — compact single row + optional search below */
   .app-header{
     display:grid;
     grid-template-columns:auto 1fr auto;
@@ -966,10 +983,9 @@ body.bulk-mode .card{padding-left:48px}
   .header-right{grid-area:actions;gap:6px;margin-left:0}
   .search{grid-area:search;max-width:none;min-width:0;width:100%}
   .search input{padding:11px 12px;font-size:16px}
-  .header-right .btn span{display:none} /* hide "Sign out" label, keep icon */
+  .header-right .btn span{display:none}
   .header-right .btn{padding:10px}
 
-  /* Content padding accounts for bottom nav + safe area */
   main.main-content{
     padding:14px 14px;
     padding-left:calc(14px + var(--safe-left));
@@ -986,19 +1002,57 @@ body.bulk-mode .card{padding-left:48px}
     font-size:11.5px;
   }
 
-  /* Single-column grids */
+  /* Widgets — full-width, consistent spacing, consistent min-height */
+  .widget-grid{
+    grid-template-columns:1fr;
+    gap:12px;
+    align-items:stretch;
+  }
+  .widget{
+    min-height:0;
+    padding:14px 14px 12px;
+    border-radius:10px;
+  }
+  .widget-head{height:20px;margin-bottom:10px}
+  .widget-head h3{font-size:10.5px;letter-spacing:.4px}
+  .widget-head h3 .lucide{width:13px;height:13px}
+  .widget-big-num{font-size:30px}
+  .widget-stat-grid{gap:6px;margin-top:10px}
+  .widget-stat{padding:8px 6px;border-radius:6px}
+  .widget-stat .n{font-size:18px}
+  .widget-stat .l{font-size:9.5px}
+
+  /* Rows — tighter on mobile but still uniform */
+  .wrow{padding:9px 0;min-height:40px;font-size:12.5px;gap:8px}
+  .wrow .wl{font-size:12.5px}
+  .wrow .wl .wsub{display:none}
+  .wrow .wm{font-size:10.5px}
+  .widget-empty{min-height:56px;font-size:12px}
+
+  /* Annunciator — uniform 2-col with fixed tile height */
+  .annunciator{
+    grid-template-columns:repeat(2,1fr);
+    gap:6px;
+    padding:8px;
+    border-radius:10px;
+  }
+  .ann-tile{
+    height:66px;
+    padding:9px 10px;
+    border-radius:6px;
+    gap:4px;
+  }
+  .ann-tile .ann-label{font-size:9.5px;gap:4px}
+  .ann-tile .ann-label .lucide{width:11px;height:11px}
+  .ann-tile .ann-count{font-size:19px}
+
   .grid{grid-template-columns:1fr;gap:10px}
-  .widget-grid{grid-template-columns:1fr;gap:10px}
   .tele-grid{grid-template-columns:1fr;gap:10px}
   .dev-grid{grid-template-columns:1fr}
   .card{padding:14px 14px 12px 17px}
   .card:hover{box-shadow:none}
   .fav-btn{top:8px;right:8px;width:36px;height:36px}
 
-  /* Annunciator 2-col */
-  .annunciator{grid-template-columns:repeat(2,1fr);gap:6px;padding:8px}
-
-  /* Alarm actions wrap below */
   .alarm-item{flex-wrap:wrap;padding:14px;gap:10px}
   .alarm-item .alarm-body{flex:1 1 100%;order:2}
   .alarm-item .alarm-sev{order:1}
@@ -1007,7 +1061,6 @@ body.bulk-mode .card{padding-left:48px}
   }
   .alarm-actions .btn.sm{flex:1;min-width:0}
 
-  /* Device head stack */
   .dev-page-head{flex-direction:column;gap:12px;align-items:stretch}
   .dev-page-title{font-size:18px}
   .dev-page-sub{font-size:11.5px}
@@ -1017,23 +1070,17 @@ body.bulk-mode .card{padding-left:48px}
   .dev-page-actions .btn{padding:10px 6px;font-size:12px}
   .dev-page-actions .btn .lucide{width:16px;height:16px}
 
-  /* Tabs tighter */
   .tab{padding:12px 2px;font-size:12.5px;margin-right:12px;min-height:48px}
-
-  /* Panels + charts */
   .panel{padding:14px;border-radius:8px}
   .chart-wrap{padding:12px}
   .chart-svg{height:150px}
 
-  /* Config rows stack */
   .config-row{flex-wrap:wrap;gap:8px;font-size:13px}
   .config-row input[type=number]{width:110px;font-size:16px;text-align:left;padding:9px 10px}
   .config-row input[type=checkbox]{width:24px;height:24px}
 
-  /* Drawer full-screen */
   .drawer{width:100vw;border-left:none;top:0;right:0}
 
-  /* Bottom-sheet modals */
   .modal-backdrop{
     padding:0;align-items:flex-end;justify-content:stretch;
     padding-top:var(--safe-top);
@@ -1059,7 +1106,6 @@ body.bulk-mode .card{padding-left:48px}
   .modal .btn-row .btn{width:100%;min-height:48px;font-size:14px}
   @keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
-  /* Full-screen palette */
   .palette-backdrop{
     padding-top:0;align-items:stretch;justify-content:stretch;background:var(--bg);
   }
@@ -1075,7 +1121,6 @@ body.bulk-mode .card{padding-left:48px}
   .palette-item{padding:14px 18px;min-height:52px;font-size:14px}
   .palette-empty{padding:60px 18px}
 
-  /* Bulk bar sits above bottom nav */
   .bulk-bar{
     left:8px;right:8px;bottom:calc(var(--nav-h) + 12px + var(--safe-bottom));
     transform:translateY(220%);padding:10px;gap:6px;border-radius:12px;
@@ -1091,7 +1136,6 @@ body.bulk-mode .card{padding-left:48px}
     bottom:calc(var(--nav-h) + 40vh + 12px + var(--safe-bottom));
   }
 
-  /* Topic inspector sits above bottom nav */
   .topic-inspector{
     height:40vh;bottom:calc(var(--nav-h) + var(--safe-bottom));
     border-top:1px solid var(--border);
@@ -1101,18 +1145,15 @@ body.bulk-mode .card{padding-left:48px}
   .ti-body{padding:8px 12px 12px;font-size:10.5px}
   .ti-row{grid-template-columns:48px 12px 1fr;gap:6px}
 
-  /* Bottom nav */
   .bottom-nav .bn-inner{height:var(--nav-h)}
   .bottom-nav .lucide{width:24px;height:24px}
   .bottom-nav .bn-label{font-size:10px}
 
-  /* Telemetry filters stack */
   .tele-filters{flex-direction:column;align-items:stretch;gap:8px}
   .tele-filters>div{width:100%;display:flex;flex-direction:column;gap:4px}
   .tele-filters select{width:100%;font-size:16px;padding:11px 12px}
   .tele-filters>button{width:100%}
 
-  /* Auto cards stack actions */
   .auto-card{flex-wrap:wrap;padding:14px;gap:10px}
   .auto-card .ac-body{flex:1 1 100%;order:2}
   .auto-card .toggle-small{order:1}
@@ -1122,7 +1163,6 @@ body.bulk-mode .card{padding-left:48px}
   }
   .auto-card .ac-actions .btn{flex:1;min-width:0}
 
-  /* Rule cards stack actions */
   .rule-card{flex-wrap:wrap;padding:14px;gap:10px}
   .rule-card .rc-body{flex:1 1 100%;order:2}
   .rule-card .toggle-small{order:1}
@@ -1132,12 +1172,10 @@ body.bulk-mode .card{padding-left:48px}
   }
   .rule-card>div:last-child .btn{flex:1}
 
-  /* OTA table scrolls */
   .ota-table-wrap{margin:0 -16px;padding:0 16px}
   .ota-table{font-size:11.5px}
   .ota-table th,.ota-table td{padding:8px 6px}
 
-  /* Toast stack above bottom nav */
   .toast-stack{
     left:12px;right:12px;bottom:calc(var(--nav-h) + 12px + var(--safe-bottom));
     max-width:none;
@@ -1147,16 +1185,9 @@ body.bulk-mode .card{padding-left:48px}
   }
   .toast{padding:12px 14px}
 
-  /* Icon picker bigger targets */
   .icon-picker button{width:48px;height:48px}
-
-  /* Quick row minimum height */
-  .quick-row{padding:12px 0;min-height:52px}
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   27. Small phones
-   ═══════════════════════════════════════════════════════════════════ */
 @media (max-width:400px){
   main.main-content{padding-left:12px;padding-right:12px}
   .card{padding:12px 12px 10px 15px}
@@ -1166,9 +1197,10 @@ body.bulk-mode .card{padding-left:48px}
   .bottom-nav .bn-label{font-size:9.5px}
   .bottom-nav .lucide{width:22px;height:22px}
   .tele-stats{gap:12px}
+  .widget-stat-grid{gap:5px}
+  .widget-stat .n{font-size:17px}
 }
 
-/* Landscape phone */
 @media (max-width:900px) and (orientation:landscape) and (max-height:500px){
   .topic-inspector{height:70vh}
   .modal{max-height:85vh}
@@ -1293,9 +1325,6 @@ body.bulk-mode .card{padding-left:48px}
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════════════════ */
 function refreshIcons(root) {
   if (!window.lucide || typeof lucide.createIcons !== 'function') return;
   try { lucide.createIcons(); } catch {}
@@ -1319,9 +1348,6 @@ async function copyText(text) {
   catch { toast('Copy failed', { type:'error' }); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   MQTT (mock)
-   ═══════════════════════════════════════════════════════════════════ */
 const mqtt = (() => {
   const subs = [], listeners = { connected:[], disconnected:[], message:[] }, pendingAcks = new Map();
   let connected = false;
@@ -1362,9 +1388,6 @@ const mqtt = (() => {
 })();
 const waitForAck = (id, ms) => mqtt.waitForAck(id, ms);
 
-/* ═══════════════════════════════════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════════════════════════════════ */
 const USERS = [
   { username:'admin',    password:'admin123',    role:'admin',    display:'Admin' },
   { username:'operator', password:'operator123', role:'operator', display:'Operator' },
@@ -1466,9 +1489,6 @@ const sceneIconHTML = name => {
   return icon(name);
 };
 
-/* ═══════════════════════════════════════════════════════════════════
-   STATE
-   ═══════════════════════════════════════════════════════════════════ */
 const DEFAULT_LAYOUT = ['fleet_status','active_alarms','quick_controls','recent_activity','site_overview'];
 let state = {
   user: lsGet('electrix_user', null),
@@ -1512,9 +1532,6 @@ function toggleFavorite(id) {
   lsSet('electrix_favorites', state.favorites);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   TOAST
-   ═══════════════════════════════════════════════════════════════════ */
 const TOAST_ICON = { ok:'check-circle', error:'x-circle', warn:'alert-triangle', info:'info' };
 function toast(title, { msg = '', type = 'info', timeout = 3200 } = {}) {
   const el = document.createElement('div');
@@ -1530,9 +1547,6 @@ function toast(title, { msg = '', type = 'info', timeout = 3200 } = {}) {
   return { close: kill };
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   MODAL / SHEET
-   ═══════════════════════════════════════════════════════════════════ */
 function confirmModal({ title, message, confirmText = 'Confirm', danger = false, requireText = null, extraHtml = '' }) {
   return new Promise(resolve => {
     const root = $('#modalRoot');
@@ -1599,10 +1613,6 @@ function openShortcuts() {
     }
   });
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   MOBILE SHEETS
-   ═══════════════════════════════════════════════════════════════════ */
 function openMobileMoreSheet() {
   const items = [
     { icon:'activity',     label:'Telemetry',       route:'#/telemetry' },
@@ -1670,9 +1680,6 @@ function openMobileSiteSheet() {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   PALETTE
-   ═══════════════════════════════════════════════════════════════════ */
 function openPalette() {
   if (state.paletteOpen) return;
   state.paletteOpen = true; state.paletteQuery = ''; state.paletteSel = 0;
@@ -1740,9 +1747,6 @@ function renderPaletteResults(close) {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   AUTH
-   ═══════════════════════════════════════════════════════════════════ */
 function attemptLogin() {
   const u = $('#loginUser').value.trim(), p = $('#loginPass').value;
   const m = USERS.find(x => x.username === u && x.password === p);
@@ -1775,9 +1779,6 @@ function enterApp() {
   refreshIcons();
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   ROUTING
-   ═══════════════════════════════════════════════════════════════════ */
 function applyRoute() {
   const h = (location.hash || '#/dashboard').slice(2);
   const [seg, param, sub] = h.split('/');
@@ -1824,9 +1825,6 @@ function renderBreadcrumbs() {
   bc.innerHTML = parts.join('');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   LIVE TICK
-   ═══════════════════════════════════════════════════════════════════ */
 let tickCount = 0, lastScheduleMinute = -1;
 function startTick() {
   setInterval(() => {
@@ -1884,9 +1882,6 @@ function tickSchedules() {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   DERIVED HELPERS
-   ═══════════════════════════════════════════════════════════════════ */
 const siteName = id => SITES.find(s => s.id === id)?.name || id;
 const deviceById = id => DEVICES.find(d => d.device_id === id);
 const sevRank = s => ({ critical:0, warn:1, info:2 })[s] ?? 9;
@@ -1979,9 +1974,6 @@ function lineChart(key, { height = 180, width = 640, windowMs = null } = {}) {
   </svg>`;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   RENDER MAIN
-   ═══════════════════════════════════════════════════════════════════ */
 function renderMain(isTick = false) {
   renderAlarmBadge();
   updateBulkBar();
@@ -2016,7 +2008,7 @@ function updateBulkBar() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   DASHBOARD
+   DASHBOARD — unified widget system
    ═══════════════════════════════════════════════════════════════════ */
 const ANN_TYPE_ICON = {
   relay_stuck:'alert-octagon', low_battery:'battery-warning',
@@ -2037,58 +2029,93 @@ function renderAnnunciator() {
     const stateCls = info.count === 0 ? 'st-normal' : (info.severity === 'critical' ? 'st-critical' : 'st-warn');
     const cls = [stateCls, state.alarmTypeFilter === t ? 'selected-type' : ''].filter(Boolean).join(' ');
     return `<div class="ann-tile ${cls}" data-ann-type="${t}">
-      <div class="ann-label">${icon(ANN_TYPE_ICON[t] || 'alert-circle')}${t.replace(/_/g,' ')}</div>
+      <div class="ann-label">${icon(ANN_TYPE_ICON[t] || 'alert-circle')}<span>${t.replace(/_/g,' ')}</span></div>
       <div class="ann-count">${info.count}</div>
     </div>`;
   }).join('')}</div>`;
 }
+
+/* Unified widget row helper */
+function wrow({ lead='', label='', sub='', meta='', value='', valueClass='', act='', isLast=false }) {
+  const subHtml = sub ? ` <span class="wsub">· ${sub}</span>` : '';
+  return `<div class="wrow" style="${isLast ? 'border-bottom:none;' : ''}">
+    ${lead}
+    <span class="wl">${label}${subHtml}</span>
+    ${meta ? `<span class="wm">${meta}</span>` : ''}
+    ${value ? `<span class="wv ${valueClass}">${value}</span>` : ''}
+    ${act}
+  </div>`;
+}
+const widgetEmpty = msg => `<div class="widget-empty">${esc(msg)}</div>`;
+
 const WIDGET_DEFS = {
   fleet_status: { title:'Fleet Status', icon:'server', render: () => {
     const online = DEVICES.filter(d => deriveStatus(d) === 'online').length;
     const warn = DEVICES.filter(d => deriveStatus(d) === 'warn').length;
     const alarm = DEVICES.filter(d => deriveStatus(d) === 'alarm').length;
     const offline = DEVICES.filter(d => deriveStatus(d) === 'offline').length;
-    return `<div class="widget-big-num">${DEVICES.length}<span class="suffix"> devices</span></div>
-      <div class="widget-stats">
-        <div class="widget-stat ok"><b>${online}</b>online</div>
-        <div class="widget-stat alarm"><b>${alarm}</b>alarm</div>
-        ${warn ? `<div class="widget-stat"><b>${warn}</b>degraded</div>` : ''}
-        <div class="widget-stat offline"><b>${offline}</b>offline</div>
+    return `<div class="widget-big-num">${DEVICES.length}<span class="suffix">devices</span></div>
+      <div class="widget-stat-grid">
+        <div class="widget-stat ok"><span class="n">${online}</span><span class="l">online</span></div>
+        <div class="widget-stat alarm"><span class="n">${alarm}</span><span class="l">alarm</span></div>
+        ${warn ? `<div class="widget-stat warn"><span class="n">${warn}</span><span class="l">warn</span></div>` : ''}
+        <div class="widget-stat offline"><span class="n">${offline}</span><span class="l">off</span></div>
       </div>`;
   }},
   active_alarms: { title:'Active Alarms', icon:'alert-triangle', render: () => {
     const list = activeAlarms().slice(0, 4);
-    if (!list.length) return `<div style="font-size:12px;color:var(--content-faint);padding:6px 0;">No active alarms.</div>`;
-    return list.map(a => `<div class="mini-alarm">
-      <span class="alarm-sev sev-${a.severity}" style="margin-top:0;">${a.severity}</span>
-      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(a.msg)}</span>
-      ${!a.acked ? '<span class="status-dot st-alarm"></span>' : ''}
-    </div>`).join('') + `<div style="margin-top:10px;"><button class="btn sm" data-nav="#/alarms">View all</button></div>`;
+    if (!list.length) return widgetEmpty('No active alarms');
+    return list.map((a, i) =>
+      wrow({
+        lead: `<span class="wchip sev-${a.severity}">${a.severity}</span>`,
+        label: esc(a.msg),
+        act: !a.acked ? `<span class="wdot alarm" title="unacknowledged" style="margin-left:auto;"></span>` : '',
+        isLast: i === list.length - 1,
+      })
+    ).join('') + `<div style="margin-top:12px;"><button class="btn sm" data-nav="#/alarms" style="width:100%;">${icon('arrow-right')}View all</button></div>`;
   }},
   quick_controls: { title:'Quick Controls', icon:'sliders-horizontal', render: () => {
     const relays = [];
     DEVICES.forEach(d => { if (d.lwt !== 'online') return; d.capabilities.forEach(c => { if (c.kind === 'relay' && c.online) relays.push({ d, c }); }); });
-    if (!relays.length) return `<div style="font-size:12px;color:var(--content-faint);">No controllable relays online.</div>`;
-    return relays.slice(0, 5).map(({ d, c }) => `<div class="quick-row">
-      <span>${esc(c.label)} <span style="color:var(--content-faint);font-size:10.5px;">· ${esc(d.name)}</span></span>
-      <button class="toggle ${c.value ? 'on' : ''} ${c.pending ? 'pending' : ''}" data-toggle-device="${d.device_id}" data-toggle-cap="${c.id}" ${can('toggle') ? '' : 'disabled'} aria-pressed="${c.value}"></button>
-    </div>`).join('');
+    if (!relays.length) return widgetEmpty('No controllable relays online');
+    const shown = relays.slice(0, 5);
+    return shown.map(({ d, c }, i) =>
+      wrow({
+        label: esc(c.label),
+        sub: esc(d.name),
+        act: `<button class="toggle ${c.value ? 'on' : ''} ${c.pending ? 'pending' : ''}" data-toggle-device="${d.device_id}" data-toggle-cap="${c.id}" ${can('toggle') ? '' : 'disabled'} aria-pressed="${c.value}" style="margin-left:auto;"></button>`,
+        isLast: i === shown.length - 1,
+      })
+    ).join('');
   }},
-  recent_activity: { title:'Recent Activity', icon:'history', render: () =>
-    ACTIVITY.slice(0, 6).map(a => `<div class="activity-row"><span class="mono">${fmtAgo(a.t)}</span><span>${esc(a.text)}</span></div>`).join('')
-  },
-  site_overview: { title:'Site Overview', icon:'map', render: () =>
-    SITES.map(s => {
+  recent_activity: { title:'Recent Activity', icon:'history', render: () => {
+    const list = ACTIVITY.slice(0, 5);
+    if (!list.length) return widgetEmpty('No recent activity');
+    return list.map((a, i) =>
+      wrow({
+        label: esc(a.text),
+        meta: fmtAgo(a.t),
+        isLast: i === list.length - 1,
+      })
+    ).join('');
+  }},
+  site_overview: { title:'Site Overview', icon:'map', render: () => {
+    if (!SITES.length) return widgetEmpty('No sites configured');
+    return SITES.map((s, i) => {
       const n = DEVICES.filter(d => d.site_id === s.id).length;
       const alarms = DEVICES.filter(d => d.site_id === s.id && deviceHasAlarm(d)).length;
       const offline = DEVICES.filter(d => d.site_id === s.id && d.lwt === 'offline').length;
-      return `<div class="site-tile" data-nav="#/devices/${s.id}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12.5px;cursor:pointer;min-height:44px;">
-        <span>${esc(s.name)}</span>
-        <span class="mono" style="font-size:11px;color:var(--content-faint);">${n} dev${alarms ? ` · <span style="color:var(--alarm)">${alarms}</span>` : ''}${offline ? ` · <span style="color:var(--warn)">${offline} off</span>` : ''}</span>
+      const parts = [`${n} dev`];
+      if (alarms) parts.push(`<span style="color:var(--alarm)">${alarms} alarm</span>`);
+      if (offline) parts.push(`<span style="color:var(--warn)">${offline} off</span>`);
+      return `<div class="wrow" data-nav="#/devices/${s.id}" style="cursor:pointer;${i === SITES.length - 1 ? 'border-bottom:none;' : ''}">
+        <span class="wl">${esc(s.name)}</span>
+        <span class="wm">${parts.join(' · ')}</span>
       </div>`;
-    }).join('')
-  },
+    }).join('');
+  }},
 };
+
 function renderDashboard(main) {
   main.innerHTML = `
     <div class="main-head">
@@ -2102,8 +2129,11 @@ function renderDashboard(main) {
     const def = WIDGET_DEFS[id]; if (!def) return;
     const el = document.createElement('div');
     el.className = 'widget'; el.draggable = !isMobile(); el.dataset.widgetId = id;
-    el.innerHTML = `<div class="widget-head"><h3>${icon(def.icon || 'square')}${esc(def.title)}</h3>${!isMobile() ? `<span class="drag-handle">${icon('grip-vertical')}</span>` : ''}</div>
-      <div>${def.render()}</div>`;
+    el.innerHTML = `<div class="widget-head">
+        <h3>${icon(def.icon || 'square')}<span>${esc(def.title)}</span></h3>
+        ${!isMobile() ? `<span class="drag-handle">${icon('grip-vertical')}</span>` : ''}
+      </div>
+      <div class="widget-body">${def.render()}</div>`;
     grid.appendChild(el);
   });
   refreshIcons(grid);
@@ -2127,9 +2157,6 @@ function wireWidgetDrag(grid) {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   DEVICES
-   ═══════════════════════════════════════════════════════════════════ */
 function renderDevices(main) {
   renderSitesAside();
   main.innerHTML = `
@@ -2235,9 +2262,6 @@ function renderDeviceGrid() {
   refreshIcons(grid);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   DEVICE PAGE
-   ═══════════════════════════════════════════════════════════════════ */
 const DEVICE_TABS = [
   { id:'overview',    label:'Overview',    icon:'gauge' },
   { id:'telemetry',   label:'Telemetry',   icon:'activity' },
@@ -2443,9 +2467,6 @@ function renderDevDiagnostics(d) {
   </div>`;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   TELEMETRY
-   ═══════════════════════════════════════════════════════════════════ */
 function renderTelemetry(main) {
   const sensors = new Set();
   Object.keys(TELEMETRY).forEach(k => sensors.add(k.split('/')[1]));
@@ -2538,9 +2559,6 @@ function exportTelemetryCSV(keys, windowMs) {
   toast('CSV exported', { msg:`${rows.length - 1} rows`, type:'ok' });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   ALARMS
-   ═══════════════════════════════════════════════════════════════════ */
 function renderAlarms(main) {
   const active = activeAlarms();
   const history = ALARMS.filter(a => a.cleared).sort((a, b) => b.raised_at_s - a.raised_at_s);
@@ -2606,9 +2624,6 @@ function renderAlarmList() {
   refreshIcons(el);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   AUTOMATION
-   ═══════════════════════════════════════════════════════════════════ */
 function renderAutomation(main) {
   const tab = state.autoTab;
   main.innerHTML = `
@@ -2929,9 +2944,6 @@ function openSceneEditor(sceneId = null) {
   wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(null); });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   OTA
-   ═══════════════════════════════════════════════════════════════════ */
 const OTA = {
   catalog: [
     { version:'1.2.0', released:'2026-08-12', notes:'Relay feedback timing fix; QoS2 tuning.', size_kb:512 },
@@ -3102,9 +3114,6 @@ function renderOTARow(d, latest) {
   </tr>`;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   INTERLOCKS
-   ═══════════════════════════════════════════════════════════════════ */
 const INTERLOCKS = [
   { id:'il1', name:'Conveyor stop on open dock door', enabled:true, priority:100, site_id:null,
     when:{ device_id:'88c4a01f3d7e', capability:'relay0', operator:'==', value:'on' },
@@ -3279,9 +3288,6 @@ function openRuleEditor(ruleId = null) {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   SETTINGS
-   ═══════════════════════════════════════════════════════════════════ */
 let DASH_USERS = USERS.map(u => ({ username:u.username, role:u.role, display:u.display }));
 function renderSettings(main) {
   if (state.user?.role !== 'admin') {
@@ -3396,9 +3402,6 @@ function renderSiteSettingsList() {
   }).join('');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   ACTIONS
-   ═══════════════════════════════════════════════════════════════════ */
 async function toggleActuator(deviceId, actuatorId) {
   if (!can('toggle')) { toast('Permission denied', { type:'error' }); return; }
   const d = deviceById(deviceId); if (!d) return;
@@ -3545,9 +3548,6 @@ async function saveConfig(d) {
   renderMain();
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   DRAWER
-   ═══════════════════════════════════════════════════════════════════ */
 function openDrawer(deviceId) {
   state.drawerDeviceId = deviceId;
   renderDrawer();
@@ -3607,9 +3607,6 @@ function renderDrawer() {
   $('#drawerClose').addEventListener('click', closeDrawer);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   DELEGATED EVENTS
-   ═══════════════════════════════════════════════════════════════════ */
 document.addEventListener('click', e => {
   const t = e.target;
   const cp = t.closest('[data-copy]');
@@ -3749,9 +3746,6 @@ document.addEventListener('change', e => {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════════════
-   THEME
-   ═══════════════════════════════════════════════════════════════════ */
 function applyTheme(theme, persist = true) {
   const root = document.documentElement;
   if (theme) root.setAttribute('data-theme', theme);
@@ -3764,9 +3758,6 @@ function applyTheme(theme, persist = true) {
   if (persist) localStorage.setItem('electrix_theme', theme || '');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   TOPIC INSPECTOR
-   ═══════════════════════════════════════════════════════════════════ */
 const TI_ROWS = [];
 const TI_MAX = 300;
 function toggleInspector(force) {
@@ -3794,9 +3785,6 @@ function logTraffic(dir, topic, payload, opts) {
   const stats = $('#tiStats'); if (stats) stats.textContent = `${TI_ROWS.length} messages`;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   BOOT
-   ═══════════════════════════════════════════════════════════════════ */
 function boot() {
   refreshIcons();
   $('#loginBtn').addEventListener('click', attemptLogin);
@@ -3832,7 +3820,6 @@ function boot() {
   $('#tiClose').addEventListener('click', () => toggleInspector(false));
   $('#tiClear').addEventListener('click', () => { TI_ROWS.length = 0; $('#tiBody').innerHTML = '<div class="ti-empty">No MQTT traffic yet.</div>'; $('#tiStats').textContent = '0 messages'; });
   window.addEventListener('hashchange', applyRoute);
-  // Swipe right to close drawer
   let tX = 0, tY = 0, tracking = false;
   document.addEventListener('touchstart', e => {
     if (!state.drawerDeviceId) return;
@@ -3847,7 +3834,6 @@ function boot() {
     if (dx > 80) { tracking = false; closeDrawer(); }
   }, { passive:true });
   document.addEventListener('touchend', () => { tracking = false; }, { passive:true });
-  // Keyboard
   let gPrefix = false, gTimer = null;
   document.addEventListener('keydown', e => {
     const tag = (document.activeElement?.tagName || '').toLowerCase();
@@ -3866,7 +3852,6 @@ function boot() {
       if (h) { e.preventDefault(); nav(h); gPrefix = false; clearTimeout(gTimer); }
     }
   });
-  // MQTT
   mqtt.on('connected', () => { $('#wsPill').classList.remove('down'); $('#wsLabel').textContent = 'connected'; });
   mqtt.on('message', (topic, payload, opts) => logTraffic('in', topic, payload, opts));
   const origPublish = mqtt.publish;
