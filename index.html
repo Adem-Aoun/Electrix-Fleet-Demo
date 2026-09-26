@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14171C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Electrix Command">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Electrix Command">
+<meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-/* ═══════════════════════════════════════════════════════════════════
-   TOKENS + RESET
-   ═══════════════════════════════════════════════════════════════════ */
 :root{
   --bg:#F4F5F7;--bg-deep:#E9EBEF;--surface:#FFF;--surface-2:#F7F8FA;
   --border:#DCE0E6;--content:#14171C;--content-dim:#5B626D;--content-faint:#8B93A0;
@@ -65,9 +68,6 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .icon-picker .lucide{width:18px;height:18px}
 .fav-btn .lucide{width:13px;height:13px}
 
-/* ═══════════════════════════════════════════════════════════════════
-   LAYOUT SHELL
-   ═══════════════════════════════════════════════════════════════════ */
 .shell{display:none;min-height:100dvh;flex-direction:row}
 .shell.active{display:flex}
 @supports not (min-height:100dvh){.shell{min-height:100vh}}
@@ -350,7 +350,7 @@ main.main-content{
 .kv dd{margin:0;font-family:var(--mono);text-align:right;overflow:hidden;text-overflow:ellipsis}
 
 /* ═══════════════════════════════════════════════════════════════════
-   WIDGET SYSTEM — unified for consistency
+   WIDGET SYSTEM — reorder mode per §6
    ═══════════════════════════════════════════════════════════════════ */
 .widget-grid{
   display:grid;
@@ -371,7 +371,7 @@ main.main-content{
 .widget.drag-over{outline:2px dashed var(--accent);outline-offset:2px}
 .widget-head{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  height:22px;flex-shrink:0;margin-bottom:12px;
+  min-height:32px;flex-shrink:0;margin-bottom:12px;
 }
 .widget-head h3{
   font-size:11px;margin:0;font-weight:700;color:var(--content-faint);
@@ -384,12 +384,22 @@ main.main-content{
   color:var(--content-faint);cursor:grab;user-select:none;
   display:flex;align-items:center;flex-shrink:0;
 }
+/* Reorder mode — up/down buttons, per §6 */
+.widget-move{display:flex;gap:4px;flex-shrink:0}
+.move-btn{
+  width:32px;height:32px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);color:var(--content-dim);cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .12s,color .12s,background .12s;
+}
+.move-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.move-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.move-btn:disabled{opacity:.3;cursor:not-allowed}
+.move-btn .lucide{width:16px;height:16px;stroke-width:2}
 .widget-body{
   flex:1;display:flex;flex-direction:column;
   min-height:0;min-width:0;
 }
-
-/* Unified row — used by every widget */
 .wrow{
   display:flex;align-items:center;gap:10px;
   min-height:38px;padding:9px 0;
@@ -403,10 +413,7 @@ main.main-content{
   color:var(--content);
 }
 .wrow .wl .wsub{color:var(--content-faint);font-size:11px;font-weight:400}
-.wrow .wm{
-  font-family:var(--mono);font-size:11px;color:var(--content-faint);
-  flex-shrink:0;
-}
+.wrow .wm{font-family:var(--mono);font-size:11px;color:var(--content-faint);flex-shrink:0}
 .wrow .wv{font-family:var(--mono);font-size:12.5px;color:var(--content);flex-shrink:0}
 .wrow .wv.ok{color:var(--ok)}
 .wrow .wv.alarm{color:var(--alarm)}
@@ -426,15 +433,11 @@ main.main-content{
 .wrow .wdot.warn{background:var(--warn)}
 .wrow .wdot.off{background:var(--offline)}
 .wrow .wact{margin-left:auto;flex-shrink:0}
-
-/* Empty state inside a widget — same visual floor as one row */
 .widget-empty{
   display:flex;align-items:center;justify-content:center;
   min-height:60px;padding:12px 4px;
   font-size:12px;color:var(--content-faint);text-align:center;
 }
-
-/* Fleet status big number */
 .widget-big-num{
   font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;
   color:var(--content);margin-bottom:4px;
@@ -463,9 +466,6 @@ main.main-content{
 .widget-stat.offline .n{color:var(--offline)}
 .widget-stat.warn .n{color:var(--warn)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   ANNUNCIATOR — consistent tiles
-   ═══════════════════════════════════════════════════════════════════ */
 .annunciator{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
@@ -538,6 +538,14 @@ main.main-content{
 }
 .latch-tag{color:var(--content-faint);border:1px solid var(--border)}
 .shelve-tag{color:var(--warn);border:1px solid var(--warn)}
+.state-chip{
+  font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.4px;margin-left:6px;
+  border:1px solid currentColor;
+}
+.state-chip.st-unack{color:var(--alarm)}
+.state-chip.st-ack{color:var(--info)}
+.state-chip.st-rtn{color:var(--content-faint)}
 
 .tabs{
   display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;
@@ -605,6 +613,20 @@ main.main-content{
   display:flex;align-items:flex-start;gap:8px;
 }
 .perm-note .lucide{width:14px;height:14px;margin-top:2px;flex-shrink:0}
+/* Honest "not live" state per §3.5 / §3.6 */
+.not-live{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:16px 18px;margin-bottom:16px;
+  background:color-mix(in srgb,var(--warn) 8%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--warn) 45%,var(--border));
+  border-left:3px solid var(--warn);
+  border-radius:8px;
+}
+.not-live .nl-icon{flex-shrink:0;color:var(--warn);margin-top:1px}
+.not-live .nl-icon .lucide{width:20px;height:20px}
+.not-live .nl-body{flex:1;min-width:0;font-size:12.5px;line-height:1.55;color:var(--content-dim)}
+.not-live .nl-body b{color:var(--content);display:block;margin-bottom:3px;font-size:13px}
+.not-live .nl-body code,.not-live .nl-body .mono{background:var(--surface-2);padding:1px 5px;border-radius:3px;font-size:11px}
 
 .log-view{
   background:var(--surface-2);border:1px solid var(--border);border-radius:6px;
@@ -946,9 +968,13 @@ body.bulk-mode .card{padding-left:48px}
 }
 .login-hint .mono{color:var(--content-dim)}
 
-/* ═══════════════════════════════════════════════════════════════════
-   MOBILE
-   ═══════════════════════════════════════════════════════════════════ */
+/* Standalone PWA display — tighten chrome when installed */
+@media (display-mode:standalone){
+  body{padding-top:var(--safe-top)}
+  .app-header{padding-top:10px}
+  .login-screen{padding-top:calc(20px + var(--safe-top))}
+}
+
 @media (max-width:820px){
   .sites-aside{display:none!important}
   .nav-rail{display:none}
@@ -1002,7 +1028,6 @@ body.bulk-mode .card{padding-left:48px}
     font-size:11.5px;
   }
 
-  /* Widgets — full-width, consistent spacing, consistent min-height */
   .widget-grid{
     grid-template-columns:1fr;
     gap:12px;
@@ -1013,23 +1038,23 @@ body.bulk-mode .card{padding-left:48px}
     padding:14px 14px 12px;
     border-radius:10px;
   }
-  .widget-head{height:20px;margin-bottom:10px}
+  .widget-head{min-height:40px;margin-bottom:10px}
   .widget-head h3{font-size:10.5px;letter-spacing:.4px}
   .widget-head h3 .lucide{width:13px;height:13px}
+  /* Reorder buttons — 44px touch target per §6 */
+  .move-btn{width:44px;height:44px}
+  .move-btn .lucide{width:18px;height:18px}
   .widget-big-num{font-size:30px}
   .widget-stat-grid{gap:6px;margin-top:10px}
   .widget-stat{padding:8px 6px;border-radius:6px}
   .widget-stat .n{font-size:18px}
   .widget-stat .l{font-size:9.5px}
-
-  /* Rows — tighter on mobile but still uniform */
   .wrow{padding:9px 0;min-height:40px;font-size:12.5px;gap:8px}
   .wrow .wl{font-size:12.5px}
   .wrow .wl .wsub{display:none}
   .wrow .wm{font-size:10.5px}
   .widget-empty{min-height:56px;font-size:12px}
 
-  /* Annunciator — uniform 2-col with fixed tile height */
   .annunciator{
     grid-template-columns:repeat(2,1fr);
     gap:6px;
@@ -1325,6 +1350,84 @@ body.bulk-mode .card{padding-left:48px}
 <script>
 'use strict';
 
+/* ═══════════════════════════════════════════════════════════════════
+   PWA — manifest + icon at runtime, per §6
+   ═══════════════════════════════════════════════════════════════════ */
+(function installPWA() {
+  try {
+    // SVG icon — accent bolt on accent tile
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">` +
+      `<rect width="192" height="192" rx="42" fill="#E8A33D"/>` +
+      `<path d="M100 28 L58 108 L90 108 L90 164 L134 84 L102 84 Z" fill="#14171C"/></svg>`;
+    const iconUrl = 'data:image/svg+xml,' + encodeURIComponent(iconSvg);
+
+    // Manifest
+    const manifest = {
+      name: 'Electrix Command',
+      short_name: 'Electrix',
+      description: 'Fleet control for MQTT-connected relay and sensor devices.',
+      start_url: '.',
+      scope: '.',
+      display: 'standalone',
+      orientation: 'any',
+      background_color: '#14171C',
+      theme_color: '#14171C',
+      icons: [
+        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
+        { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'maskable' },
+        { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
+      ],
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestUrl;
+    document.head.appendChild(manifestLink);
+
+    // Apple touch icon — iOS 16+ handles SVG, older falls back gracefully
+    const apple = document.createElement('link');
+    apple.rel = 'apple-touch-icon';
+    apple.href = iconUrl;
+    document.head.appendChild(apple);
+    const applePre = document.createElement('link');
+    applePre.rel = 'apple-touch-icon-precomposed';
+    applePre.href = iconUrl;
+    document.head.appendChild(applePre);
+
+    // Service worker — app-shell caching only, per §6
+    // Note: blob-URL service workers have limited scope on most browsers,
+    // so this is best-effort; a real deployment should ship /sw.js and
+    // register that instead.
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      const swCode = [
+        "const CACHE='electrix-shell-v1';",
+        "self.addEventListener('install',e=>{self.skipWaiting()});",
+        "self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});",
+        "self.addEventListener('fetch',e=>{",
+        "  if(e.request.method!=='GET')return;",
+        "  const u=new URL(e.request.url);",
+        "  if(u.origin!==location.origin)return;",
+        "  e.respondWith(",
+        "    caches.open(CACHE).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{",
+        "      if(res.ok)c.put(e.request,res.clone());return res;",
+        "    }).catch(()=>c.match(e.request))))",
+        "  );",
+        "});",
+      ].join('');
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(() => {});
+    }
+  } catch (e) {
+    // PWA installability is non-essential — a failure here must not break the app
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════════ */
 function refreshIcons(root) {
   if (!window.lucide || typeof lucide.createIcons !== 'function') return;
   try { lucide.createIcons(); } catch {}
@@ -1434,10 +1537,10 @@ const DEVICES = [
     capabilities:[ { id:'pir0', kind:'sensor', label:'Server Room Motion', value:'clear', online:true } ]},
 ];
 const ALARMS = [
-  { id:'a1', device_id:'88c4a01f3d7e', type:'relay_stuck', severity:'critical', code:'FEEDBACK_MISMATCH', msg:'Conveyor — feedback mismatch, possible stuck contact', raised_at_s:210, latched:true, acked:false, ack_by:null, cleared:false, note:null, shelved_until:null },
-  { id:'a2', device_id:'55e9012bca44', type:'low_battery', severity:'warn', code:'LOW_BATTERY', msg:'Cold Storage Monitor — backup battery below 15%', raised_at_s:5400, latched:false, acked:true, ack_by:'operator', cleared:false, note:'Replacement ordered', shelved_until:null },
-  { id:'a3', device_id:'a13bd220e901', type:'device_offline', severity:'warn', code:'MQTT_UNREACHABLE', msg:'Garage Controller — offline for over 2 hours', raised_at_s:7380, latched:false, acked:false, ack_by:null, cleared:false, note:null, shelved_until:null },
-  { id:'a4', device_id:'f42dc971c624', type:'threshold', severity:'info', code:'THRESHOLD_EVENT', msg:'Garden Pump — runtime exceeded 2h continuous', raised_at_s:900, latched:false, acked:true, ack_by:'admin', cleared:true, note:null, shelved_until:null },
+  { id:'a1', device_id:'88c4a01f3d7e', type:'relay_stuck', priority:'critical', state:'UNACK_ALARM', code:'FEEDBACK_MISMATCH', msg:'Conveyor — feedback mismatch, possible stuck contact', since:210, latched:true, acked:false, ack_by:null, cleared:false, note:null, shelved_until:null },
+  { id:'a2', device_id:'55e9012bca44', type:'low_battery', priority:'high', state:'ACK_ALARM', code:'LOW_BATTERY', msg:'Cold Storage Monitor — backup battery below 15%', since:5400, latched:false, acked:true, ack_by:'operator', cleared:false, note:'Replacement ordered', shelved_until:null },
+  { id:'a3', device_id:'a13bd220e901', type:'device_offline', priority:'medium', state:'UNACK_ALARM', code:'MQTT_UNREACHABLE', msg:'Garage Controller — offline for over 2 hours', since:0, latched:false, acked:false, ack_by:null, cleared:false, note:null, shelved_until:null },
+  { id:'a4', device_id:'f42dc971c624', type:'threshold', priority:'low', state:'RTN_UNACK', code:'THRESHOLD_EVENT', msg:'Garden Pump — runtime exceeded 2h continuous', since:900, latched:false, acked:true, ack_by:'admin', cleared:true, note:null, shelved_until:null },
 ];
 const TELEMETRY = {};
 function seedSeries(key, { unit, base, noise, threshold = null, window_s = 2, points = 120 }) {
@@ -1501,8 +1604,9 @@ let state = {
   drawerDeviceId: null,
   openDeviceId: null,
   widgetLayout: lsGet('electrix_widget_layout', DEFAULT_LAYOUT.slice()),
+  widgetReorderMode: false,  // §6 — reorder toggle for touch
   alarmFilter: 'active',
-  alarmSeverityFilter: 'all',
+  alarmPriorityFilter: 'all',
   alarmTypeFilter: 'all',
   favorites: lsGet('electrix_favorites', []),
   bulkMode: false,
@@ -1796,6 +1900,8 @@ function applyRoute() {
   const devicesView = state.view === 'devices';
   $('#sitesAside').style.display = devicesView ? '' : 'none';
   $('#searchWrap').style.display = devicesView ? '' : 'none';
+  // Reorder mode exits when leaving dashboard
+  if (state.view !== 'dashboard') state.widgetReorderMode = false;
   renderBreadcrumbs();
   renderAlarmBadge();
   renderMain();
@@ -1858,7 +1964,6 @@ function startTick() {
         if (s.history.length > 240) s.history.shift();
       });
     }
-    try { tickOTA(); } catch {}
     try { tickSchedules(); } catch {}
     if (tickCount % 2 === 0) { try { tickInterlocks(); } catch {} }
     if (tickCount % 2 === 0) {
@@ -1884,11 +1989,11 @@ function tickSchedules() {
 
 const siteName = id => SITES.find(s => s.id === id)?.name || id;
 const deviceById = id => DEVICES.find(d => d.device_id === id);
-const sevRank = s => ({ critical:0, warn:1, info:2 })[s] ?? 9;
+const priorityRank = p => ({ critical:0, high:1, medium:2, low:3 })[p] ?? 9;
 const deviceHasAlarm = d => ALARMS.some(a => a.device_id === d.device_id && !a.cleared);
 const isShelved = a => a.shelved_until && a.shelved_until > Date.now();
 const activeAlarms = () => ALARMS.filter(a => !a.cleared && !isShelved(a))
-  .sort((a, b) => sevRank(a.severity) - sevRank(b.severity) || a.raised_at_s - b.raised_at_s);
+  .sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority) || a.since - b.since);
 function deriveStatus(d) {
   if (deviceHasAlarm(d)) return 'alarm';
   if (d.lwt === 'offline') return 'offline';
@@ -1919,6 +2024,7 @@ function deviceTypeIcon(type) {
   if (type.includes('hvac') || type.includes('fan')) return 'fan';
   return 'cpu';
 }
+const fmtSince = s => s === 0 ? 'unknown' : fmtAgo(s);
 function sparkline(key, { width = 200, height = 24 } = {}) {
   const s = TELEMETRY[key];
   if (!s || !s.history.length) return '';
@@ -1992,7 +2098,7 @@ function renderMain(isTick = false) {
   refreshIcons(main);
 }
 function renderAlarmBadge() {
-  const n = activeAlarms().filter(a => !a.acked).length;
+  const n = activeAlarms().filter(a => a.state === 'UNACK_ALARM').length;
   ['#alarmBadge', '#alarmBadgeM'].forEach(sel => {
     const b = $(sel); if (!b) return;
     b.textContent = n;
@@ -2008,7 +2114,7 @@ function updateBulkBar() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   DASHBOARD — unified widget system
+   DASHBOARD — reorder mode per §6
    ═══════════════════════════════════════════════════════════════════ */
 const ANN_TYPE_ICON = {
   relay_stuck:'alert-octagon', low_battery:'battery-warning',
@@ -2018,15 +2124,15 @@ const ANN_TYPE_ICON = {
 function renderAnnunciator() {
   const types = {};
   ALARMS.filter(a => !a.cleared).forEach(a => {
-    const t = types[a.type] ||= { count:0, unacked:0, severity:'info' };
+    const t = types[a.type] ||= { count:0, unacked:0, priority:'low' };
     t.count++;
-    if (!a.acked) t.unacked++;
-    if (sevRank(a.severity) < sevRank(t.severity)) t.severity = a.severity;
+    if (a.state === 'UNACK_ALARM') t.unacked++;
+    if (priorityRank(a.priority) < priorityRank(t.priority)) t.priority = a.priority;
   });
   const known = ['relay_stuck','low_battery','device_offline','threshold','over_temp','water_leak'];
   return `<div class="annunciator">${known.map(t => {
-    const info = types[t] || { count:0, unacked:0, severity:'info' };
-    const stateCls = info.count === 0 ? 'st-normal' : (info.severity === 'critical' ? 'st-critical' : 'st-warn');
+    const info = types[t] || { count:0, unacked:0, priority:'low' };
+    const stateCls = info.count === 0 ? 'st-normal' : (info.priority === 'critical' ? 'st-critical' : 'st-warn');
     const cls = [stateCls, state.alarmTypeFilter === t ? 'selected-type' : ''].filter(Boolean).join(' ');
     return `<div class="ann-tile ${cls}" data-ann-type="${t}">
       <div class="ann-label">${icon(ANN_TYPE_ICON[t] || 'alert-circle')}<span>${t.replace(/_/g,' ')}</span></div>
@@ -2034,8 +2140,6 @@ function renderAnnunciator() {
     </div>`;
   }).join('')}</div>`;
 }
-
-/* Unified widget row helper */
 function wrow({ lead='', label='', sub='', meta='', value='', valueClass='', act='', isLast=false }) {
   const subHtml = sub ? ` <span class="wsub">· ${sub}</span>` : '';
   return `<div class="wrow" style="${isLast ? 'border-bottom:none;' : ''}">
@@ -2067,9 +2171,9 @@ const WIDGET_DEFS = {
     if (!list.length) return widgetEmpty('No active alarms');
     return list.map((a, i) =>
       wrow({
-        lead: `<span class="wchip sev-${a.severity}">${a.severity}</span>`,
+        lead: `<span class="wchip sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">${a.priority}</span>`,
         label: esc(a.msg),
-        act: !a.acked ? `<span class="wdot alarm" title="unacknowledged" style="margin-left:auto;"></span>` : '',
+        act: a.state === 'UNACK_ALARM' ? `<span class="wdot alarm" title="unacknowledged" style="margin-left:auto;"></span>` : '',
         isLast: i === list.length - 1,
       })
     ).join('') + `<div style="margin-top:12px;"><button class="btn sm" data-nav="#/alarms" style="width:100%;">${icon('arrow-right')}View all</button></div>`;
@@ -2092,11 +2196,7 @@ const WIDGET_DEFS = {
     const list = ACTIVITY.slice(0, 5);
     if (!list.length) return widgetEmpty('No recent activity');
     return list.map((a, i) =>
-      wrow({
-        label: esc(a.text),
-        meta: fmtAgo(a.t),
-        isLast: i === list.length - 1,
-      })
+      wrow({ label: esc(a.text), meta: fmtAgo(a.t), isLast: i === list.length - 1 })
     ).join('');
   }},
   site_overview: { title:'Site Overview', icon:'map', render: () => {
@@ -2117,27 +2217,49 @@ const WIDGET_DEFS = {
 };
 
 function renderDashboard(main) {
+  const mobile = isMobile();
+  const reorderMode = state.widgetReorderMode;
   main.innerHTML = `
     <div class="main-head">
       <h1>Overview</h1>
-      <div class="main-head-actions"><span class="count">${isMobile() ? 'Tap to drill in' : 'Drag to reorder'}</span></div>
+      <div class="main-head-actions">
+        <span class="count">${mobile ? (reorderMode ? 'Use arrows to reorder' : 'Tap a widget to drill in') : 'Drag to reorder'}</span>
+        ${mobile ? `<button class="btn sm ${reorderMode ? 'active' : ''}" id="reorderToggle" aria-pressed="${reorderMode}">
+          ${icon(reorderMode ? 'check' : 'arrow-up-down')}<span>${reorderMode ? 'Done' : 'Reorder'}</span>
+        </button>` : ''}
+      </div>
     </div>
     ${renderAnnunciator()}
     <div class="widget-grid" id="widgetGrid"></div>`;
   const grid = $('#widgetGrid');
-  state.widgetLayout.forEach(id => {
+  const total = state.widgetLayout.length;
+  state.widgetLayout.forEach((id, idx) => {
     const def = WIDGET_DEFS[id]; if (!def) return;
     const el = document.createElement('div');
-    el.className = 'widget'; el.draggable = !isMobile(); el.dataset.widgetId = id;
+    el.className = 'widget';
+    el.draggable = !mobile && !reorderMode;
+    el.dataset.widgetId = id;
+    const headRight = reorderMode
+      ? `<div class="widget-move">
+          <button class="move-btn" data-move-up="${esc(id)}" ${idx === 0 ? 'disabled' : ''} aria-label="Move ${esc(def.title)} up" title="Move up">${icon('chevron-up')}</button>
+          <button class="move-btn" data-move-down="${esc(id)}" ${idx === total - 1 ? 'disabled' : ''} aria-label="Move ${esc(def.title)} down" title="Move down">${icon('chevron-down')}</button>
+        </div>`
+      : (!mobile ? `<span class="drag-handle" title="Drag to reorder">${icon('grip-vertical')}</span>` : '');
     el.innerHTML = `<div class="widget-head">
         <h3>${icon(def.icon || 'square')}<span>${esc(def.title)}</span></h3>
-        ${!isMobile() ? `<span class="drag-handle">${icon('grip-vertical')}</span>` : ''}
+        ${headRight}
       </div>
       <div class="widget-body">${def.render()}</div>`;
     grid.appendChild(el);
   });
   refreshIcons(grid);
-  if (!isMobile()) wireWidgetDrag(grid);
+  if (!mobile && !reorderMode) wireWidgetDrag(grid);
+  // Wire reorder toggle
+  const rt = $('#reorderToggle');
+  if (rt) rt.addEventListener('click', () => {
+    state.widgetReorderMode = !state.widgetReorderMode;
+    renderDashboard(main);
+  });
 }
 function wireWidgetDrag(grid) {
   let dragSrc = null;
@@ -2154,6 +2276,24 @@ function wireWidgetDrag(grid) {
       lsSet('electrix_widget_layout', state.widgetLayout);
       renderDashboard($('#mainContent'));
     });
+  });
+}
+/* Reorder per §6 — works everywhere, keyboard-accessible, no gesture conflict */
+function moveWidget(id, dir) {
+  const idx = state.widgetLayout.indexOf(id);
+  if (idx < 0) return;
+  const to = dir === 'up' ? idx - 1 : idx + 1;
+  if (to < 0 || to >= state.widgetLayout.length) return;
+  state.widgetLayout.splice(to, 0, state.widgetLayout.splice(idx, 1)[0]);
+  lsSet('electrix_widget_layout', state.widgetLayout);
+  audit('widget.move', id, dir);
+  const main = $('#mainContent');
+  renderDashboard(main);
+  // Return focus to the same button after re-render, so keyboard users can chain moves
+  requestAnimationFrame(() => {
+    const sel = dir === 'up' ? `[data-move-up="${id}"]` : `[data-move-down="${id}"]`;
+    const btn = document.querySelector(sel);
+    if (btn) btn.focus();
   });
 }
 
@@ -2247,7 +2387,7 @@ function renderDeviceGrid() {
           </div>
         </div>
         <div class="card-right">
-          ${alarms.length ? `<span class="alarm-sev sev-${alarms[0].severity}" style="margin-top:0;">${alarms.length}</span>` : ''}
+          ${alarms.length ? `<span class="alarm-sev sev-${alarms[0].priority === 'critical' ? 'critical' : alarms[0].priority === 'low' ? 'info' : 'warn'}" style="margin-top:0;">${alarms.length}</span>` : ''}
           ${freshnessHTML(d)}
         </div>
       </div>
@@ -2440,11 +2580,11 @@ function renderDevEvents(d) {
   const events = ALARMS.filter(a => a.device_id === d.device_id);
   return `<div class="panel">
     <h4>${icon('list')}Event stream</h4>
-    ${events.length ? events.map(a => `<div class="alarm-item sev-${a.severity}">
-      <span class="alarm-sev sev-${a.severity}">${a.severity}</span>
+    ${events.length ? events.map(a => `<div class="alarm-item sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">
+      <span class="alarm-sev sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">${a.priority}</span>
       <div class="alarm-body">
-        <div class="alarm-msg">${esc(a.msg)}${a.latched ? '<span class="latch-tag">latched</span>' : ''}${isShelved(a) ? '<span class="shelve-tag">shelved</span>' : ''}</div>
-        <div class="alarm-meta">${esc(a.code)} · ${fmtAgo(a.raised_at_s)}</div>
+        <div class="alarm-msg">${esc(a.msg)}${a.latched ? '<span class="latch-tag">latched</span>' : ''}${isShelved(a) ? '<span class="shelve-tag">shelved</span>' : ''}<span class="state-chip st-${a.state === 'UNACK_ALARM' ? 'unack' : a.state === 'ACK_ALARM' ? 'ack' : 'rtn'}">${a.state}</span></div>
+        <div class="alarm-meta">${esc(a.code)} · ${fmtSince(a.since)}</div>
         ${a.note ? `<div class="alarm-note">“${esc(a.note)}”</div>` : ''}
       </div>
     </div>`).join('') : '<div class="empty">No events.</div>'}
@@ -2561,7 +2701,7 @@ function exportTelemetryCSV(keys, windowMs) {
 
 function renderAlarms(main) {
   const active = activeAlarms();
-  const history = ALARMS.filter(a => a.cleared).sort((a, b) => b.raised_at_s - a.raised_at_s);
+  const history = ALARMS.filter(a => a.cleared).sort((a, b) => b.since - a.since);
   const shelved = ALARMS.filter(a => !a.cleared && isShelved(a));
   main.innerHTML = `
     <div class="main-head">
@@ -2574,9 +2714,12 @@ function renderAlarms(main) {
       <button class="chip ${state.alarmFilter === 'shelved' ? 'active' : ''}" data-alarm-filter="shelved">${icon('archive')}Shelved <span class="n">${shelved.length}</span></button>
       <button class="chip ${state.alarmFilter === 'history' ? 'active' : ''}" data-alarm-filter="history">${icon('history')}History <span class="n">${history.length}</span></button>
       ${state.alarmTypeFilter !== 'all' ? `<span class="type-filter-tag" style="font-size:10.5px;color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,transparent);display:inline-flex;align-items:center;gap:6px;">type: ${esc(state.alarmTypeFilter)} <button class="btn sm" data-clear-type style="padding:2px 5px;font-size:10px;">${icon('x')}</button></span>` : ''}
-      <select class="sortsel" id="alarmSevFilter" style="width:auto;margin:0;padding:8px 10px;font-size:12px;">
-        <option value="all">All</option><option value="critical">Critical</option>
-        <option value="warn">Warn</option><option value="info">Info</option>
+      <select class="sortsel" id="alarmPriorityFilter" style="width:auto;margin:0;padding:8px 10px;font-size:12px;">
+        <option value="all">All priorities</option>
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
       </select>
     </div>
     <div id="alarmList"></div>`;
@@ -2585,8 +2728,8 @@ function renderAlarms(main) {
   $$('#alarmFilters [data-alarm-filter]').forEach(b => b.addEventListener('click', () => {
     state.alarmFilter = b.dataset.alarmFilter; renderAlarms(main);
   }));
-  $('#alarmSevFilter').value = state.alarmSeverityFilter;
-  $('#alarmSevFilter').addEventListener('change', e => { state.alarmSeverityFilter = e.target.value; renderAlarmList(); });
+  $('#alarmPriorityFilter').value = state.alarmPriorityFilter;
+  $('#alarmPriorityFilter').addEventListener('change', e => { state.alarmPriorityFilter = e.target.value; renderAlarmList(); });
   $('#alarmFilters [data-clear-type]')?.addEventListener('click', () => { state.alarmTypeFilter = 'all'; renderMain(); });
 }
 function renderAlarmList() {
@@ -2594,8 +2737,8 @@ function renderAlarmList() {
   let list;
   if (state.alarmFilter === 'active') list = activeAlarms();
   else if (state.alarmFilter === 'shelved') list = ALARMS.filter(a => !a.cleared && isShelved(a));
-  else list = ALARMS.filter(a => a.cleared).sort((a, b) => b.raised_at_s - a.raised_at_s);
-  if (state.alarmSeverityFilter !== 'all') list = list.filter(a => a.severity === state.alarmSeverityFilter);
+  else list = ALARMS.filter(a => a.cleared).sort((a, b) => b.since - a.since);
+  if (state.alarmPriorityFilter !== 'all') list = list.filter(a => a.priority === state.alarmPriorityFilter);
   if (state.alarmTypeFilter !== 'all') list = list.filter(a => a.type === state.alarmTypeFilter);
   if (!list.length) {
     el.innerHTML = `<div class="empty">${state.alarmFilter === 'active' ? 'No active alarms.' : 'Nothing here yet.'}</div>`;
@@ -2604,20 +2747,22 @@ function renderAlarmList() {
   const canAct = can('ack') || can('clear');
   el.innerHTML = list.map(a => {
     const d = deviceById(a.device_id), shelved = isShelved(a);
-    return `<div class="alarm-item sev-${a.severity} ${shelved ? 'shelved' : ''}">
-      <span class="alarm-sev sev-${a.severity}">${a.severity}</span>
+    const sevCls = a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn';
+    const stateCls = a.state === 'UNACK_ALARM' ? 'unack' : a.state === 'ACK_ALARM' ? 'ack' : 'rtn';
+    return `<div class="alarm-item sev-${sevCls} ${shelved ? 'shelved' : ''}">
+      <span class="alarm-sev sev-${sevCls}">${a.priority}</span>
       <div class="alarm-body">
         <div class="alarm-msg">${esc(a.msg)}
           ${a.latched ? '<span class="latch-tag">latched</span>' : ''}
+          <span class="state-chip st-${stateCls}">${a.state}</span>
           ${shelved ? `<span class="shelve-tag">${fmtAgo(Math.floor((a.shelved_until - Date.now()) / 1000))} left</span>` : ''}
         </div>
-        <div class="alarm-meta">${esc(a.code)} · ${esc(d ? d.name : a.device_id)} · ${fmtAgo(a.raised_at_s)}${a.acked ? ' · acked' : ''}</div>
+        <div class="alarm-meta">${esc(a.code)} · ${esc(d ? d.name : a.device_id)} · since ${fmtSince(a.since)}${a.acked ? ' · acked' : ''}</div>
         ${a.note ? `<div class="alarm-note">“${esc(a.note)}”</div>` : ''}
       </div>
       ${state.alarmFilter !== 'history' && canAct ? `<div class="alarm-actions">
-        ${!a.acked ? `<button class="btn sm" data-alarm-ack="${a.id}">${icon('check')}<span>Ack</span></button>` : ''}
+        ${a.state === 'UNACK_ALARM' ? `<button class="btn sm" data-alarm-ack="${a.id}">${icon('check')}<span>Ack</span></button>` : ''}
         ${!shelved ? `<button class="btn sm" data-alarm-shelve="${a.id}">${icon('archive')}<span>Shelve</span></button>` : `<button class="btn sm" data-alarm-unshelve="${a.id}">${icon('archive-restore')}<span>Unshelve</span></button>`}
-        <button class="btn sm danger" data-alarm-clear="${a.id}">${icon('trash-2')}<span>Clear</span></button>
       </div>` : ''}
     </div>`;
   }).join('');
@@ -2944,174 +3089,53 @@ function openSceneEditor(sceneId = null) {
   wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(null); });
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   OTA — honest "not live" state per §3.5
+   ═══════════════════════════════════════════════════════════════════ */
+const OTA_NOT_LIVE_BANNER = `
+  <div class="not-live">
+    <div class="nl-icon">${icon('alert-triangle')}</div>
+    <div class="nl-body">
+      <b>Not available yet</b>
+      The firmware does not publish <span class="mono">ota/available</span> or
+      <span class="mono">ota/status</span>. Nothing on this screen is a real
+      update pipeline — the catalog, targets and progress below are simulated
+      so the eventual layout can be evaluated before the firmware exists.
+      When OTA lands on-device, this banner disappears and the rest becomes live.
+    </div>
+  </div>`;
 const OTA = {
   catalog: [
-    { version:'1.2.0', released:'2026-08-12', notes:'Relay feedback timing fix; QoS2 tuning.', size_kb:512 },
-    { version:'1.1.4', released:'2026-05-03', notes:'Heartbeat jitter reduction.', size_kb:480 },
-    { version:'0.9.1', released:'2026-02-18', notes:'Initial sensor-pir release.', size_kb:396 },
+    { version:'1.2.0', released:'—', notes:'Relay feedback timing; QoS2 handshake.', size_kb:0 },
+    { version:'1.1.4', released:'—', notes:'Heartbeat jitter reduction.', size_kb:0 },
+    { version:'0.9.1', released:'—', notes:'Initial sensor-pir release.', size_kb:0 },
   ],
   latest() { return this.catalog[0].version; },
   jobs: {},
 };
 const otaJob = d => OTA.jobs[d.device_id] || null;
-function otaStatusFor(d) {
-  const j = otaJob(d);
-  if (!j) return d.fw_version === OTA.latest() ? 'up-to-date' : 'outdated';
-  return j.state;
-}
-async function startOTA(deviceId, version, { silent = false } = {}) {
-  const d = deviceById(deviceId); if (!d) return;
-  if (!can('toggle')) { toast('Permission denied', { type:'error' }); return; }
-  if (d.lwt !== 'online') { toast('Device offline', { type:'error' }); return; }
-  OTA.jobs[deviceId] = { target:version, state:'queued', progress_pct:0, started_at:Date.now(),
-    log:[{ ts:Date.now(), lv:'info', msg:`queued → ${version}` }] };
-  try {
-    await mqtt.publish(`electrix/${deviceId}/ota/available`, {
-      version, url:`https://fw.electrix.local/${version}.bin`,
-      checksum:'sha256:' + Math.random().toString(16).slice(2, 18), mandatory:false,
-    }, { qos:1, retain:true });
-  } catch {}
-  if (!silent) { audit('ota.start', deviceId, `→ ${version}`); toast('OTA queued', { msg:`${d.name} → ${version}`, type:'info' }); }
-  renderMain();
-}
-function startStagedRollout(version, pct) {
-  const candidates = DEVICES.filter(d => d.lwt === 'online' && d.fw_version !== version);
-  const n = Math.max(1, Math.round(candidates.length * (pct / 100)));
-  const picks = candidates.slice(0, n);
-  if (!picks.length) { toast('Nothing to update', { type:'info' }); return; }
-  picks.forEach(d => startOTA(d.device_id, version, { silent:true }));
-  audit('ota.rollout', version, `${n} devices`);
-  toast('Rollout started', { msg:`${picks.length} → ${version}`, type:'ok' });
-  renderMain();
-}
-function rollbackOTA(deviceId) {
-  const d = deviceById(deviceId); if (!d) return;
-  const prev = OTA.catalog.find(f => f.version !== d.fw_version); if (!prev) return;
-  OTA.jobs[deviceId] = { target:prev.version, state:'queued', progress_pct:0, started_at:Date.now(),
-    log:[{ ts:Date.now(), lv:'warn', msg:`rollback → ${prev.version}` }] };
-  audit('ota.rollback', deviceId, `→ ${prev.version}`);
-  toast('Rollback queued', { msg:`${d.name} → ${prev.version}`, type:'warn' });
-  renderMain();
-}
-function tickOTA() {
-  const states = ['downloading','verifying','flashing'];
-  Object.entries(OTA.jobs).forEach(([deviceId, j]) => {
-    if (j.state === 'done' || j.state === 'failed') return;
-    const d = deviceById(deviceId); if (!d) return;
-    if (j.state === 'flashing' && Math.random() < 0.03) {
-      j.state = 'failed'; j.log.push({ ts:Date.now(), lv:'error', msg:'flash verify failed' });
-      audit('ota.failed', deviceId, j.target);
-      toast('OTA failed', { msg:`${d.name}`, type:'error' });
-      return;
-    }
-    if (j.state === 'queued') { j.state = 'downloading'; j.log.push({ ts:Date.now(), lv:'info', msg:'downloading' }); return; }
-    j.progress_pct = Math.min(100, j.progress_pct + 6 + Math.random() * 10);
-    if (j.progress_pct >= 100) {
-      const idx = states.indexOf(j.state);
-      if (idx < states.length - 1) { j.state = states[idx + 1]; j.progress_pct = 0; j.log.push({ ts:Date.now(), lv:'info', msg:j.state }); }
-      else {
-        j.state = 'done'; j.progress_pct = 100; j.log.push({ ts:Date.now(), lv:'info', msg:`installed ${j.target}` });
-        d.fw_version = j.target;
-        audit('ota.done', deviceId, j.target);
-        toast('Firmware updated', { msg:`${d.name} → ${j.target}`, type:'ok' });
-      }
-    }
-  });
-}
 function renderOTA(main) {
-  const latest = OTA.latest();
-  const outdated = DEVICES.filter(d => d.fw_version !== latest);
-  const inFlight = DEVICES.filter(d => { const j = otaJob(d); return j && j.state !== 'done' && j.state !== 'failed'; });
-  const failed = DEVICES.filter(d => otaJob(d)?.state === 'failed');
   main.innerHTML = `
     <div class="main-head">
       <h1>Firmware / OTA</h1>
-      <div class="main-head-actions"><span class="count">${latest} · ${outdated.length} outdated · ${inFlight.length} in flight${failed.length ? ` · ${failed.length} failed` : ''}</span></div>
+      <div class="main-head-actions"><span class="count">not live</span></div>
     </div>
-    <div class="dev-grid" style="margin-bottom:14px;">
-      <div class="panel">
-        <h4>${icon('rocket')}Staged rollout</h4>
-        <div class="config-row"><span>Target</span>
-          <select id="otaRollTarget" style="padding:9px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;">
-            ${OTA.catalog.map(f => `<option value="${f.version}" ${f.version === latest ? 'selected' : ''}>${f.version}</option>`).join('')}
-          </select>
-        </div>
-        <div class="config-row" style="margin-top:8px;"><span>Batch</span>
-          <select id="otaRollPct" style="padding:9px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;">
-            <option value="25">25%</option><option value="50" selected>50%</option><option value="100">100%</option>
-          </select>
-        </div>
-        <button class="btn primary" id="otaRollStart" style="margin-top:12px;width:100%;" ${can('toggle') ? '' : 'disabled'}>${icon('rocket')}Start rollout</button>
-      </div>
-      <div class="panel">
-        <h4>${icon('package')}Catalog</h4>
-        ${OTA.catalog.map(f => `<div class="ota-fw-card" style="border:none;padding:10px 0;background:none;">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
-              <span class="ver">${f.version}</span>
-              ${f.version === latest ? '<span class="ota-badge up-to-date">latest</span>' : ''}
-            </div>
-            <div class="notes">${esc(f.notes)}</div>
-            <div class="meta">${f.released} · ${f.size_kb} KB</div>
-          </div>
-        </div>`).join('')}
-      </div>
-    </div>
+    ${OTA_NOT_LIVE_BANNER}
     <div class="panel" style="padding:0;overflow:hidden;">
-      <div class="ota-table-wrap">
-        <table class="ota-table">
-          <thead><tr>
-            <th style="padding-left:16px;">Device</th><th>Site</th>
-            <th>Current</th><th>Target</th><th>Status</th>
-            <th style="text-align:right;padding-right:16px;">Action</th>
-          </tr></thead>
-          <tbody>${DEVICES.map(d => renderOTARow(d, latest)).join('')}</tbody>
-        </table>
+      <div style="padding:48px 24px;text-align:center;color:var(--content-faint);">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--surface-2);color:var(--content-dim);margin-bottom:16px;">
+          ${icon('upload-cloud')}
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--content);margin-bottom:6px;">Nothing to show yet</div>
+        <div style="font-size:12.5px;max-width:440px;margin:0 auto;line-height:1.55;">
+          Once <span class="mono">electrix/{device_id}/ota/available</span> and
+          <span class="mono">.../ota/status</span> exist on the firmware side,
+          this screen lists per-device current/target version, rollout progress,
+          and lets an admin trigger a staged rollout.
+        </div>
       </div>
     </div>`;
   refreshIcons(main);
-  $('#otaRollStart').addEventListener('click', () => {
-    startStagedRollout($('#otaRollTarget').value, parseInt($('#otaRollPct').value, 10));
-  });
-  $$('[data-ota-start]').forEach(b => b.addEventListener('click', () => startOTA(b.dataset.otaStart, b.dataset.otaVer)));
-  $$('[data-ota-rollback]').forEach(b => b.addEventListener('click', () => rollbackOTA(b.dataset.otaRollback)));
-  $$('[data-ota-dismiss]').forEach(b => b.addEventListener('click', () => { delete OTA.jobs[b.dataset.otaDismiss]; renderMain(); }));
-}
-function renderOTARow(d, latest) {
-  const j = otaJob(d), status = otaStatusFor(d);
-  const badgeCls = { 'up-to-date':'up-to-date','outdated':'outdated','queued':'updating','downloading':'updating','verifying':'updating','flashing':'updating','done':'up-to-date','failed':'failed' }[status] || '';
-  const badgeLabel = { 'up-to-date':'up to date','outdated':'outdated' }[status] || status;
-  const showProgress = j && (j.state === 'downloading' || j.state === 'verifying' || j.state === 'flashing');
-  const offline = d.lwt !== 'online';
-  return `<tr>
-    <td style="padding-left:16px;">
-      <div style="font-weight:600;">${esc(d.name)}</div>
-      <div class="mono" style="font-size:10.5px;color:var(--content-faint);">${d.device_id}</div>
-    </td>
-    <td>${esc(siteName(d.site_id))}</td>
-    <td class="mono">${d.fw_version}</td>
-    <td class="mono">${j ? j.target : (d.fw_version === latest ? '—' : latest)}</td>
-    <td>
-      <span class="ota-badge ${badgeCls}">${badgeLabel}</span>
-      ${showProgress ? `<div class="ota-progress"><div class="bar" style="width:${j.progress_pct.toFixed(0)}%"></div></div>
-        <div class="mono" style="font-size:10px;color:var(--content-faint);margin-top:3px;">${j.state} ${j.progress_pct.toFixed(0)}%</div>` : ''}
-      ${j?.state === 'done' ? `<div class="ota-progress"><div class="bar done" style="width:100%"></div></div>` : ''}
-      ${j?.state === 'failed' ? `<div class="ota-progress"><div class="bar failed" style="width:100%"></div></div>` : ''}
-    </td>
-    <td style="text-align:right;padding-right:16px;white-space:nowrap;">
-      ${offline ? `<span class="mono" style="font-size:10.5px;color:var(--content-faint);">offline</span>` :
-        (j && (j.state === 'failed' || j.state === 'done')) ?
-          (j.state === 'failed'
-            ? `<button class="btn sm" data-ota-start="${d.device_id}" data-ota-ver="${j.target}">Retry</button>
-               <button class="btn sm" data-ota-dismiss="${d.device_id}">Dismiss</button>`
-            : `<button class="btn sm" data-ota-rollback="${d.device_id}">Rollback</button>
-               <button class="btn sm" data-ota-dismiss="${d.device_id}">Dismiss</button>`) :
-        (j ? `<span class="mono" style="font-size:10.5px;color:var(--content-faint);">in flight</span>` :
-          (d.fw_version === latest
-            ? `<span class="mono" style="font-size:10.5px;color:var(--content-faint);">—</span>`
-            : `<button class="btn sm" data-ota-start="${d.device_id}" data-ota-ver="${latest}" ${can('toggle') ? '' : 'disabled'}>Update</button>`))}
-    </td>
-  </tr>`;
 }
 
 const INTERLOCKS = [
@@ -3157,6 +3181,15 @@ function renderInterlocks(main) {
     <div class="main-head">
       <h1>Interlocks</h1>
       <div class="main-head-actions"><span class="count">${active.length} enabled · ${violations.length} blocks</span></div>
+    </div>
+    <div class="not-live">
+      <div class="nl-icon">${icon('alert-triangle')}</div>
+      <div class="nl-body">
+        <b>Demo data</b>
+        Interlocks run <em>on-device</em> in <span class="mono">components/automation/</span>,
+        which has not shipped in firmware yet. Rules and violations below
+        are simulated for layout review only.
+      </div>
     </div>
     <div class="violations-panel ${violations.length ? '' : 'empty'}">
       <h4 style="margin:0 0 8px;font-size:11.5px;color:var(--content-faint);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:6px;">${icon('shield-alert')}Live violations</h4>
@@ -3443,7 +3476,7 @@ async function ackAlarm(id) {
   const a = ALARMS.find(x => x.id === id); if (!a) return;
   const ok = await confirmModal({
     title:'Acknowledge alarm',
-    message:'Confirm the alarm has been seen. This does not clear the underlying condition.',
+    message:'Silences repeat notification. State stays UNACK_ALARM until the device transitions it.',
     confirmText:'Acknowledge',
     extraHtml:`<div class="m-extra"><label class="field-label">Operator note (optional)</label><textarea id="ackNote" rows="3" placeholder="Investigating…"></textarea></div>`,
   });
@@ -3453,20 +3486,6 @@ async function ackAlarm(id) {
   audit('alarm.ack', a.code, `by ${state.user.username}`);
   ACTIVITY.unshift({ t:0, text:`${state.user.username} acknowledged ${a.code}` });
   toast('Alarm acknowledged', { msg:a.code, type:'ok' });
-  renderMain();
-}
-async function clearAlarm(id) {
-  if (!can('clear')) { toast('Permission denied', { type:'error' }); return; }
-  const a = ALARMS.find(x => x.id === id); if (!a) return;
-  const ok = await confirmModal({
-    title:'Clear alarm?', message:`Clear "${a.msg}".`,
-    confirmText:'Clear', danger:true,
-  });
-  if (!ok) return;
-  a.cleared = true; a.cleared_at = Date.now();
-  audit('alarm.clear', a.code, `by ${state.user.username}`);
-  ACTIVITY.unshift({ t:0, text:`${state.user.username} cleared ${a.code}` });
-  toast('Alarm cleared', { msg:a.code, type:'ok' });
   renderMain();
 }
 async function shelveAlarm(id) {
@@ -3611,6 +3630,11 @@ document.addEventListener('click', e => {
   const t = e.target;
   const cp = t.closest('[data-copy]');
   if (cp) { e.preventDefault(); copyText(cp.dataset.copy); return; }
+  // Widget reorder — up/down buttons per §6
+  const mup = t.closest('[data-move-up]');
+  if (mup && !mup.disabled) { e.preventDefault(); moveWidget(mup.dataset.moveUp, 'up'); return; }
+  const mdn = t.closest('[data-move-down]');
+  if (mdn && !mdn.disabled) { e.preventDefault(); moveWidget(mdn.dataset.moveDown, 'down'); return; }
   const tab = t.closest('[data-devtab]');
   if (tab) {
     e.preventDefault();
@@ -3643,7 +3667,6 @@ document.addEventListener('click', e => {
   const toggle = t.closest('[data-toggle-device]');
   if (toggle && !toggle.disabled) { e.stopPropagation(); toggleActuator(toggle.dataset.toggleDevice, toggle.dataset.toggleCap); return; }
   const ack = t.closest('[data-alarm-ack]'); if (ack) { ackAlarm(ack.dataset.alarmAck); return; }
-  const clr = t.closest('[data-alarm-clear]'); if (clr) { clearAlarm(clr.dataset.alarmClear); return; }
   const shv = t.closest('[data-alarm-shelve]'); if (shv) { shelveAlarm(shv.dataset.alarmShelve); return; }
   const usv = t.closest('[data-alarm-unshelve]'); if (usv) { unshelveAlarm(usv.dataset.alarmUnshelve); return; }
   const ann = t.closest('[data-ann-type]');
@@ -3651,7 +3674,7 @@ document.addEventListener('click', e => {
     const type = ann.dataset.annType;
     state.alarmTypeFilter = (state.alarmTypeFilter === type) ? 'all' : type;
     state.alarmFilter = 'active';
-    state.alarmSeverityFilter = 'all';
+    state.alarmPriorityFilter = 'all';
     nav('#/alarms');
     return;
   }
@@ -3841,7 +3864,10 @@ function boot() {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); return; }
     if (typing) return;
     if (e.key === '?') { e.preventDefault(); openShortcuts(); return; }
-    if (e.key === 'Escape') { closeDrawer(); return; }
+    if (e.key === 'Escape') {
+      if (state.widgetReorderMode) { state.widgetReorderMode = false; renderMain(); return; }
+      closeDrawer(); return;
+    }
     if (e.key === 'd' || e.key === 'D') { $('#devModeBtn').click(); return; }
     if (e.key === 't' || e.key === 'T') { $('#themeBtn').click(); return; }
     if (e.key === 'i' || e.key === 'I') { toggleInspector(); return; }
