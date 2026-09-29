@@ -41,7 +41,7 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 html{height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-html,body{margin:0;padding:0;width:100%;overflow-x:clip}
+html,body{margin:0;padding:0;width:100%;max-width:100vw;overflow-x:clip}
 body{
   background:var(--bg);color:var(--content);font-family:var(--sans);font-size:14px;
   line-height:1.45;-webkit-font-smoothing:antialiased;
@@ -68,7 +68,7 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .icon-picker .lucide{width:18px;height:18px}
 .fav-btn .lucide{width:13px;height:13px}
 
-.shell{display:none;min-height:100dvh;flex-direction:row}
+.shell{display:none;min-height:100dvh;flex-direction:row;max-width:100vw;overflow-x:hidden}
 .shell.active{display:flex}
 @supports not (min-height:100dvh){.shell{min-height:100vh}}
 
@@ -105,7 +105,7 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 }
 .user-chip:hover{border-color:var(--content-faint)}
 
-.main-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:100dvh}
+.main-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:100dvh;max-width:100vw;overflow-x:hidden}
 @supports not (min-height:100dvh){.main-col{min-height:100vh}}
 
 .app-header{
@@ -143,7 +143,7 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn{-webkit-tap-highlight-col
 .breadcrumbs .cur{color:var(--content)}
 .breadcrumbs:empty{display:none}
 
-.body-wrap{display:flex;flex:1;min-height:0}
+.body-wrap{display:flex;flex:1;min-height:0;min-width:0;max-width:100%}
 .sites-aside{
   width:210px;flex-shrink:0;background:var(--bg-deep);border-right:1px solid var(--border);
   padding:16px 12px;overflow-y:auto;position:sticky;top:0;
@@ -173,7 +173,7 @@ select.sortsel{
 main.main-content{
   flex:1;overflow-y:auto;overflow-x:hidden;
   padding:18px max(20px,var(--safe-left)) 18px max(20px,var(--safe-right));
-  min-width:0;min-height:0;-webkit-overflow-scrolling:touch;
+  min-width:0;min-height:0;max-width:100%;-webkit-overflow-scrolling:touch;
 }
 
 .main-head{
@@ -184,7 +184,6 @@ main.main-content{
 .main-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .count{color:var(--content-dim);font-size:12px}
 
-/* Unified empty state — richer treatment, matches .not-live visual language */
 .empty{
   display:flex;flex-direction:column;align-items:center;gap:8px;
   text-align:center;padding:48px 20px;color:var(--content-faint);font-size:13px;
@@ -371,6 +370,7 @@ main.main-content{
   grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:14px;
   align-items:stretch;
+  min-width:0;max-width:100%;
 }
 .widget{
   background:var(--surface);
@@ -380,12 +380,13 @@ main.main-content{
   display:flex;
   flex-direction:column;
   min-height:160px;
+  min-width:0;max-width:100%;
   transition:outline .12s;
 }
 .widget.drag-over{outline:2px dashed var(--accent);outline-offset:2px}
 .widget-head{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  min-height:32px;flex-shrink:0;margin-bottom:12px;
+  min-height:32px;flex-shrink:0;margin-bottom:12px;min-width:0;
 }
 .widget-head h3{
   font-size:11px;margin:0;font-weight:700;color:var(--content-faint);
@@ -398,7 +399,6 @@ main.main-content{
   color:var(--content-faint);cursor:grab;user-select:none;
   display:flex;align-items:center;flex-shrink:0;
 }
-/* Reorder mode — up/down buttons, per §6 */
 .widget-move{display:flex;gap:4px;flex-shrink:0}
 .move-btn{
   width:32px;height:32px;border-radius:6px;border:1px solid var(--border);
@@ -419,6 +419,7 @@ main.main-content{
   min-height:38px;padding:9px 0;
   border-bottom:1px solid var(--border);
   font-size:12.5px;line-height:1.35;
+  min-width:0;
 }
 .wrow:last-child{border-bottom:none}
 .wrow .wl{
@@ -627,7 +628,6 @@ main.main-content{
   display:flex;align-items:flex-start;gap:8px;
 }
 .perm-note .lucide{width:14px;height:14px;margin-top:2px;flex-shrink:0}
-/* Honest "not live" state per §3.5 / §3.6 */
 .not-live{
   display:flex;gap:12px;align-items:flex-start;
   padding:16px 18px;margin-bottom:16px;
@@ -982,7 +982,6 @@ body.bulk-mode .card{padding-left:48px}
 }
 .login-hint .mono{color:var(--content-dim)}
 
-/* Standalone PWA display — tighten chrome when installed */
 @media (display-mode:standalone){
   body{padding-top:var(--safe-top)}
   .app-header{padding-top:10px}
@@ -1026,11 +1025,14 @@ body.bulk-mode .card{padding-left:48px}
   .header-right .btn span{display:none}
   .header-right .btn{padding:10px}
 
+  /* Mobile main-content — guard both axes so nothing can drift the scrollLeft */
   main.main-content{
     padding:14px 14px;
     padding-left:calc(14px + var(--safe-left));
     padding-right:calc(14px + var(--safe-right));
     padding-bottom:calc(var(--nav-h) + 24px + var(--safe-bottom));
+    overflow-x:hidden;
+    max-width:100%;
   }
   body.has-inspector main.main-content{
     padding-bottom:calc(var(--nav-h) + 40vh + 24px + var(--safe-bottom));
@@ -1046,19 +1048,21 @@ body.bulk-mode .card{padding-left:48px}
     grid-template-columns:1fr;
     gap:12px;
     align-items:stretch;
+    min-width:0;max-width:100%;
   }
-  /* Mobile widget floor — §1 fix. Was min-height:0, which let widgets collapse
-     to their own content height in the single-column grid, causing visibly
-     mismatched heights across a dashboard of Fleet Status vs Recent Activity. */
+  /* Mobile widget floor — §1 fix. Uniform floor for consistent rhythm;
+     combined with overflow:hidden on the widget so a stray long string
+     can't force the whole grid wider than the viewport. */
   .widget{
     min-height:120px;
     padding:14px 14px 12px;
     border-radius:10px;
+    min-width:0;max-width:100%;
+    overflow:hidden;
   }
   .widget-head{min-height:40px;margin-bottom:10px}
   .widget-head h3{font-size:10.5px;letter-spacing:.4px}
   .widget-head h3 .lucide{width:13px;height:13px}
-  /* Reorder buttons — 44px touch target per §6 */
   .move-btn{width:44px;height:44px}
   .move-btn .lucide{width:18px;height:18px}
   .widget-big-num{font-size:30px}
@@ -1178,10 +1182,20 @@ body.bulk-mode .card{padding-left:48px}
     bottom:calc(var(--nav-h) + 40vh + 12px + var(--safe-bottom));
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     TOPIC INSPECTOR (mobile) — fix for the "stuck" open appearance.
+     The closed state must translate by its own height PLUS the
+     bottom offset, otherwise the top of the sheet peeks up into the
+     viewport above the bottom-nav (which is what the user sees as
+     a "stuck" INSPECTOR bar).
+     ═══════════════════════════════════════════════════════════════ */
   .topic-inspector{
-    height:40vh;bottom:calc(var(--nav-h) + var(--safe-bottom));
+    height:40vh;
+    bottom:calc(var(--nav-h) + var(--safe-bottom));
+    transform:translateY(calc(100% + var(--nav-h) + var(--safe-bottom)));
     border-top:1px solid var(--border);
   }
+  .topic-inspector.open{transform:translateY(0)}
   .ti-head{padding:8px 12px;gap:8px}
   .ti-head .ti-stats{display:none}
   .ti-body{padding:8px 12px 12px;font-size:10.5px}
@@ -1454,7 +1468,6 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const icon = (name, cls = '') => `<i data-lucide="${esc(name)}"${cls ? ` class="${esc(cls)}"` : ''}></i>`;
 const isMobile = () => window.matchMedia('(max-width:820px)').matches;
 
-/* Unified empty-state helper — one visual language everywhere "nothing to show" appears */
 function emptyState({ icon: ic = 'inbox', title = 'Nothing to show', msg = '', cta = '', full = false } = {}) {
   return `<div class="empty${full ? ' full' : ''}">
     <div class="empty-icon">${icon(ic)}</div>
@@ -1655,12 +1668,8 @@ function toggleFavorite(id) {
 }
 
 const TOAST_ICON = { ok:'check-circle', error:'x-circle', warn:'alert-triangle', info:'info' };
-/* Toast severity-aware timeouts:
-   - error: manual dismiss only (timeout:0). A failed command needs to stay
-     on screen until the operator has actually read it.
-   - warn : 6s. Long enough to notice, short enough not to pile up.
-   - info/ok: 3.2s, the original default.
-   Explicit `timeout` overrides always win. */
+/* Severity-aware timeouts. Errors stay until dismissed — an operator may not
+   be looking when the toast fires, and there's no recovery after dismissal. */
 function toast(title, { msg = '', type = 'info', timeout } = {}) {
   if (timeout === undefined) {
     timeout = type === 'error' ? 0 : type === 'warn' ? 6000 : 3200;
@@ -1904,7 +1913,10 @@ function enterApp() {
   $$('[data-route="#/settings"]').forEach(el => el.style.display = state.user.role === 'admin' ? '' : 'none');
   applyTheme(localStorage.getItem('electrix_theme') || null, false);
   $('#devModeBtn').classList.toggle('active', state.devMode);
-  if (state.devMode) openInspector(true);
+  // Auto-open the inspector only on desktop. On mobile it takes 40vh and
+  // is intrusive to have open by default. Function is toggleInspector, not
+  // the previously (undefined) openInspector.
+  if (state.devMode && !isMobile()) toggleInspector(true);
   if (!location.hash || location.hash === '#') location.hash = '#/dashboard';
   applyRoute();
   refreshIcons();
@@ -2121,6 +2133,9 @@ function renderMain(isTick = false) {
   else if (state.view === 'interlocks') renderInterlocks(main);
   else if (state.view === 'settings') renderSettings(main);
   if (isTick) main.scrollTop = scrollTop;
+  // Force horizontal scroll back to 0 — prevents any cumulative drift from
+  // focus-driven auto-scroll or a transiently-wider child on mobile.
+  main.scrollLeft = 0;
   refreshIcons(main);
 }
 function renderAlarmBadge() {
@@ -3771,9 +3786,6 @@ document.addEventListener('click', e => {
         d.capabilities.forEach(c => { if (c.kind === 'relay' && c.value !== want) targets.push({ d, c }); });
       });
       if (!targets.length) { toast('Nothing to change', { type:'info' }); return; }
-      // Bulk confirmation gate — §4. A targeted single-device action stays
-      // instant, but a wide blast (many devices or cross-site) deserves the
-      // same pause a factory-reset already gets.
       const selectedIds = [...state.bulkSelected];
       const sites = new Set(selectedIds.map(id => deviceById(id)?.site_id).filter(Boolean));
       const needsConfirm = selectedIds.length > 3 || sites.size > 1;
@@ -3918,6 +3930,7 @@ function boot() {
     if (e.key === '?') { e.preventDefault(); openShortcuts(); return; }
     if (e.key === 'Escape') {
       if (state.widgetReorderMode) { state.widgetReorderMode = false; renderMain(); return; }
+      if (state.inspectorOpen) { toggleInspector(false); return; }
       closeDrawer(); return;
     }
     if (e.key === 'd' || e.key === 'D') { $('#devModeBtn').click(); return; }
