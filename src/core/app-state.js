@@ -356,7 +356,7 @@ function applyRoute() {
     const r = b.dataset.route.slice(2).split('/')[0];
     b.classList.toggle('active', r === target);
   });
-  const titles = { dashboard:'Dashboard', devices:'Devices', device:'Device', telemetry:'Telemetry', alarms:'Alarms', automation:'Automation', ota:'Firmware / OTA', interlocks:'Interlocks', settings:'Settings' };
+  const titles = { dashboard:'Overview', devices:'Devices', device:'Device', telemetry:'Telemetry', alarms:'Alarms', automation:'Automation', ota:'Firmware / OTA', interlocks:'Interlocks', settings:'Settings' };
   $('#viewTitle').textContent = titles[state.view] || 'Electrix Command';
   const devicesView = state.view === 'devices';
   $('#sitesAside').style.display = devicesView ? '' : 'none';

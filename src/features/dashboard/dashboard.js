@@ -25,13 +25,15 @@ function renderAnnunciator() {
   }).join('')}</div>`;
 }
 const widgetEmpty = msg => `<div class="widget-empty">${esc(msg)}</div>`;
+const deriveConnectivityStatus = device => {
+  if (device.lwt === 'offline') return 'offline';
+  const staleAfterSeconds = (device.config.heartbeat_period_ms / 1000) * 2;
+  return device.last_seen_s > staleAfterSeconds ? 'warn' : 'online';
+};
 
 function renderDashboard(main) {
   const counts = { online:0, warn:0, offline:0 };
-  DEVICES.forEach(device => {
-    if (device.lwt === 'offline') counts.offline++;
-    else counts[deriveStatus(device)]++;
-  });
+  DEVICES.forEach(device => counts[deriveConnectivityStatus(device)]++);
 
   const alarms = activeAlarms();
   const alarmDeviceIds = new Set(alarms.map(alarm => alarm.device_id));
@@ -68,10 +70,9 @@ function renderDashboard(main) {
   const siteRows = SITES.map(site => {
     const devices = DEVICES.filter(device => device.site_id === site.id);
     const siteCounts = { online:0, warn:0, alarm:0, offline:0 };
-    devices.forEach(device => {
-      if (device.lwt === 'offline') siteCounts.offline++;
-      else siteCounts[deriveStatus(device)]++;
-    });
+    devices.forEach(device => siteCounts[deriveConnectivityStatus(device)]++);
+    const siteDeviceIds = new Set(devices.map(device => device.device_id));
+    siteCounts.alarm = new Set(alarms.filter(alarm => siteDeviceIds.has(alarm.device_id)).map(alarm => alarm.device_id)).size;
     return `<button class="overview-site" data-nav="#/devices/${site.id}">
       <span class="overview-site-head"><span class="overview-site-name">${esc(site.name)}</span><span class="overview-site-count">${devices.length} ${devices.length === 1 ? 'device' : 'devices'}</span></span>
       <span class="overview-site-status">

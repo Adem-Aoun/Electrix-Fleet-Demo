@@ -115,7 +115,18 @@ function boot() {
       if (h) { e.preventDefault(); nav(h); gPrefix = false; clearTimeout(gTimer); }
     }
   });
-  mqtt.on('connected', () => { $('#wsPill').classList.remove('down'); $('#wsLabel').textContent = 'connected'; });
+  mqtt.on('connected', () => {
+    const pill = $('#wsPill');
+    pill.classList.remove('down');
+    pill.setAttribute('aria-label', 'Broker status: connected');
+    $('#wsLabel').textContent = 'connected';
+  });
+  mqtt.on('disconnected', () => {
+    const pill = $('#wsPill');
+    pill.classList.add('down');
+    pill.setAttribute('aria-label', 'Broker status: disconnected');
+    $('#wsLabel').textContent = 'disconnected';
+  });
   mqtt.on('message', (topic, payload, opts) => logTraffic('in', topic, payload, opts));
   const origPublish = mqtt.publish;
   mqtt.publish = async (topic, payload, opts) => {

@@ -12,7 +12,7 @@
 <meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="src/styles.css?v=20260929.3">
+<link rel="stylesheet" href="src/styles.css?v=20260929.6">
 </head>
 <body>
 
@@ -73,7 +73,7 @@
       <div class="view-title" id="viewTitle">Dashboard</div>
       <div class="search" id="searchWrap"><input id="search" type="search" placeholder="Search devices, sites…" autocomplete="off" enterkeyhint="search"></div>
       <div class="header-right">
-        <span class="ws-pill" id="wsPill"><span class="dot"></span><span id="wsLabel">connected</span></span>
+        <span class="ws-pill down" id="wsPill" role="status" aria-label="Broker status: connecting"><span class="dot"></span><span id="wsLabel">connecting</span></span>
 
         <div class="alarm-pill-wrap">
           <button class="alarm-pill empty" id="alarmPill" aria-haspopup="true" aria-expanded="false" aria-label="Unacknowledged alarms">
@@ -93,7 +93,7 @@
           </div>
         </div>
 
-        <button class="btn icon" id="paletteBtn" title="Command palette"><i data-lucide="command"></i></button>
+        <button class="btn icon" id="paletteBtn" title="Command palette" aria-label="Open command palette"><i data-lucide="command"></i></button>
         <button class="btn icon" id="devModeBtn" title="Developer mode"><i data-lucide="code-2"></i></button>
         <button class="btn icon" id="helpBtn" title="Help"><i data-lucide="help-circle"></i></button>
         <button class="btn icon" id="themeBtn" title="Toggle theme"><i data-lucide="moon"></i></button>
@@ -158,6 +158,6 @@
 <div id="paletteRoot"></div>
 
 
-<script src="src/main.js?v=20260929.3"></script>
+<script src="src/main.js?v=20260929.6"></script>
 </body>
 </html>

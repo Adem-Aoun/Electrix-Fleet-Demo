@@ -1163,9 +1163,13 @@ body.bulk-mode .card{padding-left:48px}
   .brand-mark{width:24px;height:24px;margin-right:5px;flex-shrink:0}
   .brand-word{font-size:11px;letter-spacing:.6px;white-space:nowrap}
   .brand-word .accent{display:none}
+  .brand-word{display:none}
   .nav-rail.collapsed ~ .main-col .app-header .brand{display:flex}
-  #paletteBtn,#helpBtn{display:none}
-  .ws-pill{display:none}
+  #helpBtn{display:none}
+  #paletteBtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:7px}
+  #paletteBtn .lucide{width:17px;height:17px}
+  .ws-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;font-size:9px;white-space:nowrap}
+  .ws-pill .dot{width:6px;height:6px}
   #shell.active ~ .bottom-nav{display:block}
   .mobile-menu-btn{display:inline-flex;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--content);align-items:center;justify-content:center;cursor:pointer}
 
@@ -1186,6 +1190,7 @@ body.bulk-mode .card{padding-left:48px}
   .search input{padding:11px 12px;font-size:16px}
   .header-right .btn span{display:none}
   .header-right .btn{padding:8px}
+  #devModeBtn,#themeBtn,#logoutBtn,#mobileMenuBtn{display:none}
 
   .alarm-pill{padding:6px 9px;gap:5px}
   .alarm-pill .lbl{display:none}
