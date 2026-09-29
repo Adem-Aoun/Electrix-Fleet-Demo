@@ -83,18 +83,11 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   gap:6px;padding:0 0 16px 0;min-height:0;
 }
 
-.rail-title{
-  font-weight:800;font-size:12.5px;letter-spacing:1.2px;
-  flex:1;min-width:0;overflow:hidden;white-space:nowrap;
-  color:var(--content);
-}
-.rail-title .accent{color:var(--accent)}
-.nav-rail.collapsed .rail-title{display:none}
-
 .rail-toggle{
   width:32px;height:32px;border-radius:6px;border:1px solid transparent;
   background:transparent;color:var(--content-faint);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  margin-left:auto;
   transition:background .12s,color .12s,border-color .12s;
 }
 .rail-toggle:hover{background:var(--surface);color:var(--content);border-color:var(--border)}
@@ -102,6 +95,7 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
 .nav-rail.collapsed .rail-toggle{
   display:flex;
   width:40px;height:40px;
+  margin-left:0;
 }
 
 .nav-brand{
