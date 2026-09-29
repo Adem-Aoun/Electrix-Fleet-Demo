@@ -1085,7 +1085,7 @@ main.main-content{
 .palette-item .pi-meta{margin-left:auto;font-size:10.5px;color:var(--content-faint);font-family:var(--mono)}
 .palette-empty{padding:28px 18px;text-align:center;color:var(--content-faint);font-size:13px}
 
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-deep);border-top:1px solid var(--border);z-index:30;padding-bottom:var(--safe-bottom);padding-left:var(--safe-left);padding-right:var(--safe-right)}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-deep);border-top:1px solid var(--border);z-index:70;padding-bottom:var(--safe-bottom);padding-left:var(--safe-left);padding-right:var(--safe-right)}
 .bottom-nav .bn-inner{display:flex;justify-content:space-around;align-items:stretch;height:var(--nav-h)}
 .bottom-nav button{background:none;border:none;color:var(--content-dim);padding:6px 4px;cursor:pointer;position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;transition:color .12s;min-height:var(--nav-h)}
 .bottom-nav button .bn-label{font-size:10px;font-weight:500;letter-spacing:.2px;line-height:1}
@@ -1194,13 +1194,12 @@ body.bulk-mode .card{padding-left:48px}
   .alarm-pill-wrap{position:static}
   .alarm-popover{
     position:fixed;
-    top:auto;bottom:0;left:0;right:0;
+    top:auto;bottom:calc(var(--nav-h) + var(--safe-bottom));left:0;right:0;
     width:100%;max-width:none;
     border-radius:18px 18px 0 0;
     border-left:none;border-right:none;border-bottom:none;
-    max-height:70vh;
+    max-height:min(70dvh,calc(100dvh - var(--nav-h) - var(--safe-top) - var(--safe-bottom) - 16px));
     display:flex;flex-direction:column;
-    padding-bottom:var(--safe-bottom);
     transform:translateY(100%);
     transition:transform .24s cubic-bezier(.2,.8,.2,1),visibility .24s,opacity .15s;
     box-shadow:0 -12px 40px rgba(0,0,0,.25);

@@ -20,6 +20,8 @@ src/
 
 `main.js` loads the classic scripts sequentially. Keep the order in its `scripts` list: the current implementation shares top-level declarations and relies on core utilities, demo fixtures, and feature functions being available before later scripts execute. The loader reports a failed script in the browser console and displays an on-page error.
 
+The stylesheet and bootstrap script use a `v` query parameter as a cache-busting release version. When deploying frontend changes, bump that value on both references in `index.html`; the bootstrap propagates it to every feature script it loads.
+
 This is a compatibility-preserving first restructuring, not a full module conversion. Keeping classic scripts means the app can still be opened directly with `file://`. Feature files still share global state, and the MQTT service is a simulator rather than a backend adapter.
 
 ## Next architecture step

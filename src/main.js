@@ -2,6 +2,7 @@
 
 (async function bootstrap() {
   const entrypointUrl = document.currentScript.src;
+  const assetVersion = new URL(entrypointUrl).searchParams.get('v');
   const scripts = [
     'core/runtime.js',
     'services/mqtt-simulator.js',
@@ -26,7 +27,9 @@
     for (const source of scripts) {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = new URL(source, entrypointUrl).href;
+        const scriptUrl = new URL(source, entrypointUrl);
+        if (assetVersion) scriptUrl.searchParams.set('v', assetVersion);
+        script.src = scriptUrl.href;
         script.onload = resolve;
         script.onerror = () => reject(new Error(`Unable to load frontend script: ${source}`));
         document.body.appendChild(script);
