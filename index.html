@@ -187,7 +187,9 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   background:var(--bg-deep);border-bottom:1px solid var(--border);
   position:sticky;top:0;z-index:20;min-height:var(--header-h);
 }
-.brand{display:flex;align-items:center;padding-right:14px;border-right:1px solid var(--border);margin-right:4px}
+.brand{display:none;align-items:center;padding-right:14px;border-right:1px solid var(--border);margin-right:4px}
+.nav-rail.collapsed ~ .main-col .app-header .brand{display:flex}
+.brand-mark{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin-right:8px;color:var(--accent)}
 .brand-word{font-weight:800;font-size:13px;letter-spacing:1.4px;color:var(--content);white-space:nowrap}
 .brand-word .accent{color:var(--accent)}
 .view-title{font-weight:700;font-size:14.5px}
@@ -708,7 +710,29 @@ main.main-content{
 .dev-page-title{font-size:22px;font-weight:700;margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .dev-page-sub{font-size:12px;color:var(--content-dim);margin-top:4px;word-break:break-word}
 .dev-page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.device-menu-wrap{position:relative}
+.device-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:30;display:none;min-width:190px;padding:5px;background:var(--surface);border:1px solid var(--border)}
+.device-menu-wrap.open .device-menu{display:grid;gap:3px}
+.device-menu .btn{width:100%;justify-content:flex-start;min-height:40px}
+.device-menu .btn.danger{color:var(--alarm)}
 .dev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.device-references{grid-column:1/-1}
+.device-reference-group{border-bottom:1px solid var(--border)}
+.device-reference-group:last-child{border-bottom:0}
+.device-reference-toggle{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 0;border:0;background:none;color:var(--content);text-align:left;cursor:pointer}
+.device-reference-toggle .label{flex:1}
+.device-reference-items{padding:0 0 8px 20px;display:grid;gap:6px}
+.device-reference-items a{color:var(--content-dim);font-size:12px;text-decoration:none}
+.device-reference-items a:hover{color:var(--accent)}
+.device-suggestions{grid-column:1/-1}
+.suggestion-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.suggestion-row:last-child{border-bottom:0}
+.sg-icon{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex-shrink:0;color:var(--content-dim)}
+.sg-icon .lucide{width:16px;height:16px}
+.sg-text{flex:1;min-width:0}
+.sg-action{flex-shrink:0}
+.source-chip{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:1px 4px;border:1px solid var(--border);color:var(--content-faint);font:10px var(--mono);margin-right:4px}
+.command-log-row{grid-template-columns:74px 24px 46px minmax(0,1fr)}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
 .panel h4{margin:0 0 12px;font-size:11.5px;color:var(--content-faint);letter-spacing:.4px;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:6px}
 .panel h4 .lucide{width:13px;height:13px}
@@ -725,6 +749,12 @@ main.main-content{
 .chart-axis{fill:var(--content-faint);font-size:9.5px;font-family:var(--mono)}
 
 .config-form{display:grid;gap:12px;margin-top:8px}
+.config-diff-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,auto);align-items:center;gap:10px;padding:8px 8px;border-left:2px solid transparent}
+.config-diff-editor{display:grid;justify-items:end;gap:3px;min-width:0}
+.config-diff-row.changed{border-left-color:var(--accent)}
+.config-diff-name{font:11px var(--mono);color:var(--content-dim);overflow-wrap:anywhere}
+.config-diff-value{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.config-diff-default{grid-column:1/-1;justify-self:start;font-size:10.5px;color:var(--content-faint)}
 .config-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;flex-wrap:wrap}
 .config-row input[type=number]{width:120px;padding:9px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);color:var(--content);font-family:var(--mono);text-align:right;font-size:13px}
 .config-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
@@ -760,6 +790,114 @@ main.main-content{
 .tele-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .tele-filters select{padding:9px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--content);font-size:13px}
 .tele-filters label{font-size:11.5px;color:var(--content-faint);margin-right:4px}
+.tele-stack{position:relative;min-width:0;touch-action:pan-y}
+.tele-group{border:1px solid var(--border);background:var(--surface);margin-bottom:12px}
+.tele-group-head{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tele-group-head .status-dot{flex-shrink:0}
+.tg-name{font-size:12.5px;font-weight:600}
+.tg-status{font-size:10.5px;color:var(--content-dim)}
+.tg-meta{font-size:10px;color:var(--content-faint);margin-left:auto}
+.tele-series{position:relative;padding:10px 12px;border-bottom:1px solid var(--border);min-width:0}
+.tele-series.pinned{border-left:3px solid var(--accent);padding-left:9px}
+.tele-series:last-child{border-bottom:0}
+.ts-head{display:flex;align-items:center;gap:8px;min-height:34px;flex-wrap:wrap}
+.ts-label{font-size:11.5px;font-weight:600}
+.ts-unit,.ts-now,.ts-cursor-value{font-family:var(--mono);font-size:11px;color:var(--content-dim)}
+.ts-now{margin-left:auto;color:var(--content)}
+.ts-cursor-value{min-width:68px}
+.ts-gauge{position:relative;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;flex:0 0 42px;color:var(--ok)}
+.ts-gauge svg{width:100%;height:100%;overflow:visible}
+.ts-gauge .track{fill:none;stroke:var(--border);stroke-width:10}
+.ts-gauge .fill{fill:none;stroke:currentColor;stroke-width:10;stroke-linecap:round}
+.ts-gauge.status-warn{color:var(--warn)}
+.ts-gauge.status-alarm{color:var(--alarm)}
+.ts-gauge.status-offline{color:var(--offline)}
+.ts-gauge-value{position:absolute;color:var(--content);font:9px var(--mono);font-variant-numeric:tabular-nums}
+.ts-kind,.ts-toggle{font:10px var(--mono);color:var(--content-faint);border:1px solid var(--border);background:var(--surface-2);padding:3px 5px}
+.ts-kind{font-size:9px}
+.ts-toggle{cursor:pointer;min-height:30px}
+.ts-toggle:hover{border-color:var(--accent);color:var(--content)}
+.ts-prox{height:4px;margin:2px 0 8px;background:var(--surface-2);position:relative}
+.ts-prox-fill{height:100%;background:var(--ok)}
+.ts-prox-fill.warn{background:var(--warn)}
+.ts-prox-fill.alarm{background:var(--alarm)}
+.ts-prox-tick{position:absolute;top:-2px;height:8px;width:1px;background:var(--content);opacity:.6}
+.ts-chart-wrap{position:relative;min-width:0}
+.ts-chart{width:100%;height:128px;display:block;overflow:visible}
+.ts-chart .chart-grid line{stroke:var(--border);opacity:.55}
+.ts-chart .chart-axis{fill:var(--content-faint);font:9px var(--mono)}
+.ts-chart .chart-th{stroke:var(--alarm);stroke-dasharray:3 3;opacity:.65}
+.ts-chart .chart-gap{fill:var(--surface-2);opacity:.8}
+.ts-chart .chart-line{fill:none;stroke:var(--accent);stroke-width:1.6;vector-effect:non-scaling-stroke}
+.ts-chart .chart-area-alarm{fill:var(--alarm);opacity:.15}
+.ts-chart .chart-area-warn{fill:var(--warn);opacity:.12}
+.ts-chart .chart-event{stroke:var(--border);stroke-width:1;opacity:.5}
+.ts-chart .chart-event-alarm{stroke:var(--alarm)}
+.ts-chart .chart-event-command{stroke:var(--accent)}
+.ts-chart .chart-event-config,.ts-chart .chart-event-lwt{stroke:var(--content-faint)}
+.tele-event-markers{position:absolute;inset:0;pointer-events:none}
+.tele-event-marker{position:absolute;top:0;width:16px;height:100%;padding:0;border:0;background:transparent;transform:translateX(-50%);pointer-events:auto;cursor:pointer}
+.tele-event-marker::before{content:'';position:absolute;top:0;left:50%;height:4px;width:3px;background:var(--content-faint);transform:translateX(-50%)}
+.tele-event-marker.alarm::before{background:var(--alarm)}
+.tele-event-marker.command::before{background:var(--accent)}
+.tele-event-marker.config::before,.tele-event-marker.lwt::before{background:var(--content-faint)}
+.tele-cursor{position:absolute;z-index:3;top:0;bottom:0;width:1px;background:var(--content);opacity:.65;pointer-events:none;display:none}
+.tele-selection{position:absolute;z-index:2;top:0;bottom:0;border-left:1px solid var(--accent);border-right:1px solid var(--accent);background:var(--accent);opacity:.12;pointer-events:none;display:none}
+.tele-event-tip{position:fixed;z-index:80;display:none;max-width:min(280px,calc(100vw - 24px));padding:6px 8px;background:var(--surface);border:1px solid var(--border);color:var(--content);font-size:10.5px;pointer-events:none}
+.tele-time-axis{display:flex;justify-content:space-between;padding:4px 10px;color:var(--content-faint);font:10px var(--mono)}
+.tele-health{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:6px;margin-bottom:12px}
+.tele-health-tile{min-width:0;min-height:44px;padding:6px 8px;border:1px solid var(--border);border-left:3px solid var(--offline);background:var(--surface);text-align:left;cursor:pointer}
+.tele-health-tile[aria-pressed="true"]{outline:1px solid var(--accent);outline-offset:-1px}
+.tele-health-name{display:flex;align-items:center;gap:6px;min-width:0;font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tele-health-bar{display:flex;height:4px;margin-top:5px;background:var(--surface-2);overflow:hidden}
+.tele-health-bar span{height:100%}
+.tele-health-bar .ok{background:var(--ok)}
+.tele-health-bar .warn{background:var(--warn)}
+.tele-health-bar .alarm{background:var(--alarm)}
+.tele-health-bar .offline{background:var(--offline)}
+.tele-health-tile.status-ok{border-left-color:var(--ok)}
+.tele-health-tile.status-warn{border-left-color:var(--warn)}
+.tele-health-tile.status-alarm{border-left-color:var(--alarm)}
+.tele-health-tile.status-offline{border-left-color:var(--offline)}
+.tele-gauges{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.tele-gauge-card{position:relative;min-width:0;padding:10px;border:1px solid var(--border);border-left:3px solid var(--offline);background:var(--surface);cursor:pointer}
+.tele-gauge-card.status-ok{border-left-color:var(--ok)}
+.tele-gauge-card.status-warn{border-left-color:var(--warn)}
+.tele-gauge-card.status-alarm{border-left-color:var(--alarm)}
+.tele-gauge-card.status-offline{border-left-color:var(--offline)}
+.tele-gauge-head{display:flex;align-items:center;gap:6px;min-width:0}
+.tele-gauge-label{font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tele-gauge-id{font:9px var(--mono);font-variant-numeric:tabular-nums;color:var(--content-faint);margin-left:auto}
+.tele-gauge-wrap{position:relative;width:120px;height:120px;margin:2px auto 0}
+.tele-gauge-svg{width:120px;height:120px;display:block;overflow:visible}
+.tele-gauge-wrap.half{height:74px}
+.tele-gauge-wrap.half .tele-gauge-svg{height:72px}
+.tele-gauge-svg .track{fill:none;stroke:var(--border);stroke-width:12;stroke-linecap:round}
+.tele-gauge-svg .fill{fill:none;stroke:currentColor;stroke-width:12;stroke-linecap:round}
+.tele-gauge-svg .threshold-tick{stroke:var(--content-faint);stroke-width:2;stroke-linecap:butt}
+.tele-gauge-reading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:3px;padding-top:12px;color:var(--content);font:700 22px var(--mono);font-variant-numeric:tabular-nums;pointer-events:none}
+.tele-gauge-wrap.half .tele-gauge-reading{inset:31px 0 auto;height:32px;padding:0;align-items:flex-start}
+.tele-gauge-reading .unit{font:12px var(--mono);color:var(--content-faint)}
+.tele-gauge-status{display:flex;align-items:center;justify-content:center;gap:6px;min-height:24px;font-size:10.5px;color:var(--content-dim)}
+.tele-gauge-prox{height:4px;margin-top:6px;border-radius:2px;background:var(--surface-2);position:relative;overflow:visible}
+.tele-gauge-prox-fill{height:100%;border-radius:2px;background:var(--ok)}
+.tele-gauge-prox-fill.warn{background:var(--warn)}
+.tele-gauge-prox-fill.alarm{background:var(--alarm)}
+.tele-gauge-prox-tick{position:absolute;top:-2px;height:8px;width:1px;background:var(--content);opacity:.6}
+.tele-chart-stack{display:grid;gap:8px}
+.tele-chart-panel{border:1px solid var(--border);border-left:3px solid var(--offline);background:var(--surface);padding:8px 10px;min-width:0;cursor:pointer}
+.tele-chart-panel.status-ok{border-left-color:var(--ok)}
+.tele-chart-panel.status-warn{border-left-color:var(--warn)}
+.tele-chart-panel.status-alarm{border-left-color:var(--alarm)}
+.tele-chart-panel.status-offline{border-left-color:var(--offline)}
+.tele-chart-head{display:flex;align-items:center;gap:8px;min-height:30px}
+.tele-chart-head .label{font-size:11px;font-weight:600}
+.tele-chart-head .id{font:9px var(--mono);color:var(--content-faint)}
+.tele-chart-head .reading{margin-left:auto;color:var(--content);font:11px var(--mono);font-variant-numeric:tabular-nums}
+.tele-config-context{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid var(--border);color:var(--content-dim);font-size:10.5px}
+.tele-config-context .mono{color:var(--content)}
+.tele-pin-line{stroke:var(--content);stroke-width:1;stroke-dasharray:2 2;opacity:.7;vector-effect:non-scaling-stroke}
+.tele-selection-status{color:var(--content-dim);font-size:10.5px}
 
 .automation-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto}
 .auto-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;gap:14px;align-items:flex-start;border-left:3px solid var(--content-faint)}
@@ -946,10 +1084,14 @@ body.bulk-mode .card{padding-left:48px}
 @media (max-width:820px){
   .sites-aside{display:none!important}
   .nav-rail{display:none}
-  .brand{display:none}
+  .brand{display:flex;grid-area:brand;padding:0;margin:0;border:0;min-width:0}
+  .brand-mark{width:24px;height:24px;margin-right:5px;flex-shrink:0}
+  .brand-word{font-size:11px;letter-spacing:.6px;white-space:nowrap}
+  .brand-word .accent{display:none}
+  .nav-rail.collapsed ~ .main-col .app-header .brand{display:flex}
   #paletteBtn,#helpBtn{display:none}
   .ws-pill{display:none}
-  .bottom-nav{display:block}
+  #shell.active ~ .bottom-nav{display:block}
   .mobile-menu-btn{display:inline-flex;width:44px;height:44px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--content);align-items:center;justify-content:center;cursor:pointer}
 
   .shell.active{flex-direction:column}
@@ -957,18 +1099,18 @@ body.bulk-mode .card{padding-left:48px}
 
   .app-header{
     display:grid;
-    grid-template-columns:1fr auto;
-    grid-template-areas:"title actions" "search search";
-    gap:8px;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:"brand title actions" "search search search";
+    gap:7px 8px;
     padding:8px max(12px,var(--safe-right)) 8px max(12px,var(--safe-left));
     padding-top:calc(8px + var(--safe-top));
   }
-  .view-title{grid-area:title;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center;min-width:0}
-  .header-right{grid-area:actions;gap:6px;margin-left:0}
+  .view-title{grid-area:title;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center;min-width:0}
+  .header-right{grid-area:actions;gap:4px;margin-left:0}
   .search{grid-area:search;max-width:none;min-width:0;width:100%}
   .search input{padding:11px 12px;font-size:16px}
   .header-right .btn span{display:none}
-  .header-right .btn{padding:10px}
+  .header-right .btn{padding:8px}
 
   .alarm-pill{padding:6px 9px;gap:5px}
   .alarm-pill .lbl{display:none}
@@ -1018,7 +1160,13 @@ body.bulk-mode .card{padding-left:48px}
   .dev-page-actions .btn{flex:1 1 0!important;min-width:0!important;max-width:none!important;width:auto!important;padding:8px 4px!important;font-size:11.5px!important;height:42px;min-height:42px;justify-content:center;gap:4px;overflow:hidden}
   .dev-page-actions .btn .lucide{width:15px;height:15px;flex-shrink:0;margin-right:0}
   .dev-page-actions .btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block}
+  .device-menu-wrap{flex:0 0 44px}
+  .device-menu-wrap>.btn{width:44px!important;min-width:44px!important;max-width:44px!important;height:44px!important;min-height:44px!important;flex:0 0 44px!important;padding:0!important}
+  .device-menu{min-width:210px}
+  .device-menu .btn{width:100%!important;max-width:none!important;height:auto!important;min-height:44px!important;flex:0 0 auto!important;justify-content:flex-start!important;padding:8px 12px!important;font-size:13px!important}
+  .dev-page-actions>.btn{height:44px;min-height:44px}
   .tabs{margin:0 0 14px 0!important;padding:0;position:relative;z-index:1;clear:both}
+  .tabs#deviceTabs .tab{min-height:44px}
   .tab{padding:10px 8px!important;font-size:12.5px!important;margin-right:6px!important;min-height:42px;gap:5px;flex-shrink:0}
   .tab .lucide{width:13px;height:13px;margin-right:0}
   .tab span{white-space:nowrap}
@@ -1052,6 +1200,22 @@ body.bulk-mode .card{padding-left:48px}
 
   .grid{grid-template-columns:minmax(0,1fr);gap:10px}
   .tele-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .tele-health{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .tele-health-tile{padding:6px}
+  .tele-gauges{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .tele-gauge-card{padding:8px}
+  .tele-gauge-wrap,.tele-gauge-svg{width:104px;height:104px}
+  .tele-gauge-wrap.half{height:65px}
+  .tele-gauge-wrap.half .tele-gauge-svg{height:65px}
+  .tele-gauge-reading{font-size:18px}
+  .tele-config-context{gap:7px 12px}
+  .ts-toggle{width:44px;min-width:44px;min-height:44px;padding:8px}
+  .tele-event-marker{width:44px}
+  .suggestion-row{align-items:flex-start;flex-wrap:wrap}
+  .suggestion-row .sg-action{margin-left:auto}
+  .suggestion-row .sg-action .btn,.dev-interlocks [data-new-device-rule]{min-height:44px}
+  [data-clear-alarm-device]{min-height:44px}
+  .device-reference-items a{min-height:44px}
   .dev-grid{grid-template-columns:minmax(0,1fr)}
   .card{padding:14px 14px 12px 17px}
   .card:hover{box-shadow:none}
@@ -1156,6 +1320,7 @@ body.bulk-mode .card{padding-left:48px}
   .dev-page-title{font-size:17px}
   .dev-page-actions .btn{font-size:11px!important;padding:8px 3px!important}
   .dev-page-actions .btn .lucide{width:14px;height:14px}
+  .device-menu-wrap>.btn{height:44px!important}
   .bottom-nav .bn-label{font-size:9.5px}
   .bottom-nav .lucide{width:22px;height:22px}
   .tele-stats{gap:12px}
@@ -1169,7 +1334,7 @@ body.bulk-mode .card{padding-left:48px}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .drawer,.toggle,.toggle::after,.toggle-small,.topic-inspector,.bulk-bar,.modal,.nav-rail,.alarm-popover{transition:none!important;animation:none!important}
+  .drawer,.toggle,.toggle::after,.toggle-small,.dev-interlocks .toggle-small::before,.topic-inspector,.bulk-bar,.modal,.nav-rail,.alarm-popover{transition:none!important;animation:none!important}
 }
 </style>
 </head>
@@ -1226,6 +1391,7 @@ body.bulk-mode .card{padding-left:48px}
   <div class="main-col">
     <header class="app-header">
       <div class="brand" title="Electrix Command">
+        <span class="brand-mark"><i data-lucide="zap"></i></span>
         <span class="brand-word">ELECTRIX <span class="accent">COMMAND</span></span>
       </div>
       <div class="view-title" id="viewTitle">Dashboard</div>
@@ -1469,6 +1635,23 @@ const DEVICES = [
     config:{ sensor_publish_period_ms:5000, heartbeat_period_ms:30000, feature_agg_telemetry_enabled:true, feature_threshold_events_enabled:true },
     capabilities:[ { id:'pir0', kind:'sensor', label:'Server Room Motion', value:'clear', online:true } ]},
 ];
+DEVICES.forEach(d => d.capabilities.forEach(c => {
+  if (!Number.isFinite(c.since)) c.since = Date.now() - (c.value === true ? 4 * 60 * 60 * 1000 : 0);
+}));
+const CONFIG_DEFAULTS = {
+  'relay-4ch': {
+    sensor_publish_period_ms:1000, heartbeat_period_ms:30000,
+    feature_agg_telemetry_enabled:true, feature_threshold_events_enabled:true,
+  },
+  'relay-2ch': {
+    sensor_publish_period_ms:1000, heartbeat_period_ms:30000,
+    feature_agg_telemetry_enabled:true, feature_threshold_events_enabled:true,
+  },
+  'sensor-pir': {
+    sensor_publish_period_ms:5000, heartbeat_period_ms:30000,
+    feature_agg_telemetry_enabled:true, feature_threshold_events_enabled:true,
+  },
+};
 const ALARMS = [
   { id:'a1', device_id:'88c4a01f3d7e', type:'relay_stuck', priority:'critical', state:'UNACK_ALARM', code:'FEEDBACK_MISMATCH', msg:'Conveyor — feedback mismatch, possible stuck contact', since:210, latched:true, acked:false, ack_by:null, cleared:false, note:null, shelved_until:null },
   { id:'a2', device_id:'55e9012bca44', type:'low_battery', priority:'high', state:'ACK_ALARM', code:'LOW_BATTERY', msg:'Cold Storage Monitor — backup battery below 15%', since:5400, latched:false, acked:true, ack_by:'operator', cleared:false, note:'Replacement ordered', shelved_until:null },
@@ -1476,6 +1659,7 @@ const ALARMS = [
   { id:'a4', device_id:'f42dc971c624', type:'threshold', priority:'low', state:'RTN_UNACK', code:'THRESHOLD_EVENT', msg:'Garden Pump — runtime exceeded 2h continuous', since:900, latched:false, acked:true, ack_by:'admin', cleared:true, note:null, shelved_until:null },
 ];
 const TELEMETRY = {};
+const LWT_LOG = [];
 function seedSeries(key, { unit, base, noise, threshold = null, window_s = 2, points = 120 }) {
   const now = Date.now(), history = [];
   for (let i = points; i >= 0; i--) history.push({ t: now - i * window_s * 1000, v: +(base + (Math.random() - 0.5) * noise).toFixed(2) });
@@ -1487,7 +1671,7 @@ DEVICES.forEach(d => {
   seedSeries(`${d.device_id}/power`,   { unit:'W', base: baseCurrent * 230, noise: 40, threshold: 1500 });
   if (d.device_type.includes('sensor')) {
     seedSeries(`${d.device_id}/temp`,    { unit:'°C', base: 22 + Math.random() * 3, noise: 0.8, threshold: 35 });
-    seedSeries(`${d.device_id}/battery`, { unit:'%',  base: 82 - Math.random() * 15, noise: 0.4, threshold: 15 });
+    seedSeries(`${d.device_id}/battery`, { unit:'%',  base: d.device_id === '55e9012bca44' ? 12 + Math.random() * 2 : 82 - Math.random() * 15, noise: 0.4, threshold: 15 });
   }
 });
 const ACTIVITY = [
@@ -1540,6 +1724,7 @@ let state = {
   widgetLayout: lsGet('electrix_widget_layout', DEFAULT_LAYOUT.slice()),
   widgetReorderMode: false,
   alarmFilter: 'active',
+  alarmDeviceFilter: null,
   alarmPriorityFilter: 'all',
   alarmTypeFilter: 'all',
   favorites: lsGet('electrix_favorites', []),
@@ -1548,6 +1733,11 @@ let state = {
   teleDevice: 'all',
   teleSensor: 'all',
   teleWindow: '5m',
+  teleSort: lsGet('electrix_tele_sort', 'device'),
+  teleRateOfChange: lsGet('electrix_tele_rate_of_change', {}),
+  teleSelection: lsGet('electrix_tele_selection', null),
+  telePinned: lsGet('electrix_tele_pinned', {}),
+  deviceReferenceOpen: lsGet('electrix_device_reference_open', {}),
   autoTab: 'schedules',
   inspectorOpen: false,
   paletteOpen: false, paletteQuery: '', paletteSel: 0,
@@ -1896,7 +2086,12 @@ function applyRoute() {
   const [seg, param, sub] = h.split('/');
   state.view = seg || 'dashboard';
   if (state.view === 'devices') state.selectedSite = param || 'all';
-  if (state.view === 'device')  { state.openDeviceId = param; state.deviceTab = sub || 'overview'; }
+  if (state.view === 'device')  {
+    state.openDeviceId = param;
+    state.deviceTab = sub === 'interlocks' ? 'overview' : sub || 'overview';
+    if (sub === 'interlocks' && param) history.replaceState(null, '', `#/device/${encodeURIComponent(param)}/overview`);
+  }
+  if (state.view === 'alarms') state.alarmDeviceFilter = param || null;
   if (state.view === 'settings' && state.user?.role !== 'admin') state.view = 'dashboard';
   const target = state.view === 'device' ? 'devices' : state.view;
   $$('.navbtn[data-route], .bottom-nav button[data-route]').forEach(b => {
@@ -1939,7 +2134,20 @@ function renderBreadcrumbs() {
   bc.innerHTML = parts.join('');
 }
 
-let tickCount = 0, lastScheduleMinute = -1;
+let tickCount = 0, lastScheduleMinute = -1, telemetryPointerActive = false;
+function deviceFreshnessTextColor(d) {
+  const heartbeat = d.config.heartbeat_period_ms / 1000;
+  if (d.lwt === 'offline' || d.last_seen_s > heartbeat * 3) return 'var(--alarm)';
+  if (d.last_seen_s >= heartbeat * 2) return 'var(--warn)';
+  return 'var(--content-dim)';
+}
+function updateDeviceSeenTicker() {
+  if (state.view !== 'device') return;
+  const d = deviceById(state.openDeviceId), label = $('#deviceSeenTicker');
+  if (!d || !label) return;
+  label.textContent = `seen ${fmtAgo(d.last_seen_s)}`;
+  label.style.color = deviceFreshnessTextColor(d);
+}
 function startTick() {
   setInterval(() => {
     tickCount++;
@@ -1948,9 +2156,7 @@ function startTick() {
         d.last_seen_s += 1;
         const hbS = d.config.heartbeat_period_ms / 1000;
         if (d.last_seen_s > hbS * 3.5) {
-          d.lwt = 'offline';
           mqtt.inject(`electrix/${d.device_id}/status/lwt`, 'offline');
-          ACTIVITY.unshift({ t:0, text:`${d.name} went offline` });
           toast('Device offline', { msg:d.name, type:'warn', timeout:4500 });
           audit('lwt', d.device_id, 'marked offline');
         }
@@ -1977,7 +2183,8 @@ function startTick() {
     if (tickCount % 2 === 0) {
       const ae = document.activeElement;
       const inForm = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT');
-      if (!inForm) renderMain(true);
+      const selectingTelemetry = (state.view === 'telemetry' || (state.view === 'device' && state.deviceTab === 'telemetry')) && telemetryPointerActive;
+      if (!inForm && !selectingTelemetry) renderMain(true);
     }
   }, 1000);
 }
@@ -2406,9 +2613,9 @@ function renderDeviceGrid() {
 const DEVICE_TABS = [
   { id:'overview',    label:'Overview',    icon:'gauge' },
   { id:'telemetry',   label:'Telemetry',   icon:'activity' },
-  { id:'commands',    label:'Commands',    icon:'terminal-square' },
+  { id:'commands',    label:'Activity',     icon:'terminal-square' },
   { id:'config',      label:'Config',      icon:'settings-2' },
-  { id:'events',      label:'Events',      icon:'list' },
+  { id:'events',      label:'Events',       icon:'list' },
   { id:'diagnostics', label:'Diagnostics', icon:'stethoscope' },
 ];
 function renderDevicePage(main) {
@@ -2432,7 +2639,7 @@ function renderDevicePage(main) {
           <span>·</span>
           <span>fw ${esc(d.fw_version)}</span>
           <span>·</span>
-          <span>seen ${fmtAgo(d.last_seen_s)}</span>
+          <span id="deviceSeenTicker" style="color:${deviceFreshnessTextColor(d)}">seen ${fmtAgo(d.last_seen_s)}</span>
           ${freshnessHTML(d)}
         </div>
       </div>
@@ -2447,6 +2654,7 @@ function renderDevicePage(main) {
     </div>
     <div id="devTabBody">${renderDeviceTab(d, state.deviceTab, { editable, controllable })}</div>`;
   refreshIcons(main);
+  if (state.deviceTab === 'telemetry') wireDeviceTelemetry(main, d);
 }
 function renderDeviceTab(d, tab, opts) {
   if (tab === 'overview') return renderDevOverview(d, opts);
@@ -2456,6 +2664,99 @@ function renderDeviceTab(d, tab, opts) {
   if (tab === 'events') return renderDevEvents(d);
   if (tab === 'diagnostics') return renderDevDiagnostics(d);
   return '';
+}
+function siblingConfigMode(d, key) {
+  const values = DEVICES.filter(other => other.device_type === d.device_type).map(other => other.config[key]);
+  const counts = new Map();
+  values.forEach(value => {
+    const encoded = JSON.stringify(value);
+    counts.set(encoded, { value, count:(counts.get(encoded)?.count || 0) + 1 });
+  });
+  return [...counts.values()].sort((a,b) => b.count-a.count)[0]?.value;
+}
+function deviceSuggestions(d) {
+  const suggestions = [];
+  const unack = ALARMS.filter(a => a.device_id === d.device_id && a.state === 'UNACK_ALARM' && !a.cleared);
+  if (unack.length) suggestions.push({
+    icon:'alert-triangle', text:`${unack.length} unacknowledged alarm${unack.length === 1 ? '' : 's'} — ack to silence repeat notification`,
+    action:'review-alarms', label:'Review',
+  });
+  d.capabilities.filter(c => c.kind === 'relay' && c.value === true && Date.now() - c.since > 3 * 60 * 60 * 1000).forEach(c => {
+    suggestions.push({ icon:'clock', text:`${c.label} on for 3h — add an auto-off?`, action:'automation', label:'Automate' });
+  });
+  d.capabilities.filter(c => c.kind === 'relay' && (c.label === c.id || /^relay\\d+$/.test(c.label))).forEach(c => {
+    suggestions.push({ icon:'tag', text:`${c.id} has no label`, action:'rename-capability', capability:c.id, label:'Rename' });
+  });
+  ['sensor_publish_period_ms','heartbeat_period_ms','feature_agg_telemetry_enabled','feature_threshold_events_enabled'].forEach(key => {
+    const modal = siblingConfigMode(d, key);
+    if (modal !== undefined && d.config[key] !== modal) {
+      suggestions.push({
+        icon:'server', text:`${key} is ${String(d.config[key])}; siblings use ${String(modal)}`,
+        action:'match-config', configKey:key, label:'Match siblings',
+      });
+    }
+  });
+  const heartbeatSeconds = d.config.heartbeat_period_ms / 1000;
+  if (d.lwt === 'online' && d.last_seen_s > heartbeatSeconds * 2) {
+    suggestions.push({
+      icon:'wifi-off', text:`last seen ${fmtAgo(d.last_seen_s)}, expected every ${fmtAgo(heartbeatSeconds)}`,
+      action:'diagnostics', label:'Diagnose',
+    });
+  }
+  const versionParts = version => String(version).split('.').map(part => Number.parseInt(part, 10) || 0);
+  const compareVersion = (a, b) => {
+    const av = versionParts(a), bv = versionParts(b);
+    for (let i = 0; i < Math.max(av.length, bv.length); i++) {
+      if ((av[i] || 0) !== (bv[i] || 0)) return (av[i] || 0) - (bv[i] || 0);
+    }
+    return 0;
+  };
+  const fleetVersion = DEVICES.map(device => device.fw_version).sort(compareVersion).at(-1);
+  if (fleetVersion && compareVersion(d.fw_version, fleetVersion) < 0) {
+    suggestions.push({ icon:'upload-cloud', text:`fw ${d.fw_version} · fleet at ${fleetVersion}`, action:'ota', label:'View OTA' });
+  }
+  return suggestions;
+}
+function renderDeviceSuggestions(d) {
+  const suggestions = deviceSuggestions(d);
+  return `<div class="panel device-suggestions">
+    <h4>${icon('lightbulb')}Suggestions</h4>
+    ${suggestions.length ? suggestions.map(s => `<div class="suggestion-row">
+      <span class="sg-icon">${icon(s.icon)}</span><span class="sg-text">${esc(s.text)}</span>
+      <span class="sg-action"><button class="btn sm" type="button" data-suggestion="${s.action}" ${s.capability ? `data-capability="${esc(s.capability)}"` : ''} ${s.configKey ? `data-config-key="${esc(s.configKey)}"` : ''} ${(['match-config'].includes(s.action) && !can('rename')) || (s.action === 'rename-capability' && !can('rename')) ? 'disabled' : ''}>${esc(s.label)}</button></span>
+    </div>`).join('') : '<div class="empty">No suggestions.</div>'}
+  </div>`;
+}
+function toggleDeviceReference(deviceId, group) {
+  const key = `${deviceId}/${group}`;
+  state.deviceReferenceOpen[key] = !state.deviceReferenceOpen[key];
+  lsSet('electrix_device_reference_open', state.deviceReferenceOpen);
+  renderMain();
+}
+function renderDeviceReferences(d) {
+  const schedules = SCHEDULES.filter(item => item.device_id === d.device_id);
+  const scenes = SCENES.filter(item => item.actions.some(action => action.device_id === d.device_id));
+  const rules = INTERLOCKS.filter(rule => rule.when.device_id === d.device_id || rule.then.device_id === d.device_id);
+  if (!schedules.length && !scenes.length && !rules.length) {
+    return `<div class="panel device-references"><h4>${icon('corner-up-right')}Referenced by</h4>
+      <div class="reference-empty">Not referenced by any schedule, scene, or interlock.</div></div>`;
+  }
+  const groups = [
+    { id:'schedules', label:'Schedules', items:schedules, href:'#/automation' },
+    { id:'scenes', label:'Scenes', items:scenes, href:'#/automation' },
+    { id:'interlocks', label:'Interlocks', items:rules, href:'#/interlocks' },
+  ];
+  return `<div class="panel device-references"><h4>${icon('corner-up-right')}Referenced by</h4>
+    ${groups.map(group => {
+      const key = `${d.device_id}/${group.id}`, open = !!state.deviceReferenceOpen[key];
+      return `<div class="device-reference-group">
+        <button class="device-reference-toggle" type="button" data-device-reference="${group.id}" data-device-id="${d.device_id}" aria-expanded="${open}">
+          <span class="label">${group.label}</span><span class="mono">${group.items.length}</span>${icon(open ? 'chevron-up' : 'chevron-down')}
+        </button>
+        ${open && group.items.length ? `<div class="device-reference-items">${group.items.map(item => `<a href="${group.href}" data-nav="${group.href}">${icon('arrow-up-right')}<span>${esc(item.name)}</span></a>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 function renderDevOverview(d, { editable, controllable }) {
   const caps = d.capabilities.map(c => {
@@ -2503,6 +2804,7 @@ ${esc(whoPayload)}</div>
     </div>`;
   }
   return `<div class="dev-grid">
+    ${renderDeviceSuggestions(d)}
     <div class="panel"><h4>${icon('toggle-right')}Capabilities</h4>${caps}</div>
     <div class="panel"><h4>${icon('info')}Status</h4>
       <dl class="kv">
@@ -2514,22 +2816,162 @@ ${esc(whoPayload)}</div>
         <dt>MAC</dt><dd>${d.mac}</dd>
       </dl>
     </div>
+    ${renderDeviceReferences(d)}
     ${identity}
   </div>`;
 }
 function renderDevTelemetry(d) {
   const keys = Object.keys(TELEMETRY).filter(k => k.startsWith(d.device_id + '/'));
   if (!keys.length) return `<div class="empty">No telemetry series.</div>`;
-  return keys.map(k => {
-    const s = TELEMETRY[k], sensor = k.split('/')[1], last = s.history.at(-1)?.v;
-    return `<div class="chart-wrap">
-      <div class="chart-head">
-        <h4>${esc(sensor)} <span class="unit">(${s.unit})</span></h4>
-        <div class="unit">now: ${last}${s.unit}</div>
-      </div>
-      ${lineChart(k)}
-    </div>`;
+  const range = telemetryRange();
+  return `<div class="tele-device-view">
+    <div class="tele-filters">
+      <div><label>Window</label>${telemetryWindowSelect('deviceTeleWindow')}</div>
+      ${range.selected ? '<button class="btn sm" data-clear-tele-selection>Clear selection</button>' : ''}
+      <span class="tele-selection-status">${range.selected ? 'Selected range' : 'Drag across a chart to select a time range'}</span>
+    </div>
+    ${renderTelemetryStack(keys, range.start, range.windowMs)}
+    <div class="tele-config-context">
+      <span>Sample period <span class="mono">${d.config.sensor_publish_period_ms} ms</span></span>
+      <span>Heartbeat period <span class="mono">${d.config.heartbeat_period_ms} ms</span></span>
+      <span>LWT <span class="mono">${esc(d.lwt)}</span></span>
+      <span>Last heartbeat <span class="mono">${esc(fmtAgo(d.last_seen_s))}</span></span>
+    </div>
+  </div>`;
+}
+
+function telemetryRange() {
+  const windowMs = { '1m':60_000, '5m':300_000, '15m':900_000, '1h':3_600_000 }[state.teleWindow] || 300_000;
+  const selected = state.teleSelection && Number.isFinite(state.teleSelection.start) && Number.isFinite(state.teleSelection.end)
+    ? state.teleSelection : null;
+  const start = selected ? Math.min(selected.start, selected.end) : Date.now() - windowMs;
+  const end = selected ? Math.max(selected.start, selected.end) : Date.now();
+  return { start, end, windowMs:Math.max(1000, end - start), selected };
+}
+function telemetryWindowSelect(id) {
+  return `<select id="${id}" aria-label="Telemetry time window">
+    <option value="1m" ${state.teleWindow === '1m' ? 'selected' : ''}>Last 1 min</option>
+    <option value="5m" ${state.teleWindow === '5m' ? 'selected' : ''}>Last 5 min</option>
+    <option value="15m" ${state.teleWindow === '15m' ? 'selected' : ''}>Last 15 min</option>
+    <option value="1h" ${state.teleWindow === '1h' ? 'selected' : ''}>Last 1 hour</option>
+  </select>`;
+}
+function telemetryStatus(key, d = deviceById(key.split('/')[0])) {
+  if (!d || d.lwt === 'offline') return 'offline';
+  const deviceStatus = deriveStatus(d);
+  const series = TELEMETRY[key], value = series?.history.at(-1)?.v;
+  if (series?.threshold != null && value != null) {
+    const lowThreshold = series.unit === '%';
+    if (lowThreshold && value <= series.threshold) return 'alarm';
+    if (!lowThreshold && value >= series.threshold) return 'alarm';
+    if (lowThreshold && value <= series.threshold * 1.25) return 'warn';
+    if (!lowThreshold && value >= series.threshold * 0.8) return 'warn';
+  }
+  return deviceStatus === 'warn' ? 'warn' : 'ok';
+}
+function telemetryGauge(key, compact = false) {
+  const series = TELEMETRY[key], value = series?.history.at(-1)?.v;
+  if (!series || value == null) return '';
+  const unit = series.unit, percent = unit === '%';
+  const threshold = series.threshold;
+  const maxValue = percent ? 100 : threshold != null ? Math.max(threshold * 1.25, value * 1.05, 1) : Math.max(value * 1.2, 1);
+  const fraction = Math.max(0, Math.min(1, value / maxValue));
+  const status = telemetryStatus(key), statusClassName = `status-${status}`;
+  if (compact) {
+    const circumference = 2 * Math.PI * 16, offset = circumference * (1 - fraction);
+    return `<span class="ts-gauge ${statusClassName}" role="img" aria-label="${value.toFixed(2)} ${esc(unit)}">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle class="track" cx="20" cy="20" r="16"/>
+        <circle class="fill" cx="20" cy="20" r="16" transform="rotate(-90 20 20)" stroke-dasharray="${(circumference * fraction).toFixed(2)} ${circumference.toFixed(2)}" stroke-dashoffset="0"/></svg>
+      <span class="ts-gauge-value">${value.toFixed(1)}</span></span>`;
+  }
+  const d = deviceById(key.split('/')[0]), circumference = percent ? Math.PI * 46 : 2 * Math.PI * 46;
+  const arcPath = percent ? 'M14 60 A46 46 0 0 1 106 60' : null;
+  const track = percent
+    ? `<path class="track" d="${arcPath}"/>`
+    : `<circle class="track" cx="60" cy="60" r="46"/>`;
+  const fill = percent
+    ? `<path class="fill" d="${arcPath}" stroke-dasharray="${(circumference * fraction).toFixed(2)} ${circumference.toFixed(2)}"/>`
+    : `<circle class="fill" cx="60" cy="60" r="46" transform="rotate(-90 60 60)" stroke-dasharray="${(circumference * fraction).toFixed(2)} ${circumference.toFixed(2)}"/>`;
+  let tick = '';
+  if (threshold != null) {
+    const thresholdFraction = Math.max(0, Math.min(1, threshold / maxValue));
+    const angle = percent ? Math.PI * (1 - thresholdFraction) : (thresholdFraction * 2 - 0.5) * Math.PI;
+    const cx = 60 + 46 * Math.cos(angle), cy = 60 - 46 * Math.sin(angle);
+    const dx = Math.cos(angle) * 5, dy = Math.sin(angle) * 5;
+    tick = `<line class="threshold-tick" x1="${(cx-dx).toFixed(1)}" y1="${(cy-dy).toFixed(1)}" x2="${(cx+dx).toFixed(1)}" y2="${(cy+dy).toFixed(1)}"/>`;
+  }
+  const shown = percent ? value.toFixed(0) : value.toFixed(1);
+  return `<div class="tele-gauge-card ${statusClassName}" data-gauge-key="${esc(key)}" role="img" aria-label="${esc(d?.name || key)} ${esc(key.split('/')[1])} ${shown} ${esc(unit)}">
+    <div class="tele-gauge-head"><span class="status-dot ${statusClass(status === 'ok' ? 'online' : status)}"></span>
+      <span class="tele-gauge-label">${esc(key.split('/')[1])}</span><span class="tele-gauge-id">${esc(d?.name || key.split('/')[0])}</span></div>
+    <div class="tele-gauge-wrap ${percent ? 'half' : ''}"><svg class="tele-gauge-svg" viewBox="${percent ? '0 0 120 72' : '0 0 120 120'}" aria-hidden="true">${track}${fill}${tick}</svg>
+      <div class="tele-gauge-reading">${shown}<span class="unit">${esc(unit)}</span></div></div>
+    <div class="tele-gauge-status">${esc(status === 'ok' ? 'Normal' : status[0].toUpperCase() + status.slice(1))}</div>
+  </div>`;
+}
+function renderTelemetryStack(keys, start, windowMs) {
+  const end = start + windowMs, events = telemetryEvents(start, end), byDevice = new Map();
+  keys.forEach(key => {
+    const deviceId = key.split('/')[0];
+    if (!byDevice.has(deviceId)) byDevice.set(deviceId, []);
+    byDevice.get(deviceId).push(key);
+  });
+  let groups = [...byDevice.entries()];
+  const deviceSortName = ([id, deviceKeys]) => deviceById(id)?.name || deviceKeys[0] || id;
+  if (state.teleSort === 'alphabetical') {
+    groups.sort((a, b) => deviceSortName(a).localeCompare(deviceSortName(b)));
+    groups.forEach(([, deviceKeys]) => deviceKeys.sort((a, b) => a.split('/')[1].localeCompare(b.split('/')[1])));
+  } else if (state.teleSort === 'anomaly') {
+    const severity = status => ({ alarm:4, offline:3, warn:2, ok:1 })[status] || 0;
+    const risk = ([id, deviceKeys]) => Math.max(...deviceKeys.map(key => severity(telemetryStatus(key))), 0);
+    groups.sort((a, b) => risk(b) - risk(a) || deviceSortName(a).localeCompare(deviceSortName(b)));
+  } else groups.sort((a, b) => deviceSortName(a).localeCompare(deviceSortName(b)));
+  groups.forEach(([, deviceKeys]) => {
+    if (state.teleSort !== 'anomaly') deviceKeys.sort((a, b) => a.split('/')[1].localeCompare(b.split('/')[1]));
+    else deviceKeys.sort((a, b) => {
+      const severity = status => ({ alarm:4, offline:3, warn:2, ok:1 })[status] || 0;
+      return severity(telemetryStatus(b)) - severity(telemetryStatus(a)) || a.localeCompare(b);
+    });
+  });
+  const contents = groups.map(([deviceId, deviceKeys]) => {
+    const d = deviceById(deviceId), deviceStatus = d ? deriveStatus(d) : 'offline';
+    const series = deviceKeys.map(key => {
+      const s = TELEMETRY[key], sensor = key.split('/')[1], raw = s.history.filter(p => p.t >= start && p.t <= end);
+      const rate = !!state.teleRateOfChange[key];
+      const data = rate ? raw.slice(1).flatMap((point, i) => {
+        const previous = raw[i], elapsed = (point.t - previous.t) / 1000;
+        return elapsed > 0 ? [{ t:point.t, v:(point.v - previous.v) / elapsed }] : [];
+      }) : raw;
+      const last = data.at(-1)?.v, unit = rate ? `${s.unit}/s` : s.unit;
+      const status = telemetryStatus(key), threshold = rate ? null : s.threshold;
+      const eventsForDevice = events.filter(event => event.device_id === deviceId);
+      return `<article class="tele-chart-panel status-${status}" data-series-key="${esc(key)}">
+        <div class="tele-chart-head">${telemetryGauge(key, true)}
+          <span class="label">${esc(sensor)}</span><span class="id">${esc(s.unit)}</span>
+          <button class="ts-toggle" type="button" data-pin-series="${esc(key)}" aria-pressed="${state.telePinned[key] != null}" title="Pin a horizontal value cursor">${state.telePinned[key] != null ? 'Unpin' : 'Pin value'}</button>
+          <button class="ts-toggle" type="button" data-rate-series="${esc(key)}" aria-pressed="${rate}" aria-label="Toggle rate of change">${rate ? 'Δ/Δt' : 'value'}</button>
+          <span class="reading">${last == null ? '—' : `${last.toFixed(2)} ${esc(unit)}`}</span>
+          <span class="ts-cursor-value" data-cursor-readout="${esc(key)}"></span>
+        </div>
+        ${telemetryChart(key, data, threshold, eventsForDevice, start, windowMs, d?.lwt === 'offline', state.telePinned[key])}
+      </article>`;
+    }).join('');
+    return `<section class="tele-group">
+      <header class="tele-group-head"><span class="status-dot ${statusClass(deviceStatus)}"></span>
+        <span class="tg-name">${esc(d?.name || deviceId)}</span><span class="tg-status">${esc(deviceStatus)}</span>
+        <span class="tg-meta mono">${esc(deviceId)} · seen ${esc(d ? fmtAgo(d.last_seen_s) : 'unknown')}</span>
+      </header>
+      <div class="tele-gauges">${deviceKeys.map(key => telemetryGauge(key)).join('')}</div>
+      <div class="tele-chart-stack">${series}</div>
+    </section>`;
   }).join('');
+  return `<div class="tele-stack" id="teleStack" data-window-start="${start}" data-window-ms="${windowMs}">
+    <div class="tele-cursor" id="teleCursor" aria-hidden="true"></div>
+    <div class="tele-selection" id="teleSelection" aria-hidden="true"></div>
+    <div class="tele-event-tip" id="teleEventTip" role="status"></div>
+    ${contents || '<div class="empty">No telemetry series match.</div>'}
+    <div class="tele-time-axis"><span>${fmtDateTime(start)}</span><span>${fmtDateTime(end)}</span></div>
+  </div>`;
 }
 const COMMAND_HISTORY = [];
 function renderDevCommands(d, { controllable }) {
@@ -2551,9 +2993,10 @@ function renderDevCommands(d, { controllable }) {
       </div>`;
     }).join('') : '<div class="empty">No actuators.</div>'}
   </div>
-  <div class="panel"><h4>${icon('history')}Command history</h4>
-    ${cmds.length ? `<div class="log-view">${cmds.map(c => `<div class="log-row">
+  <div class="panel"><h4>${icon('history')}Activity</h4>
+    ${cmds.length ? `<div class="log-view">${cmds.map(c => `<div class="log-row command-log-row">
         <span class="ts">${fmtClock(c.ts)}</span>
+        <span class="source-chip" title="${esc(c.source || 'system')}">${({ schedule:'[S]', scene:'[C]', interlock:'[I]', human:'[U]', system:'[Y]' })[c.source || 'system']}</span>
         <span class="lv ${c.status === 'ok' ? 'info' : 'error'}">${c.status}</span>
         <span>cmd/${esc(c.actuator)}/set=${esc(String(c.value))}</span>
       </div>`).join('')}</div>` : '<div class="empty">No commands yet.</div>'}
@@ -2561,19 +3004,28 @@ function renderDevCommands(d, { controllable }) {
 }
 function renderDevConfig(d, { editable }) {
   const c = d.config, dis = editable ? '' : 'disabled';
+  const defaults = CONFIG_DEFAULTS[d.device_type] || {};
+  const fields = [
+    { key:'sensor_publish_period_ms', name:'Sensor publish period', step:'100', unit:'ms', type:'number' },
+    { key:'heartbeat_period_ms', name:'Heartbeat period', step:'1000', unit:'ms', type:'number' },
+    { key:'feature_agg_telemetry_enabled', name:'Aggregated telemetry', type:'checkbox' },
+    { key:'feature_threshold_events_enabled', name:'Threshold events', type:'checkbox' },
+  ];
+  const rows = fields.map(field => {
+    const value = c[field.key], defaultValue = defaults[field.key];
+    const changed = defaultValue !== undefined && value !== defaultValue;
+    const control = field.type === 'checkbox'
+      ? `<span class="config-diff-value"><input type="checkbox" data-cfg="${field.key}" ${value ? 'checked' : ''} ${dis}><span class="mono">${String(value)}</span></span>`
+      : `<span class="config-diff-value"><input type="number" data-cfg="${field.key}" value="${esc(String(value))}" step="${field.step}" ${dis} inputmode="numeric"><span class="unit">${field.unit}</span></span>`;
+    return `<div class="config-diff-row ${changed ? 'changed' : ''}">
+      <span class="config-diff-name">${esc(field.name)}</span>
+      <div class="config-diff-editor">${control}${changed ? `<span class="config-diff-default">· default <span class="mono">${esc(String(defaultValue))}${field.unit || ''}</span></span>` : ''}</div>
+    </div>`;
+  }).join('');
   return `<div class="panel">
     <h4>${icon('settings-2')}config/set</h4>
     <div class="config-form">
-      <div class="config-row"><span>Sensor publish period</span>
-        <input type="number" data-cfg="sensor_publish_period_ms" value="${c.sensor_publish_period_ms}" step="100" ${dis} inputmode="numeric">
-        <span class="unit">ms</span></div>
-      <div class="config-row"><span>Heartbeat period</span>
-        <input type="number" data-cfg="heartbeat_period_ms" value="${c.heartbeat_period_ms}" step="1000" ${dis} inputmode="numeric">
-        <span class="unit">ms</span></div>
-      <div class="config-row"><span>Aggregated telemetry</span>
-        <input type="checkbox" data-cfg="feature_agg_telemetry_enabled" ${c.feature_agg_telemetry_enabled ? 'checked' : ''} ${dis}></div>
-      <div class="config-row"><span>Threshold events</span>
-        <input type="checkbox" data-cfg="feature_threshold_events_enabled" ${c.feature_threshold_events_enabled ? 'checked' : ''} ${dis}></div>
+      ${rows}
       ${editable ? `<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn primary" data-act="save-config">${icon('save')}Save</button><button class="btn" data-act="load-config">${icon('refresh-cw')}Reload</button></div>`
         : `<div class="perm-note">${icon('lock')}<span>Sign in as operator or admin to edit config.</span></div>`}
     </div>
@@ -2617,15 +3069,36 @@ function renderDevDiagnostics(d) {
 function renderTelemetry(main) {
   const sensors = new Set();
   Object.keys(TELEMETRY).forEach(k => sensors.add(k.split('/')[1]));
-  const windowMs = { '1m':60_000, '5m':300_000, '15m':900_000, '1h':3_600_000 }[state.teleWindow] || 300_000;
+  const range = telemetryRange(), { start, end, windowMs, selected } = range;
   let keys = Object.keys(TELEMETRY);
   if (state.teleDevice !== 'all') keys = keys.filter(k => k.startsWith(state.teleDevice + '/'));
   if (state.teleSensor !== 'all') keys = keys.filter(k => k.split('/')[1] === state.teleSensor);
-  keys.sort();
+  const healthDevices = DEVICES.slice().sort((a, b) => a.name.localeCompare(b.name));
   main.innerHTML = `
     <div class="main-head">
       <h1>Telemetry</h1>
-      <div class="main-head-actions"><span class="count">${keys.length} series</span></div>
+      <div class="main-head-actions"><span class="count">${keys.length} series</span>
+        ${selected ? `<button class="btn sm" id="teleClearSelection">Clear selection</button>` : ''}</div>
+    </div>
+    <div class="tele-health" aria-label="Fleet signal health">
+      ${healthDevices.map(d => {
+        const deviceKeys = Object.keys(TELEMETRY).filter(key => key.startsWith(d.device_id + '/'));
+        const statuses = deviceKeys.map(key => telemetryStatus(key, d));
+        const tally = name => statuses.filter(status => status === name).length;
+        const overall = d.lwt === 'offline' ? 'offline' : deriveStatus(d) === 'alarm' ? 'alarm' :
+          statuses.includes('alarm') ? 'alarm' : statuses.includes('warn') || deriveStatus(d) === 'warn' ? 'warn' : 'ok';
+        const total = Math.max(1, statuses.length);
+        return `<button type="button" class="tele-health-tile status-${overall}" data-health-device="${d.device_id}" aria-pressed="${state.teleDevice === d.device_id}">
+          <span class="tele-health-name"><span class="status-dot ${statusClass(overall === 'ok' ? 'online' : overall)}"></span>${esc(d.name)}
+            <span style="margin-left:auto;color:var(--content-faint)">${esc(fmtAgo(d.last_seen_s))}</span></span>
+          <span class="tele-health-bar" aria-hidden="true">
+            <span class="ok" style="width:${tally('ok') / total * 100}%"></span>
+            <span class="warn" style="width:${tally('warn') / total * 100}%"></span>
+            <span class="alarm" style="width:${tally('alarm') / total * 100}%"></span>
+            <span class="offline" style="width:${Math.max(tally('offline'), d.lwt === 'offline' ? total : 0) / total * 100}%"></span>
+          </span>
+        </button>`;
+      }).join('')}
     </div>
     <div class="tele-filters">
       <div><label>Device</label>
@@ -2639,62 +3112,272 @@ function renderTelemetry(main) {
         </select>
       </div>
       <div><label>Window</label>
-        <select id="teleWin">
-          <option value="1m" ${state.teleWindow === '1m' ? 'selected' : ''}>Last 1 min</option>
-          <option value="5m" ${state.teleWindow === '5m' ? 'selected' : ''}>Last 5 min</option>
-          <option value="15m" ${state.teleWindow === '15m' ? 'selected' : ''}>Last 15 min</option>
-          <option value="1h" ${state.teleWindow === '1h' ? 'selected' : ''}>Last 1 hour</option>
-        </select>
+        ${telemetryWindowSelect('teleWin')}
+      </div>
+      <div><label>Sort</label>
+        <select id="teleSort"><option value="device" ${state.teleSort === 'device' ? 'selected' : ''}>Device</option>
+          <option value="anomaly" ${state.teleSort === 'anomaly' ? 'selected' : ''}>Anomaly</option>
+          <option value="alphabetical" ${state.teleSort === 'alphabetical' ? 'selected' : ''}>Alphabetical</option></select>
       </div>
       <button class="btn sm" id="teleExport">${icon('download')}Export CSV</button>
     </div>
-    <div class="tele-grid" id="teleGrid"></div>`;
+    ${renderTelemetryStack(keys, start, windowMs)}`;
   refreshIcons(main);
   $('#teleDev').addEventListener('change', e => { state.teleDevice = e.target.value; renderMain(); });
   $('#teleSen').addEventListener('change', e => { state.teleSensor = e.target.value; renderMain(); });
-  $('#teleWin').addEventListener('change', e => { state.teleWindow = e.target.value; renderMain(); });
-  $('#teleExport').addEventListener('click', () => exportTelemetryCSV(keys, windowMs));
-  const grid = $('#teleGrid');
-  if (!keys.length) { grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">No series match.</div>`; refreshIcons(grid); return; }
-  grid.innerHTML = keys.map(k => {
-    const s = TELEMETRY[k], [devId, sensor] = k.split('/'), d = deviceById(devId);
-    const cutoff = Date.now() - windowMs;
-    const recent = s.history.filter(p => p.t >= cutoff);
-    const vals = recent.map(p => p.v);
-    const last = vals.length ? vals[vals.length - 1] : null;
-    const min = vals.length ? Math.min(...vals) : null;
-    const max = vals.length ? Math.max(...vals) : null;
-    const avg = vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
-    const over = s.threshold != null && last != null && last >= s.threshold;
-    return `<div class="tele-card">
-      <div class="tc-head">
-        <div style="min-width:0;">
-          <div class="tc-title">${esc(d?.name || devId)} · ${esc(sensor)}</div>
-          <div class="tc-sub">${devId} · ${s.unit}</div>
-        </div>
-        <div class="tc-now" style="color:${over ? 'var(--alarm)' : 'var(--content)'}">
-          ${last != null ? last.toFixed(2) : '—'}<span class="u">${s.unit}</span>
-        </div>
-      </div>
-      ${lineChart(k, { windowMs })}
-      <div class="tele-stats">
-        <div><span>min</span><b>${min != null ? min.toFixed(2) : '—'}</b></div>
-        <div><span>avg</span><b>${avg != null ? avg.toFixed(2) : '—'}</b></div>
-        <div><span>max</span><b>${max != null ? max.toFixed(2) : '—'}</b></div>
-        ${s.threshold != null ? `<div class="st-th"><span>threshold</span><b>${s.threshold}${s.unit}</b></div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-  refreshIcons(grid);
+  $('#teleWin').addEventListener('change', e => {
+    state.teleWindow = e.target.value;
+    clearTeleSelection();
+  });
+  $('#teleSort').addEventListener('change', e => {
+    state.teleSort = e.target.value;
+    lsSet('electrix_tele_sort', state.teleSort);
+    renderMain();
+  });
+  $('#teleClearSelection')?.addEventListener('click', clearTeleSelection);
+  main.querySelectorAll('[data-clear-tele-selection]').forEach(button => button.addEventListener('click', clearTeleSelection));
+  main.querySelectorAll('[data-health-device]').forEach(button => button.addEventListener('click', () => {
+    state.teleDevice = button.dataset.healthDevice;
+    renderMain();
+  }));
+  $('#teleExport').addEventListener('click', () => exportTelemetryCSV(keys, windowMs, start, end));
+  wireTelemetryStack(main, keys, start, windowMs);
 }
-function exportTelemetryCSV(keys, windowMs) {
+function wireDeviceTelemetry(main, d) {
+  const range = telemetryRange(), keys = Object.keys(TELEMETRY).filter(key => key.startsWith(d.device_id + '/'));
+  main.querySelector('#deviceTeleWindow')?.addEventListener('change', event => {
+    state.teleWindow = event.target.value;
+    clearTeleSelection();
+  });
+  main.querySelectorAll('[data-clear-tele-selection]').forEach(button => button.addEventListener('click', clearTeleSelection));
+  wireTelemetryStack(main, keys, range.start, range.windowMs);
+}
+function wireTelemetryStack(root, keys, start, windowMs) {
+  const stack = root.querySelector('#teleStack');
+  if (!stack) return;
+  const cursor = stack.querySelector('#teleCursor'), selection = stack.querySelector('#teleSelection'), tip = stack.querySelector('#teleEventTip');
+  const end = start + windowMs, events = telemetryEvents(start, end), renderedSeries = new Map();
+  keys.forEach(key => {
+    const s = TELEMETRY[key], raw = s.history.filter(point => point.t >= start && point.t <= end);
+    renderedSeries.set(key, state.teleRateOfChange[key] ? raw.slice(1).flatMap((point, i) => {
+      const previous = raw[i], elapsed = (point.t - previous.t) / 1000;
+      return elapsed > 0 ? [{ t:point.t, v:(point.v - previous.v) / elapsed }] : [];
+    }) : raw);
+  });
+  stack.querySelectorAll('[data-rate-series]').forEach(button => button.addEventListener('click', () => toggleTeleRateOfChange(button.dataset.rateSeries)));
+  stack.querySelectorAll('[data-pin-series]').forEach(button => button.addEventListener('click', () => {
+    const key = button.dataset.pinSeries;
+    if (state.telePinned[key] != null) delete state.telePinned[key];
+    else {
+      const data = renderedSeries.get(key) || [];
+      if (!data.length) return;
+      const target = state.teleCursorTime ?? data.at(-1).t;
+      const point = data.reduce((best, item) => !best || Math.abs(item.t - target) < Math.abs(best.t - target) ? item : best, null);
+      state.telePinned[key] = point.t;
+    }
+    lsSet('electrix_tele_pinned', state.telePinned);
+    renderMain();
+  }));
+  let selectionDrag = null;
+  const chartPosition = clientX => {
+    const chartRect = stack.querySelector('.ts-chart')?.getBoundingClientRect();
+    const stackRect = stack.getBoundingClientRect();
+    if (!chartRect) return null;
+    const plotLeft = chartRect.left + chartRect.width * (34 / 640);
+    const plotRight = chartRect.left + chartRect.width * (628 / 640);
+    const x = Math.max(plotLeft, Math.min(plotRight, clientX));
+    const ratio = (x - plotLeft) / Math.max(1, plotRight - plotLeft);
+    return { x, relativeX:x - stackRect.left, time:start + ratio * windowMs };
+  };
+  const updateCursor = e => {
+    const position = chartPosition(e.clientX);
+    if (!position || !renderedSeries.size) return;
+    const targetTime = position.time;
+    let snappedTime = targetTime, closestDistance = Infinity;
+    renderedSeries.forEach(data => data.forEach(point => {
+      const distance = Math.abs(point.t - targetTime);
+      if (distance < closestDistance) { closestDistance = distance; snappedTime = point.t; }
+    }));
+    state.teleCursorTime = snappedTime;
+    cursor.style.left = `${position.relativeX}px`;
+    cursor.style.display = 'block';
+    renderedSeries.forEach((data, key) => {
+      const point = data.reduce((best, item) => !best || Math.abs(item.t - snappedTime) < Math.abs(best.t - snappedTime) ? item : best, null);
+      const readout = [...stack.querySelectorAll('[data-cursor-readout]')].find(el => el.dataset.cursorReadout === key);
+      const unit = state.teleRateOfChange[key] ? `${TELEMETRY[key].unit}/s` : TELEMETRY[key].unit;
+      if (readout) readout.textContent = point ? `${point.v.toFixed(2)} ${unit}` : '';
+    });
+  };
+  stack.addEventListener('pointermove', updateCursor);
+  stack.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.ts-chart') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const point = chartPosition(e.clientX);
+    if (!point) return;
+    selectionDrag = { x:point.relativeX, time:point.time };
+    telemetryPointerActive = true;
+    stack.setPointerCapture(e.pointerId);
+    selection.style.left = `${point.relativeX}px`;
+    selection.style.width = '0px';
+    selection.style.display = 'block';
+  });
+  stack.addEventListener('pointermove', e => {
+    if (!selectionDrag) return;
+    const point = chartPosition(e.clientX);
+    if (!point) return;
+    selection.style.left = `${Math.min(selectionDrag.x, point.relativeX)}px`;
+    selection.style.width = `${Math.abs(point.relativeX - selectionDrag.x)}px`;
+  });
+  stack.addEventListener('pointerup', e => {
+    if (!selectionDrag) return;
+    const point = chartPosition(e.clientX), begin = selectionDrag;
+    selectionDrag = null;
+    telemetryPointerActive = false;
+    if (point && Math.abs(point.relativeX - begin.x) >= 5 && Math.abs(point.time - begin.time) >= 1000) {
+      setTeleSelection({ start:Math.min(begin.time, point.time), end:Math.max(begin.time, point.time) });
+    } else selection.style.display = 'none';
+  });
+  stack.addEventListener('pointercancel', () => {
+    selectionDrag = null;
+    telemetryPointerActive = false;
+    selection.style.display = 'none';
+  });
+  stack.addEventListener('pointerleave', () => {
+    cursor.style.display = 'none';
+    stack.querySelectorAll('[data-cursor-readout]').forEach(el => { el.textContent = ''; });
+    tip.style.display = 'none';
+  });
+  stack.querySelectorAll('[data-tele-event]').forEach(marker => {
+    marker.addEventListener('pointerenter', e => {
+      const event = TELEMETRY_EVENTS.get(marker.dataset.teleEvent);
+      if (!event) return;
+      tip.textContent = `${event.label} · ${fmtClock(event.ts)} · ${deviceById(event.device_id)?.name || event.device_id}`;
+      tip.style.display = 'block';
+      tip.style.left = `${Math.min(e.clientX + 10, innerWidth - tip.offsetWidth - 8)}px`;
+      tip.style.top = `${Math.max(8, e.clientY - 30)}px`;
+    });
+    marker.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+    marker.addEventListener('click', () => navigateTelemetryEvent(TELEMETRY_EVENTS.get(marker.dataset.teleEvent)));
+  });
+}
+const TELEMETRY_EVENTS = new Map();
+function telemetryEvents(start, end) {
+  const events = [];
+  const add = event => { if (event.ts >= start && event.ts <= end) events.push(event); };
+  ALARMS.forEach(a => {
+    if (!a.since) return;
+    add({ id:`alarm-${a.id}`, type:'alarm', label:'Alarm', device_id:a.device_id, ts:Date.now() - a.since * 1000 });
+  });
+  COMMAND_HISTORY.forEach(c => add({ id:`command-${c.request_id}`, type:'command', label:'Command', device_id:c.device_id, ts:c.ts }));
+  LWT_LOG.forEach((entry, i) => add({ id:`lwt-${i}`, type:'lwt', label:`LWT ${entry.lwt}`, device_id:entry.device_id, ts:entry.ts }));
+  AUDIT.filter(entry => entry.action === 'device.config_set').forEach((entry, i) =>
+    add({ id:`config-${i}-${entry.ts}`, type:'config', label:'Config write', device_id:entry.target, ts:entry.ts }));
+  TELEMETRY_EVENTS.clear();
+  events.forEach(event => TELEMETRY_EVENTS.set(event.id, event));
+  return events;
+}
+function navigateTelemetryEvent(event) {
+  if (!event) return;
+  if (event.type === 'alarm') {
+    state.alarmFilter = 'active';
+    state.alarmDeviceFilter = event.device_id;
+    nav(`#/alarms/${event.device_id}`);
+  } else {
+    const tab = event.type === 'command' ? 'commands' : event.type === 'config' ? 'config' : 'diagnostics';
+    nav(`#/device/${event.device_id}/${tab}`);
+  }
+}
+function toggleTeleRateOfChange(key) {
+  state.teleRateOfChange[key] = !state.teleRateOfChange[key];
+  lsSet('electrix_tele_rate_of_change', state.teleRateOfChange);
+  renderMain();
+}
+function setTeleSelection(range) {
+  state.teleSelection = range;
+  lsSet('electrix_tele_selection', range);
+  renderMain();
+}
+function clearTeleSelection() {
+  state.teleSelection = null;
+  lsSet('electrix_tele_selection', null);
+  renderMain();
+}
+function telemetryChart(key, data, threshold, events, start, windowMs, offline, pinnedTime = null) {
+  const s = TELEMETRY[key], width = 640, height = 128;
+  const padL = 34, padR = 12, padT = 8, padB = 18;
+  const plotW = width - padL - padR, plotH = height - padT - padB, bottom = padT + plotH;
+  const end = start + windowMs;
+  const xAt = ts => padL + Math.max(0, Math.min(1, (ts - start) / windowMs)) * plotW;
+  if (!data.length) return '<div class="empty">No telemetry in this window.</div>';
+  const values = data.map(point => point.v);
+  const lo = Math.min(...values, threshold ?? Infinity), hi = Math.max(...values, threshold ?? -Infinity);
+  const pad = (hi - lo) * 0.12 || 1, yLo = lo - pad, yHi = hi + pad, yRange = yHi - yLo || 1;
+  const yAt = value => padT + plotH - (value - yLo) / yRange * plotH;
+  const pinnedPoint = pinnedTime == null ? null : data.reduce((best, point) =>
+    !best || Math.abs(point.t - pinnedTime) < Math.abs(best.t - pinnedTime) ? point : best, null);
+  const pinnedLine = pinnedPoint
+    ? `<line class="tele-pin-line" x1="${padL}" y1="${yAt(pinnedPoint.v).toFixed(1)}" x2="${width-padR}" y2="${yAt(pinnedPoint.v).toFixed(1)}"/>`
+    : '';
+  const maxGap = Math.max(1, s.window_s * 2) * 1000;
+  const ticks = [0,1,2,3,4].map(i => {
+    const y = padT + plotH * i / 4, value = yHi - yRange * i / 4;
+    return `<line x1="${padL}" y1="${y}" x2="${width-padR}" y2="${y}"/><text class="chart-axis" x="${padL-5}" y="${y+3}" text-anchor="end">${value.toFixed(1)}</text>`;
+  }).join('');
+  const gaps = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i].t - data[i-1].t > maxGap) {
+      const x1 = xAt(data[i-1].t), x2 = xAt(data[i].t);
+      gaps.push(`<rect class="chart-gap" x="${x1.toFixed(1)}" y="${padT}" width="${Math.max(1,x2-x1).toFixed(1)}" height="${plotH}"/>`);
+    }
+  }
+  if (offline && data.at(-1).t < end) {
+    const x1 = xAt(data.at(-1).t), x2 = xAt(end);
+    gaps.push(`<rect class="chart-gap" x="${x1.toFixed(1)}" y="${padT}" width="${Math.max(1,x2-x1).toFixed(1)}" height="${plotH}"/>`);
+  }
+  const lines = [], areas = [];
+  let path = '';
+  for (let i = 0; i < data.length; i++) {
+    const point = data[i], x = xAt(point.t), y = yAt(point.v);
+    if (i === 0 || point.t - data[i-1].t > maxGap) {
+      if (path) lines.push(`<path class="chart-line" d="${path}"/>`);
+      path = `M${x.toFixed(1)},${y.toFixed(1)}`;
+    } else {
+      path += ` L${x.toFixed(1)},${y.toFixed(1)}`;
+      if (threshold != null) {
+        const value = (point.v + data[i-1].v) / 2;
+        const cls = value >= threshold ? 'alarm' : value >= threshold * 0.9 ? 'warn' : '';
+        if (cls) {
+          const x0 = xAt(data[i-1].t), y0 = yAt(data[i-1].v);
+          areas.push(`<path class="chart-area-${cls}" d="M${x0.toFixed(1)},${bottom} L${x0.toFixed(1)},${y0.toFixed(1)} L${x.toFixed(1)},${y.toFixed(1)} L${x.toFixed(1)},${bottom} Z"/>`);
+        }
+      }
+    }
+  }
+  if (path) lines.push(`<path class="chart-line" d="${path}"/>`);
+  const visibleEvents = events.filter(event => event.ts >= start && event.ts <= end);
+  const eventLines = visibleEvents.map(event => {
+    const x = xAt(event.ts), cls = `chart-event-${event.type}`;
+    return `<line class="chart-event ${cls}" x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${bottom}"/>`;
+  }).join('');
+  const markers = visibleEvents.map(event => {
+    const left = (xAt(event.ts) / width * 100).toFixed(3);
+    const label = `${event.label} at ${fmtClock(event.ts)}`;
+    return `<button class="tele-event-marker ${event.type}" type="button" data-tele-event="${esc(event.id)}" style="left:${left}%" aria-label="${esc(label)}"></button>`;
+  }).join('');
+  return `<div class="ts-chart-wrap">
+    <svg class="ts-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="${esc(key)}">
+      <g class="chart-grid">${ticks}</g>${gaps.join('')}${areas.join('')}${eventLines}
+      ${threshold != null ? `<line class="chart-th" x1="${padL}" y1="${yAt(threshold).toFixed(1)}" x2="${width-padR}" y2="${yAt(threshold).toFixed(1)}"/>` : ''}
+      ${lines.join('')}${pinnedLine}
+    </svg><div class="tele-event-markers">${markers}</div>
+  </div>`;
+}
+function exportTelemetryCSV(keys, windowMs, start = Date.now() - windowMs, end = Date.now()) {
   if (!keys.length) { toast('Nothing to export', { type:'info' }); return; }
-  const cutoff = Date.now() - windowMs;
   const rows = [['timestamp_iso','device_id','sensor','value','unit'].join(',')];
   keys.forEach(k => {
     const [devId, sensor] = k.split('/');
     const s = TELEMETRY[k];
-    s.history.filter(p => p.t >= cutoff).forEach(p => {
+    s.history.filter(p => p.t >= start && p.t <= end).forEach(p => {
       rows.push([new Date(p.t).toISOString(), devId, sensor, p.v, s.unit].join(','));
     });
   });
@@ -2707,13 +3390,15 @@ function exportTelemetryCSV(keys, windowMs) {
 }
 
 function renderAlarms(main) {
-  const active = activeAlarms();
-  const history = ALARMS.filter(a => a.cleared).sort((a, b) => b.since - a.since);
-  const shelved = ALARMS.filter(a => !a.cleared && isShelved(a));
+  const byDevice = a => !state.alarmDeviceFilter || a.device_id === state.alarmDeviceFilter;
+  const active = activeAlarms().filter(byDevice);
+  const history = ALARMS.filter(a => a.cleared && byDevice(a)).sort((a, b) => b.since - a.since);
+  const shelved = ALARMS.filter(a => !a.cleared && isShelved(a) && byDevice(a));
   main.innerHTML = `
     <div class="main-head">
       <h1>Alarms</h1>
-      <div class="main-head-actions"><span class="count">${active.length} active${shelved.length ? ` · ${shelved.length} shelved` : ''}</span></div>
+      <div class="main-head-actions"><span class="count">${active.length} active${shelved.length ? ` · ${shelved.length} shelved` : ''}${state.alarmDeviceFilter ? ` · ${esc(deviceById(state.alarmDeviceFilter)?.name || state.alarmDeviceFilter)}` : ''}</span>
+        ${state.alarmDeviceFilter ? `<button class="btn sm" data-clear-alarm-device>Clear device filter</button>` : ''}</div>
     </div>
     ${renderAnnunciator()}
     <div class="filter-chips" id="alarmFilters">
@@ -2747,6 +3432,7 @@ function renderAlarmList() {
   else list = ALARMS.filter(a => a.cleared).sort((a, b) => b.since - a.since);
   if (state.alarmPriorityFilter !== 'all') list = list.filter(a => a.priority === state.alarmPriorityFilter);
   if (state.alarmTypeFilter !== 'all') list = list.filter(a => a.type === state.alarmTypeFilter);
+  if (state.alarmDeviceFilter) list = list.filter(a => a.device_id === state.alarmDeviceFilter);
   if (!list.length) {
     el.innerHTML = `<div class="empty">${state.alarmFilter === 'active' ? 'No active alarms.' : 'Nothing here yet.'}</div>`;
     return;
@@ -2917,7 +3603,7 @@ async function runSchedule(s, { manual = false } = {}) {
   const c = d?.capabilities.find(x => x.id === s.capability);
   if (!d || !c) { audit('schedule.fail', s.id, 'missing'); if (manual) toast('Cannot run', { type:'error' }); return; }
   s.last_run = Date.now(); saveSchedules();
-  const r = await executeAction(s.device_id, s.capability, s.value);
+  const r = await executeAction(s.device_id, s.capability, s.value, 'schedule');
   if (r.ok) {
     audit('schedule.run', s.id, `${d.name}/${c.label}`);
     ACTIVITY.unshift({ t:0, text:`schedule "${s.name}" ran` });
@@ -2933,7 +3619,7 @@ async function runScene(s) {
   if (!can('automate')) { toast('Permission denied', { type:'error' }); return; }
   let ok = 0, fail = 0;
   for (const a of s.actions) {
-    const r = await executeAction(a.device_id, a.capability, a.value);
+    const r = await executeAction(a.device_id, a.capability, a.value, 'scene');
     if (r.ok) ok++; else fail++;
   }
   audit('scene.run', s.id, `${ok} ok, ${fail} failed`);
@@ -2941,7 +3627,13 @@ async function runScene(s) {
   toast('Scene ran', { msg:`${s.name} — ${ok} applied${fail ? `, ${fail} blocked` : ''}`, type: fail ? 'warn' : 'ok' });
   renderMain();
 }
-async function executeAction(device_id, capability_id, value) {
+function setCapabilityValue(capability, value) {
+  if (!Object.is(capability.value, value)) {
+    capability.value = value;
+    capability.since = Date.now();
+  }
+}
+async function executeAction(device_id, capability_id, value, source = 'system') {
   const d = deviceById(device_id); if (!d) return { ok:false, reason:'device not found' };
   const c = d.capabilities.find(x => x.id === capability_id); if (!c) return { ok:false, reason:'capability not found' };
   const block = isBlocked(device_id, capability_id);
@@ -2949,15 +3641,15 @@ async function executeAction(device_id, capability_id, value) {
   if (d.lwt !== 'online') return { ok:false, reason:'device offline' };
   const requestId = uid();
   try {
-    await mqtt.publish(`electrix/${device_id}/cmd/${capability_id}/set`, { value, request_id: requestId, source:'automation' }, { qos:2 });
+    await mqtt.publish(`electrix/${device_id}/cmd/${capability_id}/set`, { value, request_id: requestId, source }, { qos:2 });
     setTimeout(() => { mqtt.inject(`electrix/${device_id}/ack/${requestId}`, { status:'ok', echoed_value:value }); }, 200);
     await waitForAck(requestId, 4000);
-    c.value = value;
-    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id, actuator:capability_id, value, request_id:requestId, status:'ok' });
+    setCapabilityValue(c, value);
+    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id, actuator:capability_id, value, request_id:requestId, status:'ok', source });
     if (COMMAND_HISTORY.length > 100) COMMAND_HISTORY.pop();
     return { ok:true };
   } catch (e) {
-    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id, actuator:capability_id, value, request_id:requestId, status:'error' });
+    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id, actuator:capability_id, value, request_id:requestId, status:'error', source });
     return { ok:false, reason:e.message || 'ack timeout' };
   }
 }
@@ -3135,7 +3827,7 @@ function renderOTA(main) {
         </div>
       </div>
     </div>`;
-  refreshIcons(main);
+    refreshIcons(main);
 }
 
 const INTERLOCKS = [
@@ -3253,17 +3945,32 @@ function renderRuleCard(r) {
     </div>
   </div>`;
 }
-function openRuleEditor(ruleId = null) {
+function openRuleEditor(ruleId = null, scopedDeviceId = null) {
+  if (!can('toggle')) { toast('Permission denied', { type:'error' }); return; }
   const r = ruleId ? INTERLOCKS.find(x => x.id === ruleId) : null;
+  const inlineRoot = $('#ruleEditorRoot');
+  const modalMode = !!scopedDeviceId || !inlineRoot;
+  let wrap = null;
+  let root = inlineRoot;
+  if (modalMode) {
+    wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>${r ? 'Edit rule' : 'New rule'}</h3><div class="rule-editor-form"></div></div>`;
+    $('#modalRoot').appendChild(wrap);
+    root = wrap.querySelector('.rule-editor-form');
+    wrap.addEventListener('mousedown', event => { if (event.target === wrap) wrap.remove(); });
+    wrap.addEventListener('keydown', event => { if (event.key === 'Escape') wrap.remove(); });
+  }
   const allCaps = [];
-  DEVICES.forEach(d => d.capabilities.forEach(c => allCaps.push({ d, c })));
+  DEVICES.filter(d => !scopedDeviceId || d.device_id === scopedDeviceId)
+    .forEach(d => d.capabilities.forEach(c => allCaps.push({ d, c })));
   const capOptions = (selDev, selCap) =>
     allCaps.map(({ d, c }) => `<option value="${d.device_id}|${c.id}" ${d.device_id === selDev && c.id === selCap ? 'selected' : ''}>${esc(d.name)} · ${esc(c.label)}</option>`).join('');
-  const root = $('#ruleEditorRoot');
+  const defaultDeviceId = scopedDeviceId || allCaps[0]?.d.device_id;
   root.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;">
-    <div style="font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;">${icon('link-2')}${r ? 'Edit rule' : 'New rule'}</div>
+    ${modalMode ? '' : `<div style="font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;">${icon('link-2')}${r ? 'Edit rule' : 'New rule'}</div>`}
     <div class="config-row" style="margin-bottom:10px;"><span style="min-width:60px;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;">NAME</span><input type="text" id="ruleName" value="${esc(r?.name || '')}" placeholder="Rule name" style="flex:1;min-width:0;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;"></div>
-    <div class="config-row" style="margin-bottom:10px;"><span style="min-width:60px;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;">WHEN</span><select id="ruleWhen" style="flex:1;min-width:0;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">${capOptions(r?.when.device_id, r?.when.capability)}</select></div>
+    <div class="config-row" style="margin-bottom:10px;"><span style="min-width:60px;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;">WHEN</span><select id="ruleWhen" style="flex:1;min-width:0;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">${capOptions(r?.when.device_id || defaultDeviceId, r?.when.capability || allCaps[0]?.c.id)}</select></div>
     <div class="config-row" style="margin-bottom:10px;"><span style="min-width:60px;"></span>
       <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap;">
         <select id="ruleOp" style="width:110px;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
@@ -3278,7 +3985,7 @@ function openRuleEditor(ruleId = null) {
         <select id="ruleAct" style="width:100px;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
           <option value="block">block</option>
         </select>
-        <select id="ruleThen" style="flex:1;min-width:0;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">${capOptions(r?.then.device_id, r?.then.capability)}</select>
+        <select id="ruleThen" style="flex:1;min-width:0;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">${capOptions(r?.then.device_id || defaultDeviceId, r?.then.capability || allCaps[0]?.c.id)}</select>
       </div>
     </div>
     <div class="config-row" style="margin-bottom:10px;"><span style="min-width:60px;font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;">PRIO</span>
@@ -3296,18 +4003,18 @@ function openRuleEditor(ruleId = null) {
     </div>
   </div>`;
   refreshIcons(root);
-  $('#ruleCancel').addEventListener('click', () => root.innerHTML = '');
-  $('#ruleSave').addEventListener('click', () => {
-    const name = $('#ruleName').value.trim();
+  root.querySelector('#ruleCancel').addEventListener('click', () => { if (wrap) wrap.remove(); else root.innerHTML = ''; });
+  root.querySelector('#ruleSave').addEventListener('click', () => {
+    const name = root.querySelector('#ruleName').value.trim();
     if (!name) { toast('Name required', { type:'error' }); return; }
-    const [whenDev, whenCap] = $('#ruleWhen').value.split('|');
-    const [thenDev, thenCap] = $('#ruleThen').value.split('|');
+    const [whenDev, whenCap] = root.querySelector('#ruleWhen').value.split('|');
+    const [thenDev, thenCap] = root.querySelector('#ruleThen').value.split('|');
     const payload = {
       name,
-      when: { device_id:whenDev, capability:whenCap, operator:$('#ruleOp').value, value:$('#ruleVal').value.trim() },
-      then: { action:$('#ruleAct').value, device_id:thenDev, capability:thenCap },
-      priority: parseInt($('#rulePrio').value, 10) || 50,
-      site_id: $('#ruleSite').value || null,
+      when: { device_id:whenDev, capability:whenCap, operator:root.querySelector('#ruleOp').value, value:root.querySelector('#ruleVal').value.trim() },
+      then: { action:root.querySelector('#ruleAct').value, device_id:thenDev, capability:thenCap },
+      priority: parseInt(root.querySelector('#rulePrio').value, 10) || 50,
+      site_id: root.querySelector('#ruleSite').value || null,
       enabled: r?.enabled ?? true,
       created_by: r?.created_by || state.user.username,
       created_at: r?.created_at || Date.now(),
@@ -3316,6 +4023,7 @@ function openRuleEditor(ruleId = null) {
     else { INTERLOCKS.push({ id:uid(), ...payload }); audit('interlock.create', name); }
     CURRENT_BLOCKS = evaluateInterlocks();
     toast(r ? 'Rule updated' : 'Rule created', { msg:name, type:'ok' });
+    if (wrap) wrap.remove();
     renderMain();
   });
 }
@@ -3451,11 +4159,11 @@ async function toggleActuator(deviceId, actuatorId) {
   const requestId = uid();
   const t = toast('Sending…', { msg:`cmd/${actuatorId}/set`, type:'info', timeout:0 });
   try {
-    await mqtt.publish(`electrix/${d.device_id}/cmd/${actuatorId}/set`, { value:newValue, request_id:requestId }, { qos:2 });
+    await mqtt.publish(`electrix/${d.device_id}/cmd/${actuatorId}/set`, { value:newValue, request_id:requestId, source:'human' }, { qos:2 });
     setTimeout(() => { mqtt.inject(`electrix/${d.device_id}/ack/${requestId}`, { status:'ok', echoed_value:newValue }); }, 350 + Math.random() * 400);
     await waitForAck(requestId, 5000);
-    c.value = newValue; c.pending = false;
-    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id:deviceId, actuator:actuatorId, value:newValue, request_id:requestId, status:'ok' });
+    setCapabilityValue(c, newValue); c.pending = false;
+    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id:deviceId, actuator:actuatorId, value:newValue, request_id:requestId, status:'ok', source:'human' });
     if (COMMAND_HISTORY.length > 100) COMMAND_HISTORY.pop();
     audit('toggle', `${d.device_id}/${actuatorId}`, `→ ${newValue}`);
     ACTIVITY.unshift({ t:0, text:`${state.user.username} toggled ${c.label}` });
@@ -3463,7 +4171,7 @@ async function toggleActuator(deviceId, actuatorId) {
     toast('Applied', { msg:`${c.label} → ${newValue ? 'ON' : 'OFF'}`, type:'ok' });
   } catch (e) {
     c.pending = false;
-    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id:deviceId, actuator:actuatorId, value:newValue, request_id:requestId, status:'error' });
+    COMMAND_HISTORY.unshift({ ts:Date.now(), device_id:deviceId, actuator:actuatorId, value:newValue, request_id:requestId, status:'error', source:'human' });
     if (COMMAND_HISTORY.length > 100) COMMAND_HISTORY.pop();
     t.close();
     toast('Command failed', { msg:e.message || 'no ack', type:'error' });
@@ -3545,7 +4253,7 @@ async function queryState(d) {
   await mqtt.publish(`electrix/${d.device_id}/cmd/system/get`, { request_id:requestId }, { qos:1 });
   audit('device.query_state', d.device_id);
   setTimeout(() => {
-    d.capabilities.forEach(c => { if (c.kind === 'relay') c.value = Math.random() > 0.5; });
+    d.capabilities.forEach(c => { if (c.kind === 'relay') setCapabilityValue(c, Math.random() > 0.5); });
     renderMain();
     toast('State refreshed', { msg:`${d.capabilities.length} capabilities`, type:'ok' });
   }, 500);
@@ -3564,6 +4272,22 @@ async function saveConfig(d) {
   audit('device.config_set', d.device_id, JSON.stringify(next));
   toast('Config saved', { msg:`${d.name} · ${Object.keys(next).length} params`, type:'ok' });
   renderMain();
+}
+async function matchSiblingConfig(d, key) {
+  const allowed = new Set(['sensor_publish_period_ms','heartbeat_period_ms','feature_agg_telemetry_enabled','feature_threshold_events_enabled']);
+  if (!allowed.has(key) || !can('rename')) { toast('Permission denied', { type:'error' }); return; }
+  const value = siblingConfigMode(d, key);
+  if (value === undefined) { toast('No sibling value available', { type:'error' }); return; }
+  const next = { ...d.config, [key]:value }, requestId = uid();
+  try {
+    await mqtt.publish(`electrix/${d.device_id}/config/set`, { ...next, request_id:requestId }, { qos:1 });
+    d.config = next;
+    audit('device.config_set', d.device_id, JSON.stringify(next));
+    toast('Config matched', { msg:`${key} · ${String(value)}`, type:'ok' });
+    renderMain();
+  } catch (error) {
+    toast('Config update failed', { msg:error.message || 'publish failed', type:'error' });
+  }
 }
 
 function openDrawer(deviceId) {
@@ -3627,6 +4351,33 @@ function renderDrawer() {
 
 document.addEventListener('click', e => {
   const t = e.target;
+  const suggestion = t.closest('[data-suggestion]');
+  if (suggestion) {
+    const d = deviceById(state.openDeviceId);
+    if (!d || suggestion.disabled) return;
+    const action = suggestion.dataset.suggestion;
+    if (action === 'review-alarms') {
+      state.alarmFilter = 'active'; state.alarmPriorityFilter = 'all'; state.alarmTypeFilter = 'all';
+      nav(`#/alarms/${d.device_id}`);
+    } else if (action === 'automation') nav('#/automation');
+    else if (action === 'rename-capability') {
+      const input = document.querySelector(`.cap-label-edit[data-cap-id="${CSS.escape(suggestion.dataset.capability)}"]`);
+      input?.focus(); input?.select();
+    } else if (action === 'match-config') matchSiblingConfig(d, suggestion.dataset.configKey);
+    else if (action === 'diagnostics') nav(`#/device/${d.device_id}/diagnostics`);
+    else if (action === 'ota') nav('#/ota');
+    return;
+  }
+  const reference = t.closest('[data-device-reference]');
+  if (reference) {
+    toggleDeviceReference(reference.dataset.deviceId, reference.dataset.deviceReference);
+    return;
+  }
+  if (t.closest('[data-clear-alarm-device]')) {
+    state.alarmDeviceFilter = null;
+    nav('#/alarms');
+    return;
+  }
   const cp = t.closest('[data-copy]');
   if (cp) { e.preventDefault(); copyText(cp.dataset.copy); return; }
 
@@ -3669,6 +4420,14 @@ document.addEventListener('click', e => {
   }
   const routeEl = t.closest('[data-route]');
   if (routeEl) { e.preventDefault(); nav(routeEl.dataset.route); return; }
+  const drawerNav = t.closest('#drawer [data-nav]');
+  if (drawerNav) {
+    e.preventDefault();
+    const route = drawerNav.dataset.nav;
+    if (isMobile()) closeDrawer();
+    nav(route);
+    return;
+  }
   const navEl = t.closest('[data-nav]');
   if (navEl) { e.preventDefault(); nav(navEl.dataset.nav); return; }
   const siteEl = t.closest('[data-site]');
@@ -3752,7 +4511,7 @@ document.addEventListener('click', e => {
       (async () => {
         let ok = 0, fail = 0;
         for (const { d, c } of targets) {
-          const r = await executeAction(d.device_id, c.id, want);
+          const r = await executeAction(d.device_id, c.id, want, 'human');
           if (r.ok) ok++; else fail++;
         }
         audit('bulk.' + action, [...state.bulkSelected].join(','), `${ok} ok, ${fail} failed`);
@@ -3912,6 +4671,8 @@ function boot() {
       if (d) {
         const wasOnline = d.lwt === 'online';
         d.lwt = payload === 'offline' ? 'offline' : 'online';
+        LWT_LOG.unshift({ ts:Date.now(), device_id:id, lwt:d.lwt });
+        if (LWT_LOG.length > 200) LWT_LOG.pop();
         if (wasOnline && d.lwt === 'offline') ACTIVITY.unshift({ t:0, text:`${d.name} went offline` });
       }
     }
