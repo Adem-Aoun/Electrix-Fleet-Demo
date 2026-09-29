@@ -12,7 +12,7 @@
 <meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="src/styles.css?v=20260929.6">
+<link rel="stylesheet" href="src/styles.css?v=20260929.8">
 </head>
 <body>
 
@@ -66,11 +66,9 @@
 
   <div class="main-col">
     <header class="app-header">
-      <div class="brand" title="Electrix Command">
-        <span class="brand-mark"><i data-lucide="zap"></i></span>
-        <span class="brand-word">ELECTRIX <span class="accent">COMMAND</span></span>
+      <div class="brand" title="Electrix Fleet" aria-label="Electrix Fleet">
+        <span class="brand-name">Electrix <span class="brand-fleet">Fleet</span></span>
       </div>
-      <div class="view-title" id="viewTitle">Dashboard</div>
       <div class="search" id="searchWrap"><input id="search" type="search" placeholder="Search devices, sites…" autocomplete="off" enterkeyhint="search"></div>
       <div class="header-right">
         <span class="ws-pill down" id="wsPill" role="status" aria-label="Broker status: connecting"><span class="dot"></span><span id="wsLabel">connecting</span></span>
@@ -158,6 +156,6 @@
 <div id="paletteRoot"></div>
 
 
-<script src="src/main.js?v=20260929.6"></script>
+<script src="src/main.js?v=20260929.8"></script>
 </body>
 </html>

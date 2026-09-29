@@ -172,12 +172,9 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   background:var(--bg-deep);border-bottom:1px solid var(--border);
   position:sticky;top:0;z-index:20;min-height:var(--header-h);
 }
-.brand{display:none;align-items:center;padding-right:14px;border-right:1px solid var(--border);margin-right:4px}
-.nav-rail.collapsed ~ .main-col .app-header .brand{display:flex}
-.brand-mark{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin-right:8px;color:var(--accent)}
-.brand-word{font-weight:800;font-size:13px;letter-spacing:1.4px;color:var(--content);white-space:nowrap}
-.brand-word .accent{color:var(--accent)}
-.view-title{font-weight:700;font-size:14.5px}
+.brand{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-width:0}
+.brand-name{font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--content);white-space:nowrap}
+.brand-fleet{color:var(--accent)}
 .search{flex:1;min-width:140px;max-width:340px}
 .search input{
   width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);
@@ -1153,18 +1150,29 @@ body.bulk-mode .card{padding-left:48px}
   .login-screen{padding-top:calc(20px + var(--safe-top))}
 }
 
+@media (min-width:821px) and (max-width:1100px){
+  .app-header{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"brand actions" "search search";
+    gap:8px 12px;
+  }
+  .brand{grid-area:brand}
+  .search{grid-area:search;max-width:none;min-width:0;width:100%}
+  .header-right{grid-area:actions;gap:4px}
+  .header-right .btn span{display:none}
+  .header-right .btn{padding:8px}
+  #devModeBtn,#themeBtn,#logoutBtn,#helpBtn{display:none}
+  .mobile-menu-btn{display:inline-flex;width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--content);align-items:center;justify-content:center;cursor:pointer}
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    MOBILE
    ═══════════════════════════════════════════════════════════════════ */
 @media (max-width:820px){
   .sites-aside{display:none!important}
   .nav-rail{display:none}
-  .brand{display:flex;grid-area:brand;padding:0;margin:0;border:0;min-width:0}
-  .brand-mark{width:24px;height:24px;margin-right:5px;flex-shrink:0}
-  .brand-word{font-size:11px;letter-spacing:.6px;white-space:nowrap}
-  .brand-word .accent{display:none}
-  .brand-word{display:none}
-  .nav-rail.collapsed ~ .main-col .app-header .brand{display:flex}
+  .brand{grid-area:brand;gap:5px;min-width:0}
   #helpBtn{display:none}
   #paletteBtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:7px}
   #paletteBtn .lucide{width:17px;height:17px}
@@ -1178,13 +1186,12 @@ body.bulk-mode .card{padding-left:48px}
 
   .app-header{
     display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto;
-    grid-template-areas:"brand title actions" "search search search";
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"brand actions" "search search";
     gap:7px 8px;
     padding:8px max(12px,var(--safe-right)) 8px max(12px,var(--safe-left));
     padding-top:calc(8px + var(--safe-top));
   }
-  .view-title{grid-area:title;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center;min-width:0}
   .header-right{grid-area:actions;gap:4px;margin-left:0}
   .search{grid-area:search;max-width:none;min-width:0;width:100%}
   .search input{padding:11px 12px;font-size:16px}
@@ -1209,6 +1216,7 @@ body.bulk-mode .card{padding-left:48px}
     transition:transform .24s cubic-bezier(.2,.8,.2,1),visibility .24s,opacity .15s;
     box-shadow:0 -12px 40px rgba(0,0,0,.25);
   }
+
   .alarm-popover.open{transform:translateY(0)}
   .alarm-popover-head{position:relative;padding:20px 18px 12px;font-size:12px}
   .alarm-popover-head::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:36px;height:4px;border-radius:2px;background:var(--border)}
@@ -1417,6 +1425,10 @@ body.bulk-mode .card{padding-left:48px}
   .toast{padding:12px 14px}
 
   .icon-picker button{width:48px;height:48px}
+}
+
+@media (max-width:380px){
+  .ws-pill #wsLabel{display:none}
 }
 
 @media (max-width:400px){
