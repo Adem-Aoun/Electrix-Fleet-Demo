@@ -167,7 +167,7 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   position:sticky;top:0;z-index:20;min-height:var(--header-h);
 }
 .brand{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-width:0}
-.brand-name{font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--content);white-space:nowrap}
+.brand-name{font-size:18px;font-weight:800;letter-spacing:.3px;color:var(--content);white-space:nowrap}
 .brand-fleet{color:var(--accent)}
 .search{flex:1;min-width:140px;max-width:340px}
 .search input{
@@ -1167,6 +1167,7 @@ body.bulk-mode .card{padding-left:48px}
   .sites-aside{display:none!important}
   .nav-rail{display:none}
   .brand{grid-area:brand;gap:5px;min-width:0}
+  .brand-name{font-size:16px}
   #helpBtn{display:none}
   #paletteBtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:7px}
   #paletteBtn .lucide{width:17px;height:17px}
@@ -1191,7 +1192,7 @@ body.bulk-mode .card{padding-left:48px}
   .search input{padding:11px 12px;font-size:16px}
   .header-right .btn span{display:none}
   .header-right .btn{padding:8px}
-  #devModeBtn,#themeBtn,#logoutBtn,#mobileMenuBtn{display:none}
+  #devModeBtn,#themeBtn,#logoutBtn{display:none}
 
   .alarm-pill{padding:6px 9px;gap:5px}
   .alarm-pill .lbl{display:none}

@@ -228,7 +228,13 @@ function renderPaletteResults(close) {
   ).join('');
   refreshIcons(list);
   list.querySelectorAll('.palette-item').forEach(el => {
-    el.addEventListener('mouseenter', () => { state.paletteSel = +el.dataset.idx; renderPaletteResults(close); });
+    el.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      const index = +el.dataset.idx;
+      if (state.paletteSel === index) return;
+      state.paletteSel = index;
+      list.querySelectorAll('.palette-item').forEach(item => item.classList.toggle('sel', +item.dataset.idx === index));
+    });
     el.addEventListener('click', () => { const it = items[+el.dataset.idx]; close(); it.run(); });
   });
 }
