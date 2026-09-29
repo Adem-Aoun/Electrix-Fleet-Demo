@@ -24,154 +24,150 @@ function renderAnnunciator() {
     </div>`;
   }).join('')}</div>`;
 }
-function wrow({ lead='', label='', sub='', meta='', value='', valueClass='', act='', isLast=false }) {
-  const subHtml = sub ? ` <span class="wsub">· ${sub}</span>` : '';
-  return `<div class="wrow" style="${isLast ? 'border-bottom:none;' : ''}">
-    ${lead}
-    <span class="wl">${label}${subHtml}</span>
-    ${meta ? `<span class="wm">${meta}</span>` : ''}
-    ${value ? `<span class="wv ${valueClass}">${value}</span>` : ''}
-    ${act}
-  </div>`;
-}
 const widgetEmpty = msg => `<div class="widget-empty">${esc(msg)}</div>`;
 
-const WIDGET_DEFS = {
-  fleet_status: { title:'Fleet Status', icon:'server', render: () => {
-    const online = DEVICES.filter(d => deriveStatus(d) === 'online').length;
-    const warn = DEVICES.filter(d => deriveStatus(d) === 'warn').length;
-    const alarm = DEVICES.filter(d => deriveStatus(d) === 'alarm').length;
-    const offline = DEVICES.filter(d => deriveStatus(d) === 'offline').length;
-    return `<div class="widget-big-num">${DEVICES.length}<span class="suffix">devices</span></div>
-      <div class="widget-stat-grid">
-        <div class="widget-stat ok"><span class="n">${online}</span><span class="l">online</span></div>
-        <div class="widget-stat alarm"><span class="n">${alarm}</span><span class="l">alarm</span></div>
-        ${warn ? `<div class="widget-stat warn"><span class="n">${warn}</span><span class="l">warn</span></div>` : ''}
-        <div class="widget-stat offline"><span class="n">${offline}</span><span class="l">off</span></div>
-      </div>`;
-  }},
-  active_alarms: { title:'Active Alarms', icon:'alert-triangle', render: () => {
-    const list = activeAlarms().slice(0, 4);
-    if (!list.length) return widgetEmpty('No active alarms');
-    return list.map((a, i) =>
-      wrow({
-        lead: `<span class="wchip sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">${a.priority}</span>`,
-        label: esc(a.msg),
-        act: a.state === 'UNACK_ALARM' ? `<span class="wdot alarm" title="unacknowledged" style="margin-left:auto;"></span>` : '',
-        isLast: i === list.length - 1,
-      })
-    ).join('') + `<div style="margin-top:12px;"><button class="btn sm" data-nav="#/alarms" style="width:100%;">${icon('arrow-right')}View all</button></div>`;
-  }},
-  quick_controls: { title:'Quick Controls', icon:'sliders-horizontal', render: () => {
-    const relays = [];
-    DEVICES.forEach(d => { if (d.lwt !== 'online') return; d.capabilities.forEach(c => { if (c.kind === 'relay' && c.online) relays.push({ d, c }); }); });
-    if (!relays.length) return widgetEmpty('No controllable relays online');
-    const shown = relays.slice(0, 5);
-    return shown.map(({ d, c }, i) =>
-      wrow({
-        label: esc(c.label),
-        sub: esc(d.name),
-        act: `<button class="toggle ${c.value ? 'on' : ''} ${c.pending ? 'pending' : ''}" data-toggle-device="${d.device_id}" data-toggle-cap="${c.id}" ${can('toggle') ? '' : 'disabled'} aria-pressed="${c.value}" style="margin-left:auto;"></button>`,
-        isLast: i === shown.length - 1,
-      })
-    ).join('');
-  }},
-  recent_activity: { title:'Recent Activity', icon:'history', render: () => {
-    const list = ACTIVITY.slice(0, 5);
-    if (!list.length) return widgetEmpty('No recent activity');
-    return list.map((a, i) => wrow({ label: esc(a.text), meta: fmtAgo(a.t), isLast: i === list.length - 1 })).join('');
-  }},
-  site_overview: { title:'Site Overview', icon:'map', render: () => {
-    if (!SITES.length) return widgetEmpty('No sites configured');
-    return SITES.map((s, i) => {
-      const n = DEVICES.filter(d => d.site_id === s.id).length;
-      const alarms = DEVICES.filter(d => d.site_id === s.id && deviceHasAlarm(d)).length;
-      const offline = DEVICES.filter(d => d.site_id === s.id && d.lwt === 'offline').length;
-      const parts = [`${n} dev`];
-      if (alarms) parts.push(`<span style="color:var(--alarm)">${alarms} alarm</span>`);
-      if (offline) parts.push(`<span style="color:var(--warn)">${offline} off</span>`);
-      return `<div class="wrow" data-nav="#/devices/${s.id}" style="cursor:pointer;${i === SITES.length - 1 ? 'border-bottom:none;' : ''}">
-        <span class="wl">${esc(s.name)}</span>
-        <span class="wm">${parts.join(' · ')}</span>
-      </div>`;
-    }).join('');
-  }},
-};
-
 function renderDashboard(main) {
-  const mobile = isMobile();
-  const reorderMode = state.widgetReorderMode;
-  main.innerHTML = `
-    <div class="main-head">
-      <h1>Overview</h1>
-      <div class="main-head-actions">
-        <span class="count">${mobile ? (reorderMode ? 'Use arrows to reorder' : 'Tap a widget to drill in') : 'Drag to reorder'}</span>
-        ${mobile ? `<button class="btn sm ${reorderMode ? 'active' : ''}" id="reorderToggle" aria-pressed="${reorderMode}">
-          ${icon(reorderMode ? 'check' : 'arrow-up-down')}<span>${reorderMode ? 'Done' : 'Reorder'}</span>
-        </button>` : ''}
-      </div>
-    </div>
-    ${renderAnnunciator()}
-    <div class="widget-grid" id="widgetGrid"></div>`;
-  const grid = $('#widgetGrid');
-  const total = state.widgetLayout.length;
-  state.widgetLayout.forEach((id, idx) => {
-    const def = WIDGET_DEFS[id]; if (!def) return;
-    const el = document.createElement('div');
-    el.className = 'widget';
-    el.draggable = !mobile && !reorderMode;
-    el.dataset.widgetId = id;
-    const headRight = reorderMode
-      ? `<div class="widget-move">
-          <button class="move-btn" data-move-up="${esc(id)}" ${idx === 0 ? 'disabled' : ''} aria-label="Move ${esc(def.title)} up" title="Move up">${icon('chevron-up')}</button>
-          <button class="move-btn" data-move-down="${esc(id)}" ${idx === total - 1 ? 'disabled' : ''} aria-label="Move ${esc(def.title)} down" title="Move down">${icon('chevron-down')}</button>
-        </div>`
-      : (!mobile ? `<span class="drag-handle" title="Drag to reorder">${icon('grip-vertical')}</span>` : '');
-    el.innerHTML = `<div class="widget-head">
-        <h3>${icon(def.icon || 'square')}<span>${esc(def.title)}</span></h3>
-        ${headRight}
-      </div>
-      <div class="widget-body">${def.render()}</div>`;
-    grid.appendChild(el);
+  const counts = { online:0, warn:0, offline:0 };
+  DEVICES.forEach(device => {
+    if (device.lwt === 'offline') counts.offline++;
+    else counts[deriveStatus(device)]++;
   });
-  refreshIcons(grid);
-  if (!mobile && !reorderMode) wireWidgetDrag(grid);
-  const rt = $('#reorderToggle');
-  if (rt) rt.addEventListener('click', () => {
-    state.widgetReorderMode = !state.widgetReorderMode;
-    renderDashboard(main);
+
+  const alarms = activeAlarms();
+  const alarmDeviceIds = new Set(alarms.map(alarm => alarm.device_id));
+  const attentionDevices = DEVICES.filter(device =>
+    alarmDeviceIds.has(device.device_id) || ['warn','offline'].includes(deriveStatus(device))
+  );
+  const attention = alarms.slice(0, 4).map(alarm => {
+    const device = deviceById(alarm.device_id);
+    return {
+      id: device?.device_id || alarm.id,
+      title: device?.name || alarm.msg,
+      detail: alarm.msg,
+      site: device ? siteName(device.site_id) : '',
+      status: alarm.priority,
+      age: alarm.type === 'device_offline' && device
+        ? fmtAgo(device.last_seen_s)
+        : alarm.since > 0 ? fmtAgo(alarm.since) : 'Duration unknown',
+      route: device ? `#/device/${device.device_id}` : '#/alarms',
+      alarm,
+    };
   });
-}
-function wireWidgetDrag(grid) {
-  let dragSrc = null;
-  grid.querySelectorAll('.widget').forEach(w => {
-    w.addEventListener('dragstart', e => { dragSrc = w; e.dataTransfer.effectAllowed = 'move'; });
-    w.addEventListener('dragover', e => { e.preventDefault(); if (w !== dragSrc) w.classList.add('drag-over'); });
-    w.addEventListener('dragleave', () => w.classList.remove('drag-over'));
-    w.addEventListener('drop', e => {
-      e.preventDefault(); w.classList.remove('drag-over');
-      if (!dragSrc || w === dragSrc) return;
-      const from = state.widgetLayout.indexOf(dragSrc.dataset.widgetId);
-      const to = state.widgetLayout.indexOf(w.dataset.widgetId);
-      state.widgetLayout.splice(to, 0, state.widgetLayout.splice(from, 1)[0]);
-      lsSet('electrix_widget_layout', state.widgetLayout);
-      renderDashboard($('#mainContent'));
+  DEVICES.filter(device =>
+    ['warn','offline'].includes(deriveStatus(device)) && !alarmDeviceIds.has(device.device_id)
+  ).forEach(device => attention.push({
+    id: device.device_id,
+    title: device.name,
+    detail: device.lwt === 'offline' ? `Offline · last seen ${fmtAgo(device.last_seen_s)}` : `Heartbeat overdue · last seen ${fmtAgo(device.last_seen_s)}`,
+    site: siteName(device.site_id),
+    status: deriveStatus(device),
+    age: fmtAgo(device.last_seen_s),
+    route: `#/device/${device.device_id}`,
+  }));
+
+  const siteRows = SITES.map(site => {
+    const devices = DEVICES.filter(device => device.site_id === site.id);
+    const siteCounts = { online:0, warn:0, alarm:0, offline:0 };
+    devices.forEach(device => {
+      if (device.lwt === 'offline') siteCounts.offline++;
+      else siteCounts[deriveStatus(device)]++;
     });
-  });
-}
-function moveWidget(id, dir) {
-  const idx = state.widgetLayout.indexOf(id);
-  if (idx < 0) return;
-  const to = dir === 'up' ? idx - 1 : idx + 1;
-  if (to < 0 || to >= state.widgetLayout.length) return;
-  state.widgetLayout.splice(to, 0, state.widgetLayout.splice(idx, 1)[0]);
-  lsSet('electrix_widget_layout', state.widgetLayout);
-  audit('widget.move', id, dir);
-  const main = $('#mainContent');
-  renderDashboard(main);
-  requestAnimationFrame(() => {
-    const sel = dir === 'up' ? `[data-move-up="${id}"]` : `[data-move-down="${id}"]`;
-    const btn = document.querySelector(sel);
-    if (btn) btn.focus();
-  });
+    return `<button class="overview-site" data-nav="#/devices/${site.id}">
+      <span class="overview-site-head"><span class="overview-site-name">${esc(site.name)}</span><span class="overview-site-count">${devices.length} ${devices.length === 1 ? 'device' : 'devices'}</span></span>
+      <span class="overview-site-status">
+        ${siteCounts.online ? `<span class="status-ok">${siteCounts.online} online</span>` : ''}
+        ${siteCounts.warn ? `<span class="status-warn">${siteCounts.warn} warning</span>` : ''}
+        ${siteCounts.alarm ? `<span class="status-alarm">${siteCounts.alarm} alarm</span>` : ''}
+        ${siteCounts.offline ? `<span class="status-offline">${siteCounts.offline} offline</span>` : ''}
+      </span>
+      <span class="overview-site-arrow">${icon('arrow-up-right')}</span>
+    </button>`;
+  }).join('');
+
+  const relays = DEVICES.flatMap(device => device.lwt === 'online'
+    ? device.capabilities.filter(capability => capability.kind === 'relay' && capability.online).map(capability => ({ device, capability }))
+    : []
+  ).slice(0, 4);
+  const activity = ACTIVITY.slice(0, 4);
+
+  main.innerHTML = `
+    <div class="overview-dashboard">
+      <header class="overview-heading">
+        <div>
+          <div class="overview-eyebrow">FLEET COMMAND</div>
+          <h1>Overview</h1>
+          <p>Current health and the issues that need your attention.</p>
+        </div>
+        <button class="btn sm overview-all-devices" data-nav="#/devices">${icon('layout-grid')}All devices</button>
+      </header>
+
+      <section class="overview-health" aria-label="Fleet health">
+        <div class="overview-health-intro">
+          <span class="overview-health-label">Fleet health</span>
+          <strong>${DEVICES.length}<span> devices</span></strong>
+          <span class="overview-health-caption">${counts.online} online · ${attentionDevices.length} need attention</span>
+        </div>
+        <div class="overview-health-metrics">
+          <div class="overview-metric metric-online"><span class="overview-metric-dot"></span><span class="overview-metric-value">${counts.online}</span><span class="overview-metric-label">Online</span></div>
+          <div class="overview-metric metric-warning"><span class="overview-metric-dot"></span><span class="overview-metric-value">${counts.warn}</span><span class="overview-metric-label">Warning</span></div>
+          <div class="overview-metric metric-offline"><span class="overview-metric-dot"></span><span class="overview-metric-value">${counts.offline}</span><span class="overview-metric-label">Offline</span></div>
+          <button class="overview-metric metric-alarms" data-nav="#/alarms"><span class="overview-metric-dot"></span><span class="overview-metric-value">${alarms.length}</span><span class="overview-metric-label">Active alarms</span></button>
+        </div>
+      </section>
+
+      <div class="overview-primary-grid">
+        <section class="overview-panel overview-attention-panel">
+          <div class="overview-section-heading">
+            <div><span class="overview-section-kicker">PRIORITY</span><h2>Needs attention</h2></div>
+            <span class="overview-section-count ${attention.length ? 'has-issues' : ''}">${attention.length}</span>
+          </div>
+          ${attention.length ? `<div class="overview-attention-list">${attention.slice(0, 5).map(item => `
+            <article class="overview-attention-item">
+              <span class="overview-attention-icon ${item.status === 'critical' ? 'tone-critical' : ['high','medium','alarm','offline'].includes(item.status) ? 'tone-alarm' : 'tone-warning'}">${icon(item.status === 'offline' ? 'wifi-off' : item.status === 'warn' ? 'clock-3' : 'alert-triangle')}</span>
+              <div class="overview-attention-copy">
+                <div class="overview-attention-title">${esc(item.title)}</div>
+                <div class="overview-attention-detail">${esc(item.detail)}</div>
+                <div class="overview-attention-meta">${esc(item.site)}<span>·</span>${esc(item.age)}</div>
+              </div>
+              <div class="overview-attention-actions">
+                ${item.alarm?.state === 'UNACK_ALARM' && can('ack') ? `<button class="btn sm" data-alarm-ack="${esc(item.alarm.id)}">Acknowledge</button>` : ''}
+                <button class="btn sm overview-open-action" data-nav="${esc(item.route)}">${icon('arrow-up-right')}<span>Open</span></button>
+              </div>
+            </article>`).join('')}</div>${attention.length > 5 ? `<div class="overview-more-issues">+ ${attention.length - 5} more affected ${attention.length - 5 === 1 ? 'device' : 'devices'} <button data-nav="#/devices">View all devices</button></div>` : ''}` : `<div class="overview-clear-state">${icon('circle-check')}<div><strong>All clear</strong><span>No active alarms or devices needing attention.</span></div></div>`}
+          <button class="overview-section-link" data-nav="#/alarms">View alarm center ${icon('arrow-right')}</button>
+        </section>
+
+        <section class="overview-panel overview-sites-panel">
+          <div class="overview-section-heading">
+            <div><span class="overview-section-kicker">LOCATIONS</span><h2>Sites</h2></div>
+            <span class="overview-section-count">${SITES.length}</span>
+          </div>
+          <div class="overview-sites-list">${siteRows || widgetEmpty('No sites configured')}</div>
+        </section>
+      </div>
+
+      <div class="overview-secondary-grid">
+        <section class="overview-panel">
+          <div class="overview-section-heading">
+            <div><span class="overview-section-kicker">FLEET LOG</span><h2>Recent activity</h2></div>
+          </div>
+          ${activity.length ? `<div class="overview-activity-list">${activity.map((entry, index) => `
+            <div class="overview-activity-item"><span class="overview-activity-marker ${index === 0 ? 'latest' : ''}"></span><span class="overview-activity-text">${esc(entry.text)}</span><time>${esc(fmtAgo(entry.t))}</time></div>`).join('')}</div>` : widgetEmpty('No recent activity')}
+        </section>
+        <section class="overview-panel">
+          <div class="overview-section-heading">
+            <div><span class="overview-section-kicker">AT A GLANCE</span><h2>Quick controls</h2></div>
+            <span class="overview-section-note">${relays.length} available</span>
+          </div>
+          ${relays.length ? `<div class="overview-controls-list">${relays.map(({ device, capability }) => `
+            <div class="overview-control">
+              <span class="overview-control-icon">${icon('power')}</span>
+              <span class="overview-control-copy"><strong>${esc(capability.label)}</strong><small>${esc(device.name)}</small></span>
+              <button class="toggle ${capability.value ? 'on' : ''} ${capability.pending ? 'pending' : ''}" data-toggle-device="${device.device_id}" data-toggle-cap="${capability.id}" ${can('toggle') ? '' : 'disabled'} aria-label="${capability.value ? 'Turn off' : 'Turn on'} ${esc(capability.label)}" aria-pressed="${capability.value}"></button>
+            </div>`).join('')}</div>` : widgetEmpty('No controllable relays online')}
+        </section>
+      </div>
+      <footer class="overview-footer">${icon('radio-tower')}Demo fleet data · refreshes as device state changes</footer>
+    </div>`;
+  refreshIcons(main);
 }

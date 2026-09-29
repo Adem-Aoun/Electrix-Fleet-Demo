@@ -77,10 +77,6 @@ document.addEventListener('click', e => {
 
   if (t.closest('#railToggle')) { toggleSidebar(); return; }
 
-  const mup = t.closest('[data-move-up]');
-  if (mup && !mup.disabled) { e.preventDefault(); moveWidget(mup.dataset.moveUp, 'up'); return; }
-  const mdn = t.closest('[data-move-down]');
-  if (mdn && !mdn.disabled) { e.preventDefault(); moveWidget(mdn.dataset.moveDown, 'down'); return; }
   const tab = t.closest('[data-devtab]');
   if (tab) {
     e.preventDefault();
