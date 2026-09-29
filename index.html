@@ -1025,9 +1025,9 @@ body.bulk-mode .card{padding-left:48px}
 
   /* FIX: mobile widget-grid align-items start; prevents widget bodies from
      being vertically stretched by the grid. */
-  .widget-grid{grid-template-columns:1fr;gap:12px;align-items:start}
-  .widget{min-height:0;padding:14px 14px 12px;border-radius:10px;align-self:start;height:auto}
-  .widget-body{flex:0 1 auto;justify-content:flex-start}
+  .widget-grid{grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+  .widget{min-height:0;padding:14px 14px 12px;border-radius:10px;align-self:start;height:auto;min-width:0;overflow:hidden}
+  .widget-body{flex:0 1 auto;justify-content:flex-start;width:100%;min-width:0;overflow:hidden}
   .widget-head{min-height:36px;margin-bottom:10px}
   .widget-head h3{font-size:10.5px;letter-spacing:.4px}
   .widget-head h3 .lucide{width:13px;height:13px}
@@ -1044,15 +1044,15 @@ body.bulk-mode .card{padding-left:48px}
   .wrow .wm{font-size:10.5px}
   .widget-empty{min-height:56px;font-size:12px}
 
-  .annunciator{grid-template-columns:repeat(2,1fr);gap:6px;padding:8px;border-radius:10px}
+  .annunciator{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px;border-radius:10px}
   .ann-tile{height:66px;padding:9px 10px;border-radius:6px;gap:4px}
   .ann-tile .ann-label{font-size:9.5px;gap:4px}
   .ann-tile .ann-label .lucide{width:11px;height:11px}
   .ann-tile .ann-count{font-size:19px}
 
-  .grid{grid-template-columns:1fr;gap:10px}
-  .tele-grid{grid-template-columns:1fr;gap:10px}
-  .dev-grid{grid-template-columns:1fr}
+  .grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .tele-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .dev-grid{grid-template-columns:minmax(0,1fr)}
   .card{padding:14px 14px 12px 17px}
   .card:hover{box-shadow:none}
   .fav-btn{top:8px;right:8px;width:36px;height:36px}
