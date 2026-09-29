@@ -28,7 +28,6 @@
   --header-h:56px;
   --widget-radius:10px;
   --widget-pad:16px;
-  /* Sidebar — expanded by default on desktop, collapsed becomes --rail-collapsed */
   --rail-expanded:240px;
   --rail-collapsed:64px;
 }
@@ -71,13 +70,14 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
 .icon-picker .lucide{width:18px;height:18px}
 .fav-btn .lucide{width:13px;height:13px}
 .rail-toggle .lucide{width:18px;height:18px}
+.alarm-pill .lucide{width:14px;height:14px}
 
 .shell{display:none;min-height:100dvh;flex-direction:row}
 .shell.active{display:flex}
 @supports not (min-height:100dvh){.shell{min-height:100vh}}
 
 /* ═══════════════════════════════════════════════════════════════════
-   NAV RAIL — collapsible
+   NAV RAIL — expandable / collapsible
    ═══════════════════════════════════════════════════════════════════ */
 .nav-rail{
   width:var(--rail-expanded);
@@ -90,22 +90,31 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   scrollbar-width:thin;
 }
 @supports not (height:100dvh){.nav-rail{height:100vh}}
+.nav-rail.collapsed{width:var(--rail-collapsed);padding-left:8px;padding-right:8px;align-items:stretch}
 
-/* Collapsed rail */
-.nav-rail.collapsed{width:var(--rail-collapsed);padding-left:10px;padding-right:10px}
-
-/* Rail brand header — a row with brand + toggle */
 .rail-head{
   display:flex;align-items:center;gap:10px;
-  padding:0 4px 20px 4px;
-  min-height:44px;
-  border-bottom:1px solid transparent;
-  margin-bottom:8px;
+  padding:0 4px 20px 4px;min-height:44px;
 }
-.nav-rail.collapsed .rail-head{
-  justify-content:center;
-  padding:0 0 20px 0;
+.nav-rail.collapsed .rail-head{justify-content:center;padding:0 0 20px 0}
+
+.rail-title{
+  font-weight:800;font-size:12.5px;letter-spacing:1.2px;
+  flex:1;min-width:0;overflow:hidden;white-space:nowrap;
+  color:var(--content);
 }
+.rail-title .accent{color:var(--accent)}
+.nav-rail.collapsed .rail-title{display:none}
+
+.rail-toggle{
+  width:32px;height:32px;border-radius:6px;border:1px solid transparent;
+  background:transparent;color:var(--content-faint);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.rail-toggle:hover{background:var(--surface);color:var(--content);border-color:var(--border)}
+.rail-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nav-rail.collapsed .rail-toggle{display:none}
 
 .nav-brand{
   width:38px;height:38px;border-radius:9px;background:var(--accent);color:var(--accent-fg);
@@ -114,25 +123,6 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
 }
 .nav-brand .lucide{width:20px;height:20px;stroke-width:2.2}
 
-.rail-title{
-  font-weight:800;font-size:12.5px;letter-spacing:1.2px;
-  color:var(--content);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  min-width:0;flex:1;
-}
-.rail-title .accent{color:var(--accent)}
-.nav-rail.collapsed .rail-title{display:none}
-
-.rail-toggle{
-  width:32px;height:32px;border-radius:6px;border:1px solid transparent;
-  background:transparent;color:var(--content-faint);cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
-  flex-shrink:0;transition:background .12s,color .12s,border-color .12s;
-}
-.rail-toggle:hover{background:var(--surface);color:var(--content);border-color:var(--border)}
-.rail-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.nav-rail.collapsed .rail-toggle{display:none}
-
-/* Nav buttons — with labels in expanded mode */
 .navbtn{
   width:100%;min-height:44px;border-radius:8px;
   display:flex;align-items:center;gap:12px;
@@ -142,33 +132,30 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   border:none;background:none;flex-shrink:0;
   transition:color .12s,background .12s;
   font-size:13px;font-weight:500;
-  white-space:nowrap;
-}
-.navbtn .navbtn-label{
-  overflow:hidden;text-overflow:ellipsis;flex:1;
-  transition:opacity .15s;
+  white-space:nowrap;text-align:left;
 }
 .navbtn:hover{background:var(--surface);color:var(--content)}
 .navbtn.active{background:var(--accent);color:var(--accent-fg);font-weight:600}
-.navbtn.active:hover{background:var(--accent)}
 .navbtn .lucide{flex-shrink:0}
+.navbtn-label{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.nav-rail.collapsed .navbtn{
+  width:44px;padding:0;justify-content:center;margin-left:auto;margin-right:auto;
+}
+.nav-rail.collapsed .navbtn-label{display:none}
+
 .navbtn .badge{
   background:var(--alarm);color:#fff;font-size:9px;font-weight:700;
   min-width:18px;height:18px;border-radius:9px;
-  display:flex;align-items:center;justify-content:center;
-  padding:0 5px;margin-left:auto;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;padding:0 5px;
+  flex-shrink:0;
 }
-.nav-rail.collapsed .navbtn{
-  justify-content:center;padding:0;width:44px;margin-left:auto;margin-right:auto;
-}
-.nav-rail.collapsed .navbtn-label{display:none}
 .nav-rail.collapsed .navbtn .badge{
-  position:absolute;top:2px;right:2px;min-width:16px;height:16px;
-  font-size:9px;padding:0 3px;margin:0;
+  position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;
+  font-size:9px;padding:0 3px;
   border:2px solid var(--bg-deep);
 }
 
-.navspacer{flex:1;min-height:16px}
+.navspacer{flex:1;min-height:12px}
 
 .user-chip{
   width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--accent-fg);
@@ -178,11 +165,12 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
 .user-chip:hover{border-color:var(--content-faint)}
 
 .nav-user{
-  display:flex;align-items:center;gap:10px;padding:8px 4px;border-top:1px solid var(--border);margin-top:8px;
+  display:flex;align-items:center;gap:10px;padding:10px 4px 0;margin-top:8px;
+  border-top:1px solid var(--border);
 }
-.nav-rail.collapsed .nav-user{justify-content:center;padding:8px 0 0 0}
+.nav-rail.collapsed .nav-user{justify-content:center;padding:10px 0 0 0}
 .nav-user-meta{min-width:0;flex:1;overflow:hidden}
-.nav-user-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-user-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--content)}
 .nav-user-role{font-size:10.5px;color:var(--content-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-rail.collapsed .nav-user-meta{display:none}
 
@@ -197,17 +185,10 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
   padding:10px max(18px,var(--safe-left)) 10px max(18px,var(--safe-right));
   padding-top:calc(10px + var(--safe-top));
   background:var(--bg-deep);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:10;min-height:var(--header-h);
+  position:sticky;top:0;z-index:20;min-height:var(--header-h);
 }
-/* Header brand — no second bolt; identity lives in the rail */
-.brand{
-  display:flex;align-items:center;
-  padding-right:14px;border-right:1px solid var(--border);margin-right:4px;
-}
-.brand-word{
-  font-weight:800;font-size:13px;letter-spacing:1.4px;color:var(--content);
-  white-space:nowrap;
-}
+.brand{display:flex;align-items:center;padding-right:14px;border-right:1px solid var(--border);margin-right:4px}
+.brand-word{font-weight:800;font-size:13px;letter-spacing:1.4px;color:var(--content);white-space:nowrap}
 .brand-word .accent{color:var(--accent)}
 .view-title{font-weight:700;font-size:14.5px}
 .search{flex:1;min-width:140px;max-width:340px}
@@ -219,6 +200,75 @@ button,a,.card,.site-item,.ann-tile,.tab,.chip,.navbtn,.rail-toggle{-webkit-tap-
 .header-right{display:flex;align-items:center;gap:6px;margin-left:auto}
 .mobile-menu-btn{display:none}
 
+/* ═══════════════════════════════════════════════════════════════════
+   ALARM PILL + POPOVER
+   ═══════════════════════════════════════════════════════════════════ */
+.alarm-pill-wrap{position:relative;display:inline-flex}
+.alarm-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 11px;border-radius:20px;
+  background:color-mix(in srgb,var(--alarm) 12%,var(--surface));
+  border:1px solid color-mix(in srgb,var(--alarm) 45%,var(--border));
+  color:var(--alarm);font-size:12px;font-weight:600;
+  cursor:pointer;min-height:36px;
+  transition:background .12s,border-color .12s;
+}
+.alarm-pill:hover{background:color-mix(in srgb,var(--alarm) 18%,var(--surface))}
+.alarm-pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.alarm-pill.empty{display:none}
+.alarm-pill .count{
+  background:var(--alarm);color:#fff;font-size:11px;font-weight:700;
+  min-width:20px;height:20px;border-radius:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:0 6px;line-height:1;
+}
+.alarm-pill .lbl{font-size:11px;letter-spacing:.2px}
+
+.alarm-popover{
+  position:absolute;top:calc(100% + 8px);right:0;
+  width:380px;max-width:calc(100vw - 24px);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;
+  box-shadow:0 12px 40px rgba(0,0,0,.18);
+  z-index:60;overflow:hidden;
+  display:none;
+}
+.alarm-popover.open{display:block}
+.alarm-popover-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--content-faint);font-weight:600;
+}
+.alarm-popover-head .x{
+  background:none;border:none;color:var(--content-faint);
+  cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;
+}
+.alarm-popover-head .x:hover{color:var(--content);background:var(--surface-2)}
+.alarm-popover-list{max-height:340px;overflow-y:auto}
+.alarm-popover-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:12.5px;cursor:pointer;
+}
+.alarm-popover-row:hover{background:var(--surface-2)}
+.alarm-popover-row:last-child{border-bottom:none}
+.alarm-popover-row .msg{
+  font-weight:600;margin-bottom:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.alarm-popover-row .meta{
+  font-family:var(--mono);font-size:10.5px;color:var(--content-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.alarm-popover-foot{
+  padding:10px 14px;border-top:1px solid var(--border);
+  display:flex;justify-content:center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BREADCRUMBS / LAYOUT
+   ═══════════════════════════════════════════════════════════════════ */
 .breadcrumbs{
   display:flex;align-items:center;gap:6px;padding:8px max(18px,var(--safe-left)) 8px max(18px,var(--safe-right));
   font-size:12px;color:var(--content-faint);border-bottom:1px solid var(--border);background:var(--bg);
@@ -1094,6 +1144,9 @@ body.bulk-mode .card{padding-left:48px}
   .search input{padding:11px 12px;font-size:16px}
   .header-right .btn span{display:none}
   .header-right .btn{padding:10px}
+  .alarm-pill .lbl{display:none}
+  .alarm-pill{padding:6px 9px}
+  .alarm-popover{width:calc(100vw - 24px);right:-8px}
 
   main.main-content{
     padding:14px 14px;
@@ -1118,24 +1171,17 @@ body.bulk-mode .card{padding-left:48px}
   .dev-page-title .cap-icon{width:28px;height:28px;flex-shrink:0}
   .dev-page-title .fav-btn{width:32px;height:32px;flex-shrink:0}
   .dev-page-title .fav-btn .lucide{width:14px;height:14px}
-  .dev-page-sub{
-    font-size:11.5px;margin-top:6px;line-height:1.5;
-    display:flex;flex-wrap:wrap;align-items:center;gap:4px;
-  }
-  .dev-page-actions{
-    display:flex !important;flex-wrap:nowrap !important;
-    gap:6px;width:100%;margin:0;padding:0;
-  }
+  .dev-page-sub{font-size:11.5px;margin-top:6px;line-height:1.5;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+  .dev-page-actions{display:flex!important;flex-wrap:nowrap!important;gap:6px;width:100%;margin:0;padding:0}
   .dev-page-actions .btn{
-    flex:1 1 0 !important;min-width:0 !important;max-width:none !important;
-    width:auto !important;padding:8px 4px !important;font-size:11.5px !important;
+    flex:1 1 0!important;min-width:0!important;max-width:none!important;
+    width:auto!important;padding:8px 4px!important;font-size:11.5px!important;
     height:42px;min-height:42px;justify-content:center;gap:4px;overflow:hidden;
   }
   .dev-page-actions .btn .lucide{width:15px;height:15px;flex-shrink:0;margin-right:0}
   .dev-page-actions .btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block}
-
-  .tabs{margin:0 0 14px 0 !important;padding:0;position:relative;z-index:1;clear:both}
-  .tab{padding:10px 8px !important;font-size:12.5px !important;margin-right:6px !important;min-height:42px;gap:5px;flex-shrink:0}
+  .tabs{margin:0 0 14px 0!important;padding:0;position:relative;z-index:1;clear:both}
+  .tab{padding:10px 8px!important;font-size:12.5px!important;margin-right:6px!important;min-height:42px;gap:5px;flex-shrink:0}
   .tab .lucide{width:13px;height:13px;margin-right:0}
   .tab span{white-space:nowrap}
 
@@ -1313,7 +1359,7 @@ body.bulk-mode .card{padding-left:48px}
 </div>
 
 <div class="shell" id="shell">
-  <nav class="nav-rail" id="navRail" aria-label="Primary">
+  <nav class="nav-rail" id="navRail">
     <div class="rail-head">
       <div class="nav-brand" title="Electrix Command"><i data-lucide="zap"></i></div>
       <div class="rail-title">ELECTRIX <span class="accent">COMMAND</span></div>
@@ -1349,6 +1395,25 @@ body.bulk-mode .card{padding-left:48px}
       <div class="search" id="searchWrap"><input id="search" type="search" placeholder="Search devices, sites…" autocomplete="off" enterkeyhint="search"></div>
       <div class="header-right">
         <span class="ws-pill" id="wsPill"><span class="dot"></span><span id="wsLabel">connected</span></span>
+
+        <div class="alarm-pill-wrap">
+          <button class="alarm-pill empty" id="alarmPill" aria-haspopup="true" aria-expanded="false" aria-label="Unacknowledged alarms">
+            <i data-lucide="bell-ring"></i>
+            <span class="count">0</span>
+            <span class="lbl">unack</span>
+          </button>
+          <div class="alarm-popover" id="alarmPopover" role="dialog" aria-label="Unacknowledged alarms">
+            <div class="alarm-popover-head">
+              <span>Unacknowledged</span>
+              <button class="x" id="alarmPopoverClose" aria-label="Close">×</button>
+            </div>
+            <div class="alarm-popover-list" id="alarmPopoverList"></div>
+            <div class="alarm-popover-foot">
+              <button class="btn sm" data-nav="#/alarms">Open Alarms</button>
+            </div>
+          </div>
+        </div>
+
         <button class="btn icon" id="paletteBtn" title="Command palette"><i data-lucide="command"></i></button>
         <button class="btn icon" id="devModeBtn" title="Developer mode"><i data-lucide="code-2"></i></button>
         <button class="btn icon" id="helpBtn" title="Help"><i data-lucide="help-circle"></i></button>
@@ -1640,11 +1705,11 @@ let state = {
   sortBy: lsGet('electrix_sort', 'site'),
   search: '',
   devMode: lsGet('electrix_devmode', false),
+  sidebarCollapsed: lsGet('electrix_sidebar_collapsed', false),
   drawerDeviceId: null,
   openDeviceId: null,
   widgetLayout: lsGet('electrix_widget_layout', DEFAULT_LAYOUT.slice()),
   widgetReorderMode: false,
-  sidebarCollapsed: lsGet('electrix_sidebar', false),
   alarmFilter: 'active',
   alarmPriorityFilter: 'all',
   alarmTypeFilter: 'all',
@@ -1894,7 +1959,7 @@ function renderPaletteResults(close) {
 /* ═══════════════════════════════════════════════════════════════════
    SIDEBAR TOGGLE
    ═══════════════════════════════════════════════════════════════════ */
-function applySidebar() {
+function applySidebarState() {
   const rail = $('#navRail');
   if (!rail) return;
   const collapsed = !!state.sidebarCollapsed;
@@ -1910,20 +1975,59 @@ function applySidebar() {
 function toggleSidebar() {
   if (isMobile()) return;
   state.sidebarCollapsed = !state.sidebarCollapsed;
-  lsSet('electrix_sidebar', state.sidebarCollapsed);
+  lsSet('electrix_sidebar_collapsed', state.sidebarCollapsed);
   audit('sidebar.toggle', state.sidebarCollapsed ? 'collapsed' : 'expanded');
-  applySidebar();
+  applySidebarState();
 }
-/* Auto-collapse on narrow desktops, unless the person has an explicit stored choice */
-function autoCollapseForWidth() {
-  if (isMobile()) return;
-  const stored = localStorage.getItem('electrix_sidebar');
-  if (stored != null) return; // respect explicit choice
-  const shouldCollapse = window.innerWidth < 1100;
-  if (shouldCollapse !== state.sidebarCollapsed) {
-    state.sidebarCollapsed = shouldCollapse;
-    applySidebar();
+
+/* ═══════════════════════════════════════════════════════════════════
+   ALARM PILL + POPOVER
+   ═══════════════════════════════════════════════════════════════════ */
+function renderAlarmPill() {
+  const pill = $('#alarmPill');
+  const pop = $('#alarmPopover');
+  const list = $('#alarmPopoverList');
+  if (!pill) return;
+  const unack = activeAlarms().filter(a => a.state === 'UNACK_ALARM');
+  if (!unack.length) {
+    pill.classList.add('empty');
+    pill.setAttribute('aria-hidden', 'true');
+    if (pop) pop.classList.remove('open');
+    if (pill) pill.setAttribute('aria-expanded', 'false');
+    return;
   }
+  pill.classList.remove('empty');
+  pill.removeAttribute('aria-hidden');
+  const c = pill.querySelector('.count');
+  if (c) c.textContent = unack.length;
+  if (list) {
+    list.innerHTML = unack.slice(0, 5).map(a => {
+      const d = deviceById(a.device_id);
+      const sevCls = a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn';
+      return `<div class="alarm-popover-row" data-alarm-jump="${a.id}">
+        <span class="alarm-sev sev-${sevCls}" style="margin-top:0;">${a.priority}</span>
+        <div style="flex:1;min-width:0;">
+          <div class="msg">${esc(a.msg)}</div>
+          <div class="meta">${esc(d?.name || a.device_id)} · ${fmtSince(a.since)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  refreshIcons(pop);
+}
+function toggleAlarmPopover() {
+  const pill = $('#alarmPill');
+  const pop = $('#alarmPopover');
+  if (!pill || !pop || pill.classList.contains('empty')) return;
+  const open = !pop.classList.contains('open');
+  pop.classList.toggle('open', open);
+  pill.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeAlarmPopover() {
+  const pop = $('#alarmPopover');
+  const pill = $('#alarmPill');
+  if (pop) pop.classList.remove('open');
+  if (pill) pill.setAttribute('aria-expanded', 'false');
 }
 
 function attemptLogin() {
@@ -1954,8 +2058,7 @@ function enterApp() {
   if (roleEl) roleEl.textContent = ROLE_LABEL[state.user.role];
   $$('[data-route="#/settings"]').forEach(el => el.style.display = state.user.role === 'admin' ? '' : 'none');
   applyTheme(localStorage.getItem('electrix_theme') || null, false);
-  applySidebar();
-  autoCollapseForWidth();
+  applySidebarState();
   $('#devModeBtn').classList.toggle('active', state.devMode);
   if (state.devMode) openInspector(true);
   if (!location.hash || location.hash === '#') location.hash = '#/dashboard';
@@ -1981,6 +2084,7 @@ function applyRoute() {
   $('#sitesAside').style.display = devicesView ? '' : 'none';
   $('#searchWrap').style.display = devicesView ? '' : 'none';
   if (state.view !== 'dashboard') state.widgetReorderMode = false;
+  closeAlarmPopover();
   renderBreadcrumbs();
   renderAlarmBadge();
   renderMain();
@@ -2183,6 +2287,7 @@ function renderAlarmBadge() {
     b.textContent = n;
     b.style.display = n > 0 ? 'flex' : 'none';
   });
+  renderAlarmPill();
 }
 function updateBulkBar() {
   const bar = $('#bulkBar'); if (!bar) return;
@@ -3699,6 +3804,25 @@ document.addEventListener('click', e => {
   const t = e.target;
   const cp = t.closest('[data-copy]');
   if (cp) { e.preventDefault(); copyText(cp.dataset.copy); return; }
+
+  // Alarm pill / popover
+  const pill = t.closest('#alarmPill');
+  if (pill) { e.preventDefault(); toggleAlarmPopover(); return; }
+  if (t.closest('#alarmPopoverClose')) { closeAlarmPopover(); return; }
+  const jump = t.closest('[data-alarm-jump]');
+  if (jump) {
+    const a = ALARMS.find(x => x.id === jump.dataset.alarmJump);
+    if (a) { state.alarmTypeFilter = a.type; state.alarmFilter = 'active'; state.alarmPriorityFilter = 'all'; }
+    closeAlarmPopover();
+    nav('#/alarms');
+    return;
+  }
+  // Click outside the popover closes it
+  if (!t.closest('.alarm-pill-wrap')) closeAlarmPopover();
+
+  // Sidebar toggle
+  if (t.closest('#railToggle')) { toggleSidebar(); return; }
+
   const mup = t.closest('[data-move-up]');
   if (mup && !mup.disabled) { e.preventDefault(); moveWidget(mup.dataset.moveUp, 'up'); return; }
   const mdn = t.closest('[data-move-down]');
@@ -3913,7 +4037,6 @@ function boot() {
   $('#tiClose').addEventListener('click', () => toggleInspector(false));
   $('#tiClear').addEventListener('click', () => { TI_ROWS.length = 0; $('#tiBody').innerHTML = '<div class="ti-empty">No MQTT traffic yet.</div>'; $('#tiStats').textContent = '0 messages'; });
   window.addEventListener('hashchange', applyRoute);
-  window.addEventListener('resize', () => { autoCollapseForWidth(); });
   let tX = 0, tY = 0, tracking = false;
   document.addEventListener('touchstart', e => {
     if (!state.drawerDeviceId) return;
@@ -3933,11 +4056,11 @@ function boot() {
     const tag = (document.activeElement?.tagName || '').toLowerCase();
     const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement?.isContentEditable;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); return; }
-    // ⌘\ / Ctrl+\ — toggle sidebar (macOS HIG standard)
     if ((e.ctrlKey || e.metaKey) && (e.key === '\\' || e.code === 'Backslash')) { e.preventDefault(); toggleSidebar(); return; }
     if (typing) return;
     if (e.key === '?') { e.preventDefault(); openShortcuts(); return; }
     if (e.key === 'Escape') {
+      if ($('#alarmPopover')?.classList.contains('open')) { closeAlarmPopover(); return; }
       if (state.widgetReorderMode) { state.widgetReorderMode = false; renderMain(); return; }
       closeDrawer(); return;
     }
