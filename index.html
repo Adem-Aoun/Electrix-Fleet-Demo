@@ -6,16 +6,16 @@
 <meta name="theme-color" content="#14171C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Electrix Command">
+<meta name="apple-mobile-web-app-title" content="Electrix Panel">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Electrix Command">
-<meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
-<title>Electrix Command — Fleet</title>
+<meta name="application-name" content="Electrix Panel">
+<meta name="description" content="Electrix Panel — fleet control for MQTT-connected relay and sensor devices.">
+<title>Electrix Panel — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
 :root{
   --bg:#F4F5F7;--bg-deep:#E9EBEF;--surface:#FFF;--surface-2:#F7F8FA;
-  --border:#DCE0E6;--content:#14171C;--content-dim:#5B626D;--content-faint:#8B93A0;
+  --border:#DCE0E6;--content:#14171C;--content-dim:#5B626D;--content-faint:#626978;
   --accent:#B8791F;--accent-fg:#FFF;
   --ok:#1F9D55;--alarm:#D93B3B;--warn:#C98A1F;--info:#3B7DD9;--offline:#9AA1AC;
   --mono:'SF Mono','Cascadia Code','Roboto Mono',ui-monospace,Menlo,Consolas,monospace;
@@ -31,12 +31,12 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#14171C;--bg-deep:#0F1216;--surface:#1B1F26;--surface-2:#21262E;
-  --border:#2C323C;--content:#E6E9EF;--content-dim:#9AA1AC;--content-faint:#5B626D;
+  --border:#2C323C;--content:#E6E9EF;--content-dim:#9AA1AC;--content-faint:#838B9A;
   --accent:#E8A33D;--accent-fg:#14171C;--ok:#3DDC84;--alarm:#FF5C5C;--warn:#E8A33D;--info:#5FA8FF;--offline:#5B626D;
 }}
 :root[data-theme="dark"]{
   --bg:#14171C;--bg-deep:#0F1216;--surface:#1B1F26;--surface-2:#21262E;
-  --border:#2C323C;--content:#E6E9EF;--content-dim:#9AA1AC;--content-faint:#5B626D;
+  --border:#2C323C;--content:#E6E9EF;--content-dim:#9AA1AC;--content-faint:#838B9A;
   --accent:#E8A33D;--accent-fg:#14171C;--ok:#3DDC84;--alarm:#FF5C5C;--warn:#E8A33D;--info:#5FA8FF;--offline:#5B626D;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -183,8 +183,22 @@ main.main-content{
 .main-head h1{font-size:17px;margin:0;font-weight:700}
 .main-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .count{color:var(--content-dim);font-size:12px}
-.empty{text-align:center;padding:60px 20px;color:var(--content-faint);font-size:13px}
-.empty .cta{margin-top:12px}
+
+/* Unified empty state — richer treatment, matches .not-live visual language */
+.empty{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  text-align:center;padding:48px 20px;color:var(--content-faint);font-size:13px;
+}
+.empty.full{grid-column:1/-1}
+.empty .empty-icon{
+  width:48px;height:48px;border-radius:12px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;color:var(--content-dim);
+  border:1px solid var(--border);
+}
+.empty .empty-icon .lucide{width:22px;height:22px;stroke-width:1.7}
+.empty .empty-title{color:var(--content);font-weight:600;font-size:13.5px}
+.empty .empty-msg{max-width:340px;line-height:1.5}
+.empty .cta{margin-top:6px}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
@@ -1033,8 +1047,11 @@ body.bulk-mode .card{padding-left:48px}
     gap:12px;
     align-items:stretch;
   }
+  /* Mobile widget floor — §1 fix. Was min-height:0, which let widgets collapse
+     to their own content height in the single-column grid, causing visibly
+     mismatched heights across a dashboard of Fleet Status vs Recent Activity. */
   .widget{
-    min-height:0;
+    min-height:120px;
     padding:14px 14px 12px;
     border-radius:10px;
   }
@@ -1242,7 +1259,7 @@ body.bulk-mode .card{padding-left:48px}
   <div class="login-card">
     <div class="login-brand">
       <span class="mark"><i data-lucide="zap"></i></span>
-      ELECTRIX COMMAND
+      ELECTRIX PANEL
     </div>
     <div class="login-sub">Fleet control — sign in to continue</div>
     <div class="login-error" id="loginError">Invalid username or password.</div>
@@ -1260,12 +1277,12 @@ body.bulk-mode .card{padding-left:48px}
 
 <div class="shell" id="shell">
   <nav class="nav-rail">
-    <div class="nav-brand" title="Electrix Command"><i data-lucide="zap"></i></div>
+    <div class="nav-brand" title="Electrix Panel"><i data-lucide="zap"></i></div>
     <button class="navbtn" data-route="#/dashboard" title="Dashboard"><i data-lucide="layout-dashboard"></i></button>
     <button class="navbtn" data-route="#/devices" title="Devices"><i data-lucide="plug"></i></button>
     <button class="navbtn" data-route="#/telemetry" title="Telemetry"><i data-lucide="activity"></i></button>
     <button class="navbtn" data-route="#/alarms" title="Alarms"><i data-lucide="alert-triangle"></i><span class="badge" id="alarmBadge" style="display:none"></span></button>
-    <button class="navbtn" data-route="#/automation" title="Automation"><i data-lucide="zap"></i></button>
+    <button class="navbtn" data-route="#/automation" title="Automation"><i data-lucide="workflow"></i></button>
     <button class="navbtn" data-route="#/ota" title="OTA"><i data-lucide="upload-cloud"></i></button>
     <button class="navbtn" data-route="#/interlocks" title="Interlocks"><i data-lucide="link-2"></i></button>
     <button class="navbtn" data-route="#/settings" title="Settings"><i data-lucide="settings"></i></button>
@@ -1275,9 +1292,9 @@ body.bulk-mode .card{padding-left:48px}
 
   <div class="main-col">
     <header class="app-header">
-      <div class="brand" title="Electrix Command">
+      <div class="brand" title="Electrix Panel">
         <span class="brand-mark"><i data-lucide="zap"></i></span>
-        <span class="brand-name">ELECTRIX COMMAND</span>
+        <span class="brand-name">ELECTRIX PANEL</span>
       </div>
       <div class="view-title" id="viewTitle">Dashboard</div>
       <div class="search" id="searchWrap"><input id="search" type="search" placeholder="Search devices, sites…" autocomplete="off" enterkeyhint="search"></div>
@@ -1314,7 +1331,7 @@ body.bulk-mode .card{padding-left:48px}
     <button data-route="#/dashboard"><i data-lucide="layout-dashboard"></i><span class="bn-label">Home</span></button>
     <button data-route="#/devices"><i data-lucide="plug"></i><span class="bn-label">Devices</span></button>
     <button data-route="#/alarms"><i data-lucide="alert-triangle"></i><span class="bn-label">Alarms</span><span class="badge" id="alarmBadgeM" style="display:none"></span></button>
-    <button data-route="#/automation"><i data-lucide="zap"></i><span class="bn-label">Automate</span></button>
+    <button data-route="#/automation"><i data-lucide="workflow"></i><span class="bn-label">Automate</span></button>
     <button id="bottomMoreBtn"><i data-lucide="more-horizontal"></i><span class="bn-label">More</span></button>
   </div>
 </nav>
@@ -1355,16 +1372,14 @@ body.bulk-mode .card{padding-left:48px}
    ═══════════════════════════════════════════════════════════════════ */
 (function installPWA() {
   try {
-    // SVG icon — accent bolt on accent tile
     const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">` +
       `<rect width="192" height="192" rx="42" fill="#E8A33D"/>` +
       `<path d="M100 28 L58 108 L90 108 L90 164 L134 84 L102 84 Z" fill="#14171C"/></svg>`;
     const iconUrl = 'data:image/svg+xml,' + encodeURIComponent(iconSvg);
 
-    // Manifest
     const manifest = {
-      name: 'Electrix Command',
-      short_name: 'Electrix',
+      name: 'Electrix Panel',
+      short_name: 'Electrix Panel',
       description: 'Fleet control for MQTT-connected relay and sensor devices.',
       start_url: '.',
       scope: '.',
@@ -1386,7 +1401,6 @@ body.bulk-mode .card{padding-left:48px}
     manifestLink.href = manifestUrl;
     document.head.appendChild(manifestLink);
 
-    // Apple touch icon — iOS 16+ handles SVG, older falls back gracefully
     const apple = document.createElement('link');
     apple.rel = 'apple-touch-icon';
     apple.href = iconUrl;
@@ -1396,10 +1410,6 @@ body.bulk-mode .card{padding-left:48px}
     applePre.href = iconUrl;
     document.head.appendChild(applePre);
 
-    // Service worker — app-shell caching only, per §6
-    // Note: blob-URL service workers have limited scope on most browsers,
-    // so this is best-effort; a real deployment should ship /sw.js and
-    // register that instead.
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
       const swCode = [
         "const CACHE='electrix-shell-v1';",
@@ -1420,9 +1430,7 @@ body.bulk-mode .card{padding-left:48px}
       const swUrl = URL.createObjectURL(swBlob);
       navigator.serviceWorker.register(swUrl).catch(() => {});
     }
-  } catch (e) {
-    // PWA installability is non-essential — a failure here must not break the app
-  }
+  } catch (e) {}
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1445,6 +1453,16 @@ const fmtDateTime = ts => new Date(ts).toLocaleString('en-GB', { month:'short', 
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const icon = (name, cls = '') => `<i data-lucide="${esc(name)}"${cls ? ` class="${esc(cls)}"` : ''}></i>`;
 const isMobile = () => window.matchMedia('(max-width:820px)').matches;
+
+/* Unified empty-state helper — one visual language everywhere "nothing to show" appears */
+function emptyState({ icon: ic = 'inbox', title = 'Nothing to show', msg = '', cta = '', full = false } = {}) {
+  return `<div class="empty${full ? ' full' : ''}">
+    <div class="empty-icon">${icon(ic)}</div>
+    <div class="empty-title">${esc(title)}</div>
+    ${msg ? `<div class="empty-msg">${esc(msg)}</div>` : ''}
+    ${cta}
+  </div>`;
+}
 
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); toast('Copied', { msg: text.slice(0, 60), type:'info', timeout:1600 }); }
@@ -1604,7 +1622,7 @@ let state = {
   drawerDeviceId: null,
   openDeviceId: null,
   widgetLayout: lsGet('electrix_widget_layout', DEFAULT_LAYOUT.slice()),
-  widgetReorderMode: false,  // §6 — reorder toggle for touch
+  widgetReorderMode: false,
   alarmFilter: 'active',
   alarmPriorityFilter: 'all',
   alarmTypeFilter: 'all',
@@ -1637,7 +1655,16 @@ function toggleFavorite(id) {
 }
 
 const TOAST_ICON = { ok:'check-circle', error:'x-circle', warn:'alert-triangle', info:'info' };
-function toast(title, { msg = '', type = 'info', timeout = 3200 } = {}) {
+/* Toast severity-aware timeouts:
+   - error: manual dismiss only (timeout:0). A failed command needs to stay
+     on screen until the operator has actually read it.
+   - warn : 6s. Long enough to notice, short enough not to pile up.
+   - info/ok: 3.2s, the original default.
+   Explicit `timeout` overrides always win. */
+function toast(title, { msg = '', type = 'info', timeout } = {}) {
+  if (timeout === undefined) {
+    timeout = type === 'error' ? 0 : type === 'warn' ? 6000 : 3200;
+  }
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<div class="ti">${icon(TOAST_ICON[type] || 'info')}</div>
@@ -1790,7 +1817,7 @@ function openPalette() {
   const root = $('#paletteRoot');
   root.innerHTML = `<div class="palette-backdrop" id="paletteBackdrop">
     <div class="palette" role="dialog" aria-modal="true">
-      <input id="paletteInput" placeholder="Search Electrix Command…" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <input id="paletteInput" placeholder="Search Electrix Panel…" autocomplete="off" spellcheck="false" autocapitalize="off">
       <div class="palette-list" id="paletteList"></div>
     </div></div>`;
   const close = () => { root.innerHTML = ''; state.paletteOpen = false; };
@@ -1814,7 +1841,7 @@ function paletteItems() {
     { group:'Go to', icon:'plug',             label:'Devices',   run: () => location.hash = '#/devices' },
     { group:'Go to', icon:'activity',         label:'Telemetry', run: () => location.hash = '#/telemetry' },
     { group:'Go to', icon:'alert-triangle',   label:'Alarms',    run: () => location.hash = '#/alarms' },
-    { group:'Go to', icon:'zap',              label:'Automation',run: () => location.hash = '#/automation' },
+    { group:'Go to', icon:'workflow',         label:'Automation',run: () => location.hash = '#/automation' },
     { group:'Go to', icon:'upload-cloud',     label:'OTA',       run: () => location.hash = '#/ota' },
     { group:'Go to', icon:'link-2',           label:'Interlocks',run: () => location.hash = '#/interlocks' },
   ];
@@ -1896,11 +1923,10 @@ function applyRoute() {
     b.classList.toggle('active', r === target);
   });
   const titles = { dashboard:'Dashboard', devices:'Devices', device:'Device', telemetry:'Telemetry', alarms:'Alarms', automation:'Automation', ota:'Firmware / OTA', interlocks:'Interlocks', settings:'Settings' };
-  $('#viewTitle').textContent = titles[state.view] || 'Electrix Command';
+  $('#viewTitle').textContent = titles[state.view] || 'Electrix Panel';
   const devicesView = state.view === 'devices';
   $('#sitesAside').style.display = devicesView ? '' : 'none';
   $('#searchWrap').style.display = devicesView ? '' : 'none';
-  // Reorder mode exits when leaving dashboard
   if (state.view !== 'dashboard') state.widgetReorderMode = false;
   renderBreadcrumbs();
   renderAlarmBadge();
@@ -2042,14 +2068,14 @@ function sparkline(key, { width = 200, height = 24 } = {}) {
 }
 function lineChart(key, { height = 180, width = 640, windowMs = null } = {}) {
   const s = TELEMETRY[key];
-  if (!s || !s.history.length) return '<div class="empty">No telemetry yet.</div>';
+  if (!s || !s.history.length) return emptyState({ icon:'activity', title:'No telemetry yet', msg:'Waiting for the first publish.' });
   let data = s.history.slice(-140);
   if (windowMs) {
     const cutoff = Date.now() - windowMs;
     const filtered = data.filter(p => p.t >= cutoff);
     if (filtered.length >= 2) data = filtered;
   }
-  if (data.length < 2) return '<div class="empty">Not enough data in range.</div>';
+  if (data.length < 2) return emptyState({ icon:'activity', title:'Not enough data', msg:'Try a longer window.' });
   const vals = data.map(p => p.v);
   const lo = Math.min(...vals, s.threshold ?? Infinity);
   const hi = Math.max(...vals, s.threshold ?? -Infinity);
@@ -2254,7 +2280,6 @@ function renderDashboard(main) {
   });
   refreshIcons(grid);
   if (!mobile && !reorderMode) wireWidgetDrag(grid);
-  // Wire reorder toggle
   const rt = $('#reorderToggle');
   if (rt) rt.addEventListener('click', () => {
     state.widgetReorderMode = !state.widgetReorderMode;
@@ -2278,7 +2303,6 @@ function wireWidgetDrag(grid) {
     });
   });
 }
-/* Reorder per §6 — works everywhere, keyboard-accessible, no gesture conflict */
 function moveWidget(id, dir) {
   const idx = state.widgetLayout.indexOf(id);
   if (idx < 0) return;
@@ -2289,7 +2313,6 @@ function moveWidget(id, dir) {
   audit('widget.move', id, dir);
   const main = $('#mainContent');
   renderDashboard(main);
-  // Return focus to the same button after re-render, so keyboard users can chain moves
   requestAnimationFrame(() => {
     const sel = dir === 'up' ? `[data-move-up="${id}"]` : `[data-move-down="${id}"]`;
     const btn = document.querySelector(sel);
@@ -2363,7 +2386,12 @@ function renderDeviceGrid() {
   const list = visibleDevices();
   $('#mainCount').textContent = list.length + (list.length === 1 ? ' device' : ' devices');
   if (!list.length) {
-    grid.innerHTML = `<div class="empty">No devices match.<div class="cta"><button class="btn" data-nav="#/devices">Clear filter</button></div></div>`;
+    grid.innerHTML = emptyState({
+      icon: 'search',
+      title: 'No devices match',
+      msg: 'Try a different search term or clear the site filter.',
+      cta: `<div class="cta"><button class="btn" data-nav="#/devices">Clear filter</button></div>`,
+    });
     refreshIcons(grid); return;
   }
   grid.innerHTML = list.map(d => {
@@ -2412,7 +2440,10 @@ const DEVICE_TABS = [
 ];
 function renderDevicePage(main) {
   const d = deviceById(state.openDeviceId);
-  if (!d) { main.innerHTML = `<div class="empty">Device not found.<div class="cta"><button class="btn" data-nav="#/devices">Back</button></div></div>`; refreshIcons(main); return; }
+  if (!d) {
+    main.innerHTML = emptyState({ icon:'plug', title:'Device not found', cta:`<div class="cta"><button class="btn" data-nav="#/devices">Back</button></div>` });
+    refreshIcons(main); return;
+  }
   const st = deriveStatus(d), cls = statusClass(st);
   const editable = can('rename'), controllable = can('toggle');
   main.innerHTML = `
@@ -2481,7 +2512,7 @@ ${isRelay ? `<span class="k">cmd/set</span>: ${cmdTopic} <span class="qos-badge"
         ${devHtml}
       </div>${toggleHtml}
     </div>`;
-  }).join('') || '<div class="empty">No capabilities.</div>';
+  }).join('') || emptyState({ icon:'toggle-right', title:'No capabilities', msg:'This device has not advertised any.' });
   let identity = '';
   if (state.devMode) {
     const whoPayload = JSON.stringify({
@@ -2512,7 +2543,7 @@ ${esc(whoPayload)}</div>
 }
 function renderDevTelemetry(d) {
   const keys = Object.keys(TELEMETRY).filter(k => k.startsWith(d.device_id + '/'));
-  if (!keys.length) return `<div class="empty">No telemetry series.</div>`;
+  if (!keys.length) return emptyState({ icon:'activity', title:'No telemetry series', msg:'The device has not published any sensors.' });
   return keys.map(k => {
     const s = TELEMETRY[k], sensor = k.split('/')[1], last = s.history.at(-1)?.v;
     return `<div class="chart-wrap">
@@ -2542,14 +2573,14 @@ function renderDevCommands(d, { controllable }) {
         <button class="btn" data-cmd-set="${c.id}" data-cmd-val="on"  ${controllable && c.online && !block ? '' : 'disabled'}>${icon('power')}<span>ON</span></button>
         <button class="btn" data-cmd-set="${c.id}" data-cmd-val="off" ${controllable && c.online && !block ? '' : 'disabled'}>${icon('power-off')}<span>OFF</span></button>
       </div>`;
-    }).join('') : '<div class="empty">No actuators.</div>'}
+    }).join('') : emptyState({ icon:'power', title:'No actuators', msg:'Nothing controllable on this device.' })}
   </div>
   <div class="panel"><h4>${icon('history')}Command history</h4>
     ${cmds.length ? `<div class="log-view">${cmds.map(c => `<div class="log-row">
         <span class="ts">${fmtClock(c.ts)}</span>
         <span class="lv ${c.status === 'ok' ? 'info' : 'error'}">${c.status}</span>
         <span>cmd/${esc(c.actuator)}/set=${esc(String(c.value))}</span>
-      </div>`).join('')}</div>` : '<div class="empty">No commands yet.</div>'}
+      </div>`).join('')}</div>` : emptyState({ icon:'terminal', title:'No commands yet', msg:'Send one above to see history.' })}
   </div>`;
 }
 function renderDevConfig(d, { editable }) {
@@ -2578,16 +2609,17 @@ ${esc(JSON.stringify(c, null, 2))}</div>` : ''}
 }
 function renderDevEvents(d) {
   const events = ALARMS.filter(a => a.device_id === d.device_id);
+  if (!events.length) return `<div class="panel">${emptyState({ icon:'list', title:'No events', msg:'No alarms or threshold events have been raised.' })}</div>`;
   return `<div class="panel">
     <h4>${icon('list')}Event stream</h4>
-    ${events.length ? events.map(a => `<div class="alarm-item sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">
+    ${events.map(a => `<div class="alarm-item sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">
       <span class="alarm-sev sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">${a.priority}</span>
       <div class="alarm-body">
         <div class="alarm-msg">${esc(a.msg)}${a.latched ? '<span class="latch-tag">latched</span>' : ''}${isShelved(a) ? '<span class="shelve-tag">shelved</span>' : ''}<span class="state-chip st-${a.state === 'UNACK_ALARM' ? 'unack' : a.state === 'ACK_ALARM' ? 'ack' : 'rtn'}">${a.state}</span></div>
         <div class="alarm-meta">${esc(a.code)} · ${fmtSince(a.since)}</div>
         ${a.note ? `<div class="alarm-note">“${esc(a.note)}”</div>` : ''}
       </div>
-    </div>`).join('') : '<div class="empty">No events.</div>'}
+    </div>`).join('')}
   </div>`;
 }
 function renderDevDiagnostics(d) {
@@ -2648,7 +2680,10 @@ function renderTelemetry(main) {
   $('#teleWin').addEventListener('change', e => { state.teleWindow = e.target.value; renderMain(); });
   $('#teleExport').addEventListener('click', () => exportTelemetryCSV(keys, windowMs));
   const grid = $('#teleGrid');
-  if (!keys.length) { grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">No series match.</div>`; refreshIcons(grid); return; }
+  if (!keys.length) {
+    grid.innerHTML = emptyState({ icon:'activity', title:'No series match', msg:'Try a different device or sensor filter.', full:true });
+    refreshIcons(grid); return;
+  }
   grid.innerHTML = keys.map(k => {
     const s = TELEMETRY[k], [devId, sensor] = k.split('/'), d = deviceById(devId);
     const cutoff = Date.now() - windowMs;
@@ -2741,7 +2776,9 @@ function renderAlarmList() {
   if (state.alarmPriorityFilter !== 'all') list = list.filter(a => a.priority === state.alarmPriorityFilter);
   if (state.alarmTypeFilter !== 'all') list = list.filter(a => a.type === state.alarmTypeFilter);
   if (!list.length) {
-    el.innerHTML = `<div class="empty">${state.alarmFilter === 'active' ? 'No active alarms.' : 'Nothing here yet.'}</div>`;
+    el.innerHTML = state.alarmFilter === 'active'
+      ? emptyState({ icon:'check-circle', title:'No active alarms', msg:'All clear across the fleet.' })
+      : emptyState({ icon:'history', title:'Nothing here yet', msg:'No matching alarms in this category.' });
     return;
   }
   const canAct = can('ack') || can('clear');
@@ -2858,7 +2895,7 @@ function renderSchedules() {
             <button class="btn sm danger" data-sched-delete="${s.id}" ${canEdit ? '' : 'disabled'}>${icon('trash-2')}</button>
           </div>
         </div>`;
-      }).join('') : '<div class="empty">No schedules yet.</div>'}
+      }).join('') : emptyState({ icon:'clock', title:'No schedules yet', msg:'Add one to run actions at a fixed time.' })}
     </div>`;
 }
 function renderScenes() {
@@ -2893,7 +2930,7 @@ function renderScenes() {
             <button class="btn sm danger" data-scene-delete="${s.id}" ${canEdit ? '' : 'disabled'}>${icon('trash-2')}</button>
           </div>
         </div>`;
-      }).join('') : '<div class="empty">No scenes yet.</div>'}
+      }).join('') : emptyState({ icon:'wand-2', title:'No scenes yet', msg:'Group several actions into one tap.' })}
     </div>`;
 }
 async function runSchedule(s, { manual = false } = {}) {
@@ -3211,7 +3248,7 @@ function renderInterlocks(main) {
       <button class="btn primary" id="addRuleBtn" ${can('toggle') ? '' : 'disabled'}>${icon('plus')}New rule</button>
     </div>
     <div id="ruleList">
-      ${INTERLOCKS.length ? INTERLOCKS.map(renderRuleCard).join('') : '<div class="empty">No rules defined yet.</div>'}
+      ${INTERLOCKS.length ? INTERLOCKS.map(renderRuleCard).join('') : emptyState({ icon:'link-2', title:'No rules defined', msg:'Create one to guard a device against unsafe states.' })}
     </div>
     <div id="ruleEditorRoot"></div>`;
   refreshIcons(main);
@@ -3630,7 +3667,6 @@ document.addEventListener('click', e => {
   const t = e.target;
   const cp = t.closest('[data-copy]');
   if (cp) { e.preventDefault(); copyText(cp.dataset.copy); return; }
-  // Widget reorder — up/down buttons per §6
   const mup = t.closest('[data-move-up]');
   if (mup && !mup.disabled) { e.preventDefault(); moveWidget(mup.dataset.moveUp, 'up'); return; }
   const mdn = t.closest('[data-move-down]');
@@ -3735,13 +3771,29 @@ document.addEventListener('click', e => {
         d.capabilities.forEach(c => { if (c.kind === 'relay' && c.value !== want) targets.push({ d, c }); });
       });
       if (!targets.length) { toast('Nothing to change', { type:'info' }); return; }
+      // Bulk confirmation gate — §4. A targeted single-device action stays
+      // instant, but a wide blast (many devices or cross-site) deserves the
+      // same pause a factory-reset already gets.
+      const selectedIds = [...state.bulkSelected];
+      const sites = new Set(selectedIds.map(id => deviceById(id)?.site_id).filter(Boolean));
+      const needsConfirm = selectedIds.length > 3 || sites.size > 1;
       (async () => {
+        if (needsConfirm) {
+          const siteList = [...sites].map(s => siteName(s)).join(', ') || '—';
+          const ok = await confirmModal({
+            title: `Bulk turn ${action.toUpperCase()}?`,
+            message: `This will turn ${want ? 'ON' : 'OFF'} every matching relay on ${selectedIds.length} selected device${selectedIds.length === 1 ? '' : 's'} across ${sites.size} site${sites.size === 1 ? '' : 's'} (${siteList}). ${targets.length} relays will change.`,
+            confirmText: `Turn ${action.toUpperCase()}`,
+            danger: action === 'off',
+          });
+          if (!ok) return;
+        }
         let ok = 0, fail = 0;
         for (const { d, c } of targets) {
           const r = await executeAction(d.device_id, c.id, want);
           if (r.ok) ok++; else fail++;
         }
-        audit('bulk.' + action, [...state.bulkSelected].join(','), `${ok} ok, ${fail} failed`);
+        audit('bulk.' + action, selectedIds.join(','), `${ok} ok, ${fail} failed`);
         toast(`Bulk ${action}`, { msg:`${ok} applied${fail ? `, ${fail} blocked` : ''}`, type: fail ? 'warn' : 'ok' });
         renderMain();
       })();
