@@ -23,7 +23,7 @@ function renderDevCommands(d, { controllable }) {
   <div class="panel"><h4>${icon('history')}Activity</h4>
     ${cmds.length ? `<div class="log-view">${cmds.map(c => `<div class="log-row command-log-row">
         <span class="ts">${fmtClock(c.ts)}</span>
-        <span class="source-chip" title="${esc(c.source || 'system')}">${({ schedule:'[S]', scene:'[C]', interlock:'[I]', human:'[U]', system:'[Y]' })[c.source || 'system']}</span>
+        <span class="source-chip" title="${esc(c.source || 'system')}">${({ schedule:'[S]', scene:'[C]', interlock:'[A]', human:'[U]', system:'[Y]' })[c.source || 'system']}</span>
         <span class="lv ${c.status === 'ok' ? 'info' : 'error'}">${c.status}</span>
         <span>cmd/${esc(c.actuator)}/set=${esc(String(c.value))}</span>
       </div>`).join('')}</div>` : '<div class="empty">No commands yet.</div>'}

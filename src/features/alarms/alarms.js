@@ -11,7 +11,6 @@ function renderAlarms(main) {
       <div class="main-head-actions"><span class="count">${active.length} active${shelved.length ? ` · ${shelved.length} shelved` : ''}${state.alarmDeviceFilter ? ` · ${esc(deviceById(state.alarmDeviceFilter)?.name || state.alarmDeviceFilter)}` : ''}</span>
         ${state.alarmDeviceFilter ? `<button class="btn sm" data-clear-alarm-device>Clear device filter</button>` : ''}</div>
     </div>
-    ${renderAnnunciator()}
     <div class="filter-chips" id="alarmFilters">
       <button class="chip ${state.alarmFilter === 'active' ? 'active' : ''}" data-alarm-filter="active">${icon('alert-triangle')}Active <span class="n">${active.length}</span></button>
       <button class="chip ${state.alarmFilter === 'shelved' ? 'active' : ''}" data-alarm-filter="shelved">${icon('archive')}Shelved <span class="n">${shelved.length}</span></button>

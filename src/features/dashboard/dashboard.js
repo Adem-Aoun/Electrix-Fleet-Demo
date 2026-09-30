@@ -1,29 +1,5 @@
 'use strict';
 
-const ANN_TYPE_ICON = {
-  relay_stuck:'alert-octagon', low_battery:'battery-warning',
-  device_offline:'wifi-off', threshold:'trending-up',
-  over_temp:'thermometer-sun', water_leak:'droplets',
-};
-function renderAnnunciator() {
-  const types = {};
-  ALARMS.filter(a => !a.cleared).forEach(a => {
-    const t = types[a.type] ||= { count:0, unacked:0, priority:'low' };
-    t.count++;
-    if (a.state === 'UNACK_ALARM') t.unacked++;
-    if (priorityRank(a.priority) < priorityRank(t.priority)) t.priority = a.priority;
-  });
-  const known = ['relay_stuck','low_battery','device_offline','threshold','over_temp','water_leak'];
-  return `<div class="annunciator">${known.map(t => {
-    const info = types[t] || { count:0, unacked:0, priority:'low' };
-    const stateCls = info.count === 0 ? 'st-normal' : (info.priority === 'critical' ? 'st-critical' : 'st-warn');
-    const cls = [stateCls, state.alarmTypeFilter === t ? 'selected-type' : ''].filter(Boolean).join(' ');
-    return `<div class="ann-tile ${cls}" data-ann-type="${t}">
-      <div class="ann-label">${icon(ANN_TYPE_ICON[t] || 'alert-circle')}<span>${t.replace(/_/g,' ')}</span></div>
-      <div class="ann-count">${info.count}</div>
-    </div>`;
-  }).join('')}</div>`;
-}
 const widgetEmpty = msg => `<div class="widget-empty">${esc(msg)}</div>`;
 const deriveConnectivityStatus = device => {
   if (device.lwt === 'offline') return 'offline';

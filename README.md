@@ -14,7 +14,7 @@ src/
   core/                     Shared runtime, state, actions, events, lifecycle
   data/                     Demo fixtures
   features/                 Dashboard, devices, telemetry, alarms, automation,
-                            firmware, interlocks, and settings
+                            firmware, and settings
   services/                 Simulated MQTT transport
 ```
 

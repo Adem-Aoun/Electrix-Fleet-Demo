@@ -12,7 +12,7 @@
 <meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="src/styles.css?v=20260929.17">
+<link rel="stylesheet" href="src/styles.css?v=20260930.1">
 </head>
 <body>
 
@@ -49,7 +49,6 @@
     <button class="navbtn" data-route="#/alarms" title="Alarms"><i data-lucide="alert-triangle"></i><span class="navbtn-label">Alarms</span><span class="badge" id="alarmBadge" style="display:none"></span></button>
     <button class="navbtn" data-route="#/automation" title="Automation"><i data-lucide="zap"></i><span class="navbtn-label">Automation</span></button>
     <button class="navbtn" data-route="#/ota" title="Firmware / OTA"><i data-lucide="upload-cloud"></i><span class="navbtn-label">Firmware</span></button>
-    <button class="navbtn" data-route="#/interlocks" title="Interlocks"><i data-lucide="link-2"></i><span class="navbtn-label">Interlocks</span></button>
     <button class="navbtn" data-route="#/settings" title="Settings"><i data-lucide="settings"></i><span class="navbtn-label">Settings</span></button>
 
     <div class="navspacer"></div>
@@ -133,7 +132,10 @@
   <span class="bb-count"><span class="mono" id="bulkCount">0</span> selected</span>
   <button class="btn sm" data-bulk="on"><i data-lucide="power"></i><span>On</span></button>
   <button class="btn sm" data-bulk="off"><i data-lucide="power-off"></i><span>Off</span></button>
-  <button class="btn sm" data-bulk="fav"><i data-lucide="star"></i><span>Fav</span></button>
+  <button class="btn sm" data-bulk="reboot"><i data-lucide="rotate-cw"></i><span>Reboot</span></button>
+  <button class="btn sm" data-bulk="fav"><i data-lucide="star"></i><span>Favorite</span></button>
+  <button class="btn sm" data-bulk="alarms"><i data-lucide="alert-triangle"></i><span>Alarms</span></button>
+  <button class="btn sm" data-bulk="export"><i data-lucide="download"></i><span>Export</span></button>
   <button class="btn sm danger" data-bulk="clear"><i data-lucide="x"></i><span>Clear</span></button>
   <button class="btn sm" data-bulk="exit"><span>Done</span></button>
 </div>
@@ -155,6 +157,6 @@
 <div id="paletteRoot"></div>
 
 
-<script src="src/main.js?v=20260929.17"></script>
+<script src="src/main.js?v=20260930.1"></script>
 </body>
 </html>

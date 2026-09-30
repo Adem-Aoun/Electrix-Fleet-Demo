@@ -7,8 +7,8 @@ async function toggleActuator(deviceId, actuatorId) {
   const block = isBlocked(deviceId, actuatorId);
   if (block) {
     const w = block.rule.when, condDev = deviceById(w.device_id);
-    toast('Interlock blocked', { msg:`${block.rule.name} — ${condDev?.name || w.device_id} is ${w.value}`, type:'error', timeout:5200 });
-    audit('interlock.block', `${deviceId}/${actuatorId}`, block.rule.id);
+    toast('Automation rule blocked', { msg:`${block.rule.name} — ${condDev?.name || w.device_id} is ${w.value}`, type:'error', timeout:5200 });
+    audit('automation.block', `${deviceId}/${actuatorId}`, block.rule.id);
     return;
   }
   if (!c.online || d.lwt !== 'online') { toast('Device offline', { type:'error' }); return; }

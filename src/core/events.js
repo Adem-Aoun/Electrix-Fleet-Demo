@@ -177,6 +177,34 @@ document.addEventListener('click', e => {
       toast('Favorites updated', { msg:`${state.bulkSelected.size} devices`, type:'ok' });
       renderMain(); return;
     }
+    if (action === 'alarms') {
+      const ids = [...state.bulkSelected];
+      const alarm = ALARMS.find(a => ids.includes(a.device_id) && !a.cleared);
+      if (alarm) { state.alarmFilter = 'active'; state.alarmDeviceFilter = alarm.device_id; nav(`#/alarms/${alarm.device_id}`); }
+      else toast('No active alarms', { type:'info' });
+      return;
+    }
+    if (action === 'export') {
+      const rows = [['device_id','name','site','status','last_seen_seconds'].join(',')];
+      state.bulkSelected.forEach(id => {
+        const d = deviceById(id); if (!d) return;
+        rows.push([d.device_id, d.name, siteName(d.site_id), deriveStatus(d), d.last_seen_s].map(v => `"${String(v).replaceAll('"','""')}"`).join(','));
+      });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([rows.join('\n')], { type:'text/csv' }));
+      link.download = `electrix-devices-${Date.now()}.csv`; link.click(); URL.revokeObjectURL(link.href);
+      toast('Devices exported', { msg:`${rows.length - 1} devices`, type:'ok' });
+      return;
+    }
+    if (action === 'reboot') {
+      if (!can('toggle')) { toast('Permission denied', { type:'error' }); return; }
+      const targets = [...state.bulkSelected].map(deviceById).filter(Boolean);
+      (async () => {
+        for (const d of targets) await rebootDevice(d);
+        toast('Reboot commands sent', { msg:`${targets.length} devices`, type:'ok' });
+      })();
+      return;
+    }
     if (action === 'on' || action === 'off') {
       const want = action === 'on';
       const targets = [];

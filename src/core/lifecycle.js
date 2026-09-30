@@ -111,7 +111,7 @@ function boot() {
     if (e.key === 'i' || e.key === 'I') { toggleInspector(); return; }
     if (e.key === 'g' || e.key === 'G') { gPrefix = true; clearTimeout(gTimer); gTimer = setTimeout(() => gPrefix = false, 900); return; }
     if (gPrefix) {
-      const map = { d:'#/dashboard', v:'#/devices', a:'#/alarms', t:'#/telemetry', u:'#/automation', o:'#/ota', i:'#/interlocks', s:'#/settings' };
+      const map = { d:'#/dashboard', v:'#/devices', a:'#/alarms', t:'#/telemetry', u:'#/automation', o:'#/ota', s:'#/settings' };
       const h = map[e.key.toLowerCase()];
       if (h) { e.preventDefault(); nav(h); gPrefix = false; clearTimeout(gTimer); }
     }

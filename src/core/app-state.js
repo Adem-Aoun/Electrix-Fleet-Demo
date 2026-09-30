@@ -102,7 +102,6 @@ function openMobileMoreSheet() {
   const items = [
     { icon:'activity',     label:'Telemetry',       route:'#/telemetry' },
     { icon:'upload-cloud', label:'Firmware / OTA',  route:'#/ota' },
-    { icon:'link-2',       label:'Interlocks',      route:'#/interlocks' },
   ];
   if (state.user?.role === 'admin') items.push({ icon:'settings', label:'Settings', route:'#/settings' });
   const rowStyle = 'display:flex;align-items:center;gap:14px;padding:14px 12px;border:none;background:none;width:100%;text-align:left;font-size:14px;color:var(--content);cursor:pointer;border-radius:8px;min-height:52px;';
@@ -197,7 +196,6 @@ function paletteItems() {
     { group:'Go to', icon:'alert-triangle',   label:'Alarms',    run: () => location.hash = '#/alarms' },
     { group:'Go to', icon:'zap',              label:'Automation',run: () => location.hash = '#/automation' },
     { group:'Go to', icon:'upload-cloud',     label:'OTA',       run: () => location.hash = '#/ota' },
-    { group:'Go to', icon:'link-2',           label:'Interlocks',run: () => location.hash = '#/interlocks' },
   ];
   if (state.user?.role === 'admin') items.push({ group:'Go to', icon:'settings', label:'Settings', run: () => location.hash = '#/settings' });
   items.push({ group:'Actions', icon:'panel-left-close', label:'Toggle sidebar', run: () => toggleSidebar() });
@@ -354,7 +352,7 @@ function applyRoute() {
     if (device && device.site_id === siteId) {
       state.view = 'device';
       state.openDeviceId = deviceId;
-      state.deviceTab = parts[4] === 'interlocks' ? 'overview' : parts[4] || 'overview';
+      state.deviceTab = parts[4] || 'overview';
       state.selectedSite = siteId;
     } else {
       state.view = 'devices';
@@ -365,11 +363,14 @@ function applyRoute() {
     if (state.view === 'devices') state.selectedSite = param || 'all';
     if (state.view === 'device')  {
       state.openDeviceId = param;
-      state.deviceTab = sub === 'interlocks' ? 'overview' : sub || 'overview';
-      if (sub === 'interlocks' && param) history.replaceState(null, '', `#/device/${encodeURIComponent(param)}/overview`);
+      state.deviceTab = sub || 'overview';
     }
   }
   if (state.view === 'alarms') state.alarmDeviceFilter = param || null;
+  if (state.view === 'interlocks') {
+    state.view = 'automation';
+    if (location.hash !== '#/automation') history.replaceState(null, '', '#/automation');
+  }
   if (state.view === 'settings' && state.user?.role !== 'admin') state.view = 'dashboard';
   const target = state.view === 'device' ? 'devices' : state.view;
   $$('.navbtn[data-route], .bottom-nav button[data-route]').forEach(b => {
@@ -409,7 +410,7 @@ function renderBreadcrumbs() {
       parts.push(`<span class="sep">/</span><span class="cur">${esc(d.name)}</span>`);
     }
   } else {
-    const label = { telemetry:'Telemetry', alarms:'Alarms', automation:'Automation', ota:'Firmware / OTA', interlocks:'Interlocks', settings:'Settings' }[state.view] || state.view;
+    const label = { telemetry:'Telemetry', alarms:'Alarms', automation:'Automation', ota:'Firmware / OTA', settings:'Settings' }[state.view] || state.view;
     parts.push(`<span class="sep">/</span><span class="cur">${esc(label)}</span>`);
   }
   bc.innerHTML = parts.join('');
@@ -573,7 +574,6 @@ function renderMain(isTick = false) {
   else if (state.view === 'alarms') renderAlarms(main);
   else if (state.view === 'automation') renderAutomation(main);
   else if (state.view === 'ota') renderOTA(main);
-  else if (state.view === 'interlocks') renderInterlocks(main);
   else if (state.view === 'settings') renderSettings(main);
   if (isTick) main.scrollTop = scrollTop;
   refreshIcons(main);

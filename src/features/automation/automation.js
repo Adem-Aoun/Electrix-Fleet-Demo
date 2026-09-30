@@ -68,6 +68,19 @@ function renderAutomation(main) {
     }));
   }
 }
+function renderDeviceAutomation(d) {
+  const schedules = SCHEDULES.filter(s => s.device_id === d.device_id);
+  const scenes = SCENES.filter(s => s.actions.some(a => a.device_id === d.device_id));
+  return `<div class="device-automation">
+    <div class="panel"><div class="panel-head"><h4>${icon('zap')}Automation for ${esc(d.name)}</h4><button class="btn sm primary" data-device-new-schedule="${d.device_id}" ${can('automate') ? '' : 'disabled'}>${icon('plus')}New timer</button></div>
+      <p class="device-automation-help">Rules, timers, and scenes that control this device.</p>
+      ${schedules.length ? schedules.map(s => `<div class="device-auto-row"><span class="status-dot ${s.enabled ? 'online' : 'offline'}"></span><div><strong>${esc(s.name)}</strong><small>${s.condition ? 'Condition' : 'Timer'} · ${esc(s.time)} · ${s.value ? 'turn on' : 'turn off'}</small></div><button class="btn sm" data-device-edit-schedule="${s.id}">${icon('pencil')}Edit</button></div>`).join('') : '<div class="empty">No timers for this device.</div>'}
+    </div>
+    <div class="panel"><div class="panel-head"><h4>${icon('wand-2')}Scenes</h4><button class="btn sm" data-nav="#/automation">Manage automation</button></div>
+      ${scenes.length ? scenes.map(s => `<div class="device-auto-row"><span class="status-dot ${s.enabled ? 'online' : 'offline'}"></span><div><strong>${esc(s.name)}</strong><small>Scene · ${s.actions.length} action${s.actions.length === 1 ? '' : 's'}</small></div></div>`).join('') : '<div class="empty">No scenes include this device.</div>'}
+    </div>
+  </div>`;
+}
 function renderSchedules() {
   const canEdit = can('automate');
   return `
@@ -85,11 +98,11 @@ function renderSchedules() {
           <div class="ac-body">
             <div class="ac-name">${icon('clock')}${esc(s.name)}</div>
             <div class="ac-detail">
-              <span class="kw">AT</span> <span class="v">${esc(s.time)}</span> · ${esc(daysStr)}<br>
+              <span class="kw">${s.condition ? 'IF' : 'AT'}</span> <span class="v">${s.condition ? `${esc(s.condition.deviceName || s.condition.device_id)}.${esc(s.condition.capability)} ${esc(s.condition.operator)} ${esc(String(s.condition.value))}` : esc(s.time)}</span> · ${esc(daysStr)}<br>
               <span class="kw">DO</span> ${esc(d?.name || s.device_id)}.<span class="v">${esc(c?.label || s.capability)}</span>
-              <span class="op">=</span> <span class="v">${s.value ? 'on' : 'off'}</span>
+              <span class="op">=</span> <span class="v">${s.value ? 'on' : 'off'}</span>${s.elseValue != null ? ` · ELSE ${s.elseValue ? 'on' : 'off'}` : ''}
             </div>
-            <div class="ac-meta">${s.last_run ? `last ${fmtAgo(Math.floor((Date.now() - s.last_run) / 1000))}` : 'never run'}</div>
+            <div class="ac-meta">Device: ${esc(d?.name || s.device_id)} · ${s.last_run ? `last ${fmtAgo(Math.floor((Date.now() - s.last_run) / 1000))}` : 'never run'}</div>
           </div>
           <div class="ac-actions">
             <button class="btn sm" data-sched-run="${s.id}" ${canEdit ? '' : 'disabled'}>${icon('play')}Run</button>
@@ -140,8 +153,19 @@ async function runSchedule(s, { manual = false } = {}) {
   const d = deviceById(s.device_id);
   const c = d?.capabilities.find(x => x.id === s.capability);
   if (!d || !c) { audit('schedule.fail', s.id, 'missing'); if (manual) toast('Cannot run', { type:'error' }); return; }
+  let actionValue = s.value;
+  if (s.condition) {
+    const conditionDevice = deviceById(s.condition.device_id);
+    const conditionCapability = conditionDevice?.capabilities.find(x => x.id === s.condition.capability);
+    const matches = conditionCapability && String(conditionCapability.value) === String(s.condition.value);
+    if (!matches && s.elseValue == null) {
+      if (manual) toast('Condition not met', { type:'info' });
+      return;
+    }
+    if (!matches) actionValue = s.elseValue;
+  }
   s.last_run = Date.now(); saveSchedules();
-  const r = await executeAction(s.device_id, s.capability, s.value, 'schedule');
+  const r = await executeAction(s.device_id, s.capability, actionValue, 'schedule');
   if (r.ok) {
     audit('schedule.run', s.id, `${d.name}/${c.label}`);
     ACTIVITY.unshift({ t:0, text:`schedule "${s.name}" ran` });
@@ -175,7 +199,7 @@ async function executeAction(device_id, capability_id, value, source = 'system')
   const d = deviceById(device_id); if (!d) return { ok:false, reason:'device not found' };
   const c = d.capabilities.find(x => x.id === capability_id); if (!c) return { ok:false, reason:'capability not found' };
   const block = isBlocked(device_id, capability_id);
-  if (block) return { ok:false, reason:'interlock: ' + block.rule.name };
+  if (block) return { ok:false, reason:'automation rule: ' + block.rule.name };
   if (d.lwt !== 'online') return { ok:false, reason:'device offline' };
   const requestId = uid();
   try {
@@ -191,24 +215,31 @@ async function executeAction(device_id, capability_id, value, source = 'system')
     return { ok:false, reason:e.message || 'ack timeout' };
   }
 }
-function openScheduleEditor(scheduleId = null) {
+function openScheduleEditor(scheduleId = null, deviceId = null) {
   const s = scheduleId ? SCHEDULES.find(x => x.id === scheduleId) : null;
   const allCaps = [];
-  DEVICES.forEach(d => d.capabilities.forEach(c => { if (c.kind === 'relay') allCaps.push({ d, c }); }));
+  DEVICES.filter(d => !deviceId || d.device_id === deviceId).forEach(d => d.capabilities.forEach(c => { if (c.kind === 'relay') allCaps.push({ d, c }); }));
   const capOptions = (selDev, selCap) =>
     allCaps.map(({ d, c }) => `<option value="${d.device_id}|${c.id}" ${d.device_id === selDev && c.id === selCap ? 'selected' : ''}>${esc(d.name)} · ${esc(c.label)}</option>`).join('');
   const days = s?.days || [1,2,3,4,5];
+  const condition = s?.condition || null;
   const root = $('#modalRoot');
   const wrap = document.createElement('div');
   wrap.className = 'modal-backdrop';
   wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true">
     <h3>${s ? 'Edit schedule' : 'New schedule'}</h3>
     <div class="m-row"><label class="field-label">Name</label><input type="text" id="schName" value="${esc(s?.name || '')}" placeholder="Garden pump off at night"></div>
-    <div class="m-row"><label class="field-label">When</label>
+    <div class="m-row"><label class="field-label">Trigger</label>
+      <select id="schTrigger"><option value="timer" ${condition ? '' : 'selected'}>Timer</option><option value="condition" ${condition ? 'selected' : ''}>When condition is true</option></select>
       <input type="time" id="schTime" value="${esc(s?.time || '22:00')}">
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;" id="schDays">
         ${DAYS.map((dn, i) => `<button type="button" class="d" data-day="${i}" style="font-size:11px;padding:6px 9px;border-radius:4px;background:${days.includes(i) ? 'var(--accent)' : 'var(--surface-2)'};color:${days.includes(i) ? 'var(--accent-fg)' : 'var(--content-faint)'};border:1px solid var(--border);cursor:pointer;min-width:40px;">${dn}</button>`).join('')}
       </div>
+    </div>
+    <div class="m-row" id="schConditionRow" style="${condition ? '' : 'display:none'}"><label class="field-label">If / else condition</label>
+      <select id="schCondition"><option value="">Choose a signal</option>${allCaps.map(({ d, c }) => `<option value="${d.device_id}|${c.id}" ${condition?.device_id === d.device_id && condition?.capability === c.id ? 'selected' : ''}>${esc(d.name)} · ${esc(c.label)}</option>`).join('')}</select>
+      <select id="schOperator"><option value="==" ${condition?.operator === '==' ? 'selected' : ''}>is</option><option value="!=" ${condition?.operator === '!=' ? 'selected' : ''}>is not</option></select>
+      <select id="schConditionValue"><option value="true" ${condition?.value === true ? 'selected' : ''}>ON</option><option value="false" ${condition?.value === false ? 'selected' : ''}>OFF</option></select>
     </div>
     <div class="m-row"><label class="field-label">Action</label>
       <select id="schDevice" style="margin-bottom:8px;">${capOptions(s?.device_id, s?.capability)}</select>
@@ -216,6 +247,7 @@ function openScheduleEditor(scheduleId = null) {
         <option value="true" ${s?.value === true ? 'selected' : ''}>Turn ON</option>
         <option value="false" ${s?.value === false ? 'selected' : ''}>Turn OFF</option>
       </select>
+      <select id="schElseValue" style="margin-top:8px;"><option value="">No ELSE action</option><option value="true" ${s?.elseValue === true ? 'selected' : ''}>ELSE turn ON</option><option value="false" ${s?.elseValue === false ? 'selected' : ''}>ELSE turn OFF</option></select>
     </div>
     <div class="btn-row">
       <button class="btn" data-act="cancel">Cancel</button>
@@ -225,6 +257,9 @@ function openScheduleEditor(scheduleId = null) {
   root.appendChild(wrap);
   refreshIcons(wrap);
   const selectedDays = new Set(days);
+  const trigger = wrap.querySelector('#schTrigger');
+  const conditionRow = wrap.querySelector('#schConditionRow');
+  trigger.addEventListener('change', () => { conditionRow.style.display = trigger.value === 'condition' ? '' : 'none'; });
   wrap.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => {
     const i = parseInt(b.dataset.day, 10);
     if (selectedDays.has(i)) selectedDays.delete(i); else selectedDays.add(i);
@@ -242,7 +277,9 @@ function openScheduleEditor(scheduleId = null) {
     if (!time) { toast('Time required', { type:'error' }); return; }
     const [devId, capId] = wrap.querySelector('#schDevice').value.split('|');
     const val = wrap.querySelector('#schValue').value === 'true';
-    const payload = { name, time, days:[...selectedDays].sort(), device_id:devId, capability:capId, value:val, enabled:s?.enabled ?? true, last_run:s?.last_run ?? null };
+    const conditionKey = wrap.querySelector('#schCondition').value;
+    const conditionDevice = DEVICES.find(d => d.device_id === conditionKey?.split('|')[0]);
+    const payload = { name, time, days:[...selectedDays].sort(), device_id:devId, capability:capId, value:val, elseValue:wrap.querySelector('#schElseValue').value === '' ? null : wrap.querySelector('#schElseValue').value === 'true', condition:trigger.value === 'condition' && conditionKey ? { device_id:conditionDevice.device_id, deviceName:conditionDevice.name, capability:conditionKey.split('|')[1], operator:wrap.querySelector('#schOperator').value, value:wrap.querySelector('#schConditionValue').value === 'true' } : null, enabled:s?.enabled ?? true, last_run:s?.last_run ?? null };
     if (s) { Object.assign(s, payload); audit('schedule.edit', s.id, name); }
     else { SCHEDULES.push({ id:uid(), ...payload }); audit('schedule.create', name); }
     saveSchedules();
