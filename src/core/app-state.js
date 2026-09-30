@@ -203,7 +203,13 @@ function paletteItems() {
   items.push({ group:'Actions', icon:'code-2',   label:'Toggle developer mode', run: () => $('#devModeBtn').click() });
   items.push({ group:'Actions', icon:'terminal', label:'Toggle topic inspector', run: () => toggleInspector() });
   items.push({ group:'Actions', icon:'log-out',  label:'Sign out', run: () => logout() });
-  SCHEDULES.forEach(s => items.push({ group:'Schedules', icon:'clock', label:s.name, meta:s.time, run: () => location.hash = '#/automation' }));
+  LADDER_RULES.forEach(task => items.push({
+  group: 'Automation tasks',
+  icon: 'git-branch',
+  label: task.name,
+  meta: `${task.rungs.length} rung${task.rungs.length === 1 ? '' : 's'}`,
+  run: () => location.hash = '#/automation',
+}));
   SCENES.forEach(s => items.push({ group:'Scenes', icon:s.icon && !/[^\x00-\x7F]/.test(s.icon) ? s.icon : 'sparkles', label:s.name, meta:`${s.actions.length} actions`, run: () => runScene(s) }));
   SITES.forEach(s => items.push({ group:'Sites', icon:'map-pin', label:s.name, meta:s.id, run: () => location.hash = `#/devices/${s.id}` }));
   DEVICES.forEach(d => items.push({ group:isFavorite(d.device_id) ? '★ Favorites' : 'Devices', icon:'plug', label:d.name, meta:d.device_id, run: () => location.hash = deviceRoute(d.device_id) }));
@@ -416,7 +422,7 @@ function renderBreadcrumbs() {
   bc.innerHTML = parts.join('');
 }
 
-let tickCount = 0, lastScheduleMinute = -1, telemetryPointerActive = false;
+let tickCount = 0, telemetryPointerActive = false;
 function deviceFreshnessTextColor(d) {
   const heartbeat = d.config.heartbeat_period_ms / 1000;
   if (d.lwt === 'offline' || d.last_seen_s > heartbeat * 3) return 'var(--alarm)';
@@ -460,30 +466,18 @@ function startTick() {
         if (s.history.length > 240) s.history.shift();
       });
     }
-    try { tickSchedules(); } catch {}
+    tickLadderRules();
     if (tickCount % 2 === 0) { try { tickInterlocks(); } catch {} }
     if (tickCount % 2 === 0) {
       const ae = document.activeElement;
       const inForm = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT');
       const selectingTelemetry = (state.view === 'telemetry' || (state.view === 'device' && state.deviceTab === 'telemetry')) && telemetryPointerActive;
-      if (!inForm && !selectingTelemetry) renderMain(true);
+      const viewingAutomation = state.view === 'automation' || (state.view === 'device' && state.deviceTab === 'automation');
+      if (viewingAutomation) refreshLadderIndicators();
+      else if (!inForm && !selectingTelemetry) renderMain(true);
     }
   }, 1000);
 }
-function tickSchedules() {
-  const now = new Date();
-  const minute = now.getHours() * 60 + now.getMinutes();
-  if (minute === lastScheduleMinute) return;
-  lastScheduleMinute = minute;
-  const day = now.getDay();
-  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  SCHEDULES.forEach(s => {
-    if (!s.enabled || !s.days.includes(day) || s.time !== timeStr) return;
-    if (s.last_run && Date.now() - s.last_run < 60_000) return;
-    runSchedule(s);
-  });
-}
-
 const siteName = id => SITES.find(s => s.id === id)?.name || id;
 const deviceById = id => DEVICES.find(d => d.device_id === id);
 const priorityRank = p => ({ critical:0, high:1, medium:2, low:3 })[p] ?? 9;

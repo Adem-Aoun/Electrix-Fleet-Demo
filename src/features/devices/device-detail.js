@@ -1,94 +1,106 @@
 'use strict';
 
-const COMMAND_HISTORY = [];
-function renderDevCommands(d, { controllable }) {
-  const cmds = COMMAND_HISTORY.filter(c => c.device_id === d.device_id);
-  const relays = d.capabilities.filter(c => c.kind === 'relay');
-  return `<div class="panel" style="margin-bottom:14px">
-    <h4>${icon('send')}Send command</h4>
-    ${relays.length ? relays.map(c => {
-      const block = isBlocked(d.device_id, c.id);
-      return `<div class="cap-row">
-        <div class="cap-icon">${icon('power')}</div>
-        <div class="cap-info">
-          <div style="font-weight:600;font-size:13px;">${esc(c.label)}</div>
-          <div class="cap-id mono">${c.id} · ${c.online ? 'online' : 'offline'}</div>
-          ${block ? `<div style="font-size:10.5px;color:var(--alarm);margin-top:3px;">${icon('ban')} blocked: ${esc(block.rule.name)}</div>` : ''}
-        </div>
-        <button class="btn" data-cmd-set="${c.id}" data-cmd-val="on"  ${controllable && c.online && !block ? '' : 'disabled'}>${icon('power')}<span>ON</span></button>
-        <button class="btn" data-cmd-set="${c.id}" data-cmd-val="off" ${controllable && c.online && !block ? '' : 'disabled'}>${icon('power-off')}<span>OFF</span></button>
-      </div>`;
-    }).join('') : '<div class="empty">No actuators.</div>'}
-  </div>
-  <div class="panel"><h4>${icon('history')}Activity</h4>
-    ${cmds.length ? `<div class="log-view">${cmds.map(c => `<div class="log-row command-log-row">
-        <span class="ts">${fmtClock(c.ts)}</span>
-        <span class="source-chip" title="${esc(c.source || 'system')}">${({ schedule:'[S]', scene:'[C]', interlock:'[A]', human:'[U]', system:'[Y]' })[c.source || 'system']}</span>
-        <span class="lv ${c.status === 'ok' ? 'info' : 'error'}">${c.status}</span>
-        <span>cmd/${esc(c.actuator)}/set=${esc(String(c.value))}</span>
-      </div>`).join('')}</div>` : '<div class="empty">No commands yet.</div>'}
-  </div>`;
+function renderDevices(main) {
+  renderSitesAside();
+  main.innerHTML = `
+    <div class="main-head">
+      <h1 id="mainTitle">${state.selectedSite === 'all' ? 'All sites' : esc(siteName(state.selectedSite))}</h1>
+      <div class="main-head-actions">
+        <span class="count" id="mainCount"></span>
+        ${isMobile() ? `<button class="btn sm" id="mobileSiteFilter">${icon('filter')}<span>Sites</span></button>` : ''}
+        <button class="btn sm" id="deviceViewToggle">${state.deviceView === 'grid' ? icon('list') + 'List' : icon('grid-2x2') + 'Grid'}</button>
+        <button class="btn sm ${state.bulkMode ? 'active' : ''}" id="bulkToggle">${state.bulkMode ? 'Done' : 'Select'}</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>`;
+  renderDeviceGrid();
+  $('#bulkToggle').addEventListener('click', () => {
+    state.bulkMode = !state.bulkMode;
+    if (!state.bulkMode) state.bulkSelected.clear();
+    renderMain();
+  });
+  $('#deviceViewToggle').addEventListener('click', () => { state.deviceView = state.deviceView === 'grid' ? 'list' : 'grid'; renderMain(); });
+  const msf = $('#mobileSiteFilter'); if (msf) msf.addEventListener('click', openMobileSiteSheet);
 }
-function renderDevConfig(d, { editable }) {
-  const c = d.config, dis = editable ? '' : 'disabled';
-  const defaults = CONFIG_DEFAULTS[d.device_type] || {};
-  const fields = [
-    { key:'sensor_publish_period_ms', name:'Sensor publish period', step:'100', unit:'ms', type:'number' },
-    { key:'heartbeat_period_ms', name:'Heartbeat period', step:'1000', unit:'ms', type:'number' },
-    { key:'feature_agg_telemetry_enabled', name:'Aggregated telemetry', type:'checkbox' },
-    { key:'feature_threshold_events_enabled', name:'Threshold events', type:'checkbox' },
-  ];
-  const rows = fields.map(field => {
-    const value = c[field.key], defaultValue = defaults[field.key];
-    const changed = defaultValue !== undefined && value !== defaultValue;
-    const control = field.type === 'checkbox'
-      ? `<span class="config-diff-value"><input type="checkbox" data-cfg="${field.key}" ${value ? 'checked' : ''} ${dis}><span class="mono">${String(value)}</span></span>`
-      : `<span class="config-diff-value"><input type="number" data-cfg="${field.key}" value="${esc(String(value))}" step="${field.step}" ${dis} inputmode="numeric"><span class="unit">${field.unit}</span></span>`;
-    return `<div class="config-diff-row ${changed ? 'changed' : ''}">
-      <span class="config-diff-name">${esc(field.name)}</span>
-      <div class="config-diff-editor">${control}${changed ? `<span class="config-diff-default">· default <span class="mono">${esc(String(defaultValue))}${field.unit || ''}</span></span>` : ''}</div>
+
+function renderSitesAside() {
+  const list = $('#siteList'); if (!list) return;
+  const counts = {};
+  DEVICES.forEach(d => counts[d.site_id] = (counts[d.site_id] || 0) + 1);
+  const row = (id, name, count) =>
+    `<button class="site-item ${state.selectedSite === id ? 'selected' : ''}" data-site="${id}">
+      <span>${esc(name)}</span><span class="site-count">${count}</span></button>`;
+  list.innerHTML = row('all','All sites',DEVICES.length) + SITES.map(s => row(s.id, s.name, counts[s.id] || 0)).join('');
+  list.querySelectorAll('.site-item').forEach(el => el.addEventListener('click', () => {
+    state.selectedSite = el.dataset.site;
+    nav(el.dataset.site === 'all' ? '#/devices' : `#/devices/${el.dataset.site}`);
+  }));
+  const sel = $('#sortSel'); if (sel) sel.value = state.sortBy;
+}
+
+function visibleDevices() {
+  let list = DEVICES.slice();
+  if (state.selectedSite !== 'all') list = list.filter(d => d.site_id === state.selectedSite);
+  if (state.search.trim()) {
+    const q = state.search.trim().toLowerCase();
+    list = list.filter(d =>
+      d.name.toLowerCase().includes(q) ||
+      d.device_id.toLowerCase().includes(q) ||
+      siteName(d.site_id).toLowerCase().includes(q) ||
+      d.capabilities.some(c => c.label.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+    );
+  }
+  const rank = { alarm:0, warn:1, online:2, offline:3 };
+  list.sort((a, b) => {
+    if (state.sortBy === 'favorite') {
+      const fav = (isFavorite(b.device_id) ? 1 : 0) - (isFavorite(a.device_id) ? 1 : 0);
+      if (fav) return fav;
+    }
+    switch (state.sortBy) {
+      case 'name': return a.name.localeCompare(b.name);
+      case 'status': return (rank[deriveStatus(a)] ?? 9) - (rank[deriveStatus(b)] ?? 9) || a.name.localeCompare(b.name);
+      case 'last_seen': return a.last_seen_s - b.last_seen_s;
+      default: return siteName(a.site_id).localeCompare(siteName(b.site_id)) || a.name.localeCompare(b.name);
+    }
+  });
+  return list;
+}
+
+function renderDeviceGrid() {
+  const grid = $('#grid'); if (!grid) return;
+  const list = visibleDevices();
+  $('#mainCount').textContent = list.length + (list.length === 1 ? ' device' : ' devices');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">No devices match.<div class="cta"><button class="btn" data-nav="#/devices">Clear filter</button></div></div>`;
+    refreshIcons(grid); return;
+  }
+  grid.classList.toggle('list-view', state.deviceView === 'list');
+  grid.innerHTML = list.map(d => {
+    const st = deriveStatus(d), cls = statusClass(st);
+    const displayStatus = d.lwt === 'offline' ? 'offline' : st === 'alarm' ? 'warn' : st;
+    const alarms = ALARMS.filter(a => a.device_id === d.device_id && !a.cleared);
+    const selected = state.bulkSelected.has(d.device_id);
+    return `<div class="card ${cls} ${selected ? 'selected' : ''}" data-device="${d.device_id}">
+      <div class="sel-check" data-sel-device="${d.device_id}">${icon('check')}</div>
+      <div class="card-top">
+        <div style="min-width:0;flex:1;display:flex;gap:9px;align-items:flex-start;">
+          <span class="cap-icon" style="width:28px;height:28px;background:var(--surface-2);">${icon(deviceTypeIcon(d.device_type))}</span>
+          <div style="min-width:0;">
+            <div class="card-name">${esc(d.name)}</div>
+            <div class="card-site">${esc(siteName(d.site_id))}</div>
+          </div>
+        </div>
+        <div class="card-right">
+          <span class="device-status status-${displayStatus === 'warn' ? 'warn' : displayStatus}">${displayStatus === 'warn' ? 'Warning' : displayStatus === 'offline' ? 'Offline' : 'Online'}</span>
+        </div>
+      </div>
+      ${alarms.length ? `<div class="card-alarm-row"><span class="alarm-label ${alarms.some(a => a.priority === 'critical') ? 'critical' : ''}">${alarms.length} alarm${alarms.length === 1 ? '' : 's'}</span><button class="card-alarm-action" data-nav="#/alarms/${d.device_id}">View alarm${alarms.length === 1 ? '' : 's'} ${icon('arrow-up-right')}</button></div>` : ''}
+      <div class="card-meta">
+        <span class="mono card-id">${d.device_id}</span>
+        <span>${st === 'offline' ? 'offline ' + fmtAgo(d.last_seen_s) : 'seen ' + fmtAgo(d.last_seen_s)}</span>
+      </div>
+      <span class="card-open">Open device ${icon('arrow-up-right')}</span>
     </div>`;
   }).join('');
-  return `<div class="panel">
-    <h4>${icon('settings-2')}config/set</h4>
-    <div class="config-form">
-      ${rows}
-      ${editable ? `<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn primary" data-act="save-config">${icon('save')}Save</button><button class="btn" data-act="load-config">${icon('refresh-cw')}Reload</button></div>`
-        : `<div class="perm-note">${icon('lock')}<span>Sign in as operator or admin to edit config.</span></div>`}
-    </div>
-    ${state.devMode ? `<h4 style="margin-top:16px">${icon('file-code')}config/current</h4>
-      <div class="devpanel"><button class="copy-btn" data-copy="electrix/${d.device_id}/config/current">${icon('copy')}</button>
-electrix/${d.device_id}/config/current
-${esc(JSON.stringify(c, null, 2))}</div>` : ''}
-  </div>`;
-}
-function renderDevEvents(d) {
-  const events = ALARMS.filter(a => a.device_id === d.device_id);
-  return `<div class="panel">
-    <h4>${icon('list')}Event stream</h4>
-    ${events.length ? events.map(a => `<div class="alarm-item sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">
-      <span class="alarm-sev sev-${a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn'}">${a.priority}</span>
-      <div class="alarm-body">
-        <div class="alarm-msg">${esc(a.msg)}${a.latched ? '<span class="latch-tag">latched</span>' : ''}${isShelved(a) ? '<span class="shelve-tag">shelved</span>' : ''}<span class="state-chip st-${a.state === 'UNACK_ALARM' ? 'unack' : a.state === 'ACK_ALARM' ? 'ack' : 'rtn'}">${a.state}</span></div>
-        <div class="alarm-meta">${esc(a.code)} · ${fmtSince(a.since)}</div>
-        ${a.note ? `<div class="alarm-note">“${esc(a.note)}”</div>` : ''}
-      </div>
-    </div>`).join('') : '<div class="empty">No events.</div>'}
-  </div>`;
-}
-function renderDevDiagnostics(d) {
-  const sample = [
-    { ts: Date.now() - 40000, lv:'debug', msg:'heartbeat published, rssi=-58' },
-    { ts: Date.now() - 30000, lv:'info',  msg:'config/get served, params=4' },
-    { ts: Date.now() - 22000, lv:'info',  msg:'telemetry/current → 2.41 A' },
-    { ts: Date.now() - 12000, lv:'warn',  msg:'mqtt reconnect attempt #1' },
-    { ts: Date.now() - 4000,  lv:'info',  msg:'mqtt reconnected' },
-  ];
-  return `<div class="panel">
-    <h4>${icon('stethoscope')}diag/log (QoS0)</h4>
-    <div class="log-view">${sample.map(l => `<div class="log-row">
-      <span class="ts">${fmtClock(l.ts)}</span><span class="lv ${l.lv}">${l.lv}</span><span>${esc(l.msg)}</span>
-    </div>`).join('')}</div>
-    ${state.devMode ? `<div style="margin-top:12px;"><button class="btn sm" data-act="toggle-inspector">${icon('terminal')}Open inspector</button></div>` : ''}
-  </div>`;
+  refreshIcons(grid);
 }

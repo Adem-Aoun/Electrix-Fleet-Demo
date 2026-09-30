@@ -148,12 +148,7 @@ function renderDevicePage(main) {
     <div id="devTabBody">${renderDeviceTab(d, state.deviceTab, { editable, controllable })}</div>`;
   refreshIcons(main);
   if (state.deviceTab === 'telemetry') wireDeviceTelemetry(main, d);
-  if (state.deviceTab === 'automation') {
-    main.querySelector('[data-device-new-schedule]')?.addEventListener('click', () => openScheduleEditor(null, d.device_id));
-    main.querySelectorAll('[data-device-edit-schedule]').forEach(button => {
-      button.addEventListener('click', () => openScheduleEditor(button.dataset.deviceEditSchedule, d.device_id));
-    });
-  }
+  if (state.deviceTab === 'automation') wireLadderControls(main);
 }
 function renderDeviceTab(d, tab, opts) {
   if (tab === 'overview') return renderDevOverview(d, opts);
@@ -234,14 +229,14 @@ function toggleDeviceReference(deviceId, group) {
   renderMain();
 }
 function renderDeviceReferences(d) {
-  const schedules = SCHEDULES.filter(item => item.device_id === d.device_id);
+  const rungs = LADDER_RULES.filter(item => ladderRuleUsesDevice(item, d.device_id));
   const scenes = SCENES.filter(item => item.actions.some(action => action.device_id === d.device_id));
-  if (!schedules.length && !scenes.length) {
+  if (!rungs.length && !scenes.length) {
     return `<div class="panel device-references"><h4>${icon('corner-up-right')}Referenced by</h4>
-      <div class="reference-empty">Not referenced by any schedule or scene.</div></div>`;
+      <div class="reference-empty">Not referenced by any PLC rung or scene.</div></div>`;
   }
   const groups = [
-    { id:'schedules', label:'Schedules', items:schedules, href:'#/automation' },
+    { id:'rungs', label:'PLC rungs', items:rungs, href:'#/automation' },
     { id:'scenes', label:'Scenes', items:scenes, href:'#/automation' },
   ];
   return `<div class="panel device-references"><h4>${icon('corner-up-right')}Referenced by</h4>

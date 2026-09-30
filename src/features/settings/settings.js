@@ -1,6 +1,7 @@
 'use strict';
 
-let DASH_USERS = USERS.map(u => ({ username:u.username, role:u.role, display:u.display }));
+let DASH_USERS = USERS.map(u => ({ username: u.username, role: u.role, display: u.display }));
+
 function renderSettings(main) {
   if (state.user?.role !== 'admin') {
     main.innerHTML = `<div class="main-head"><h1>Settings</h1></div>
@@ -71,28 +72,36 @@ function renderSettings(main) {
   $('#addUserBtn').addEventListener('click', () => {
     const name = $('#newUserName').value.trim(); if (!name) return;
     const role = $('#newUserRole').value;
-    DASH_USERS.push({ username:name, role, display:name });
+    DASH_USERS.push({ username: name, role, display: name });
     audit('user.add', name, role);
     $('#newUserName').value = ''; renderUserList();
-    toast('User added', { msg:`${name} (${role})`, type:'ok' });
+    toast('User added', { msg: `${name} (${role})`, type: 'ok' });
   });
   $('#addSiteBtn').addEventListener('click', () => {
     const raw = $('#newSiteName').value.trim(); if (!raw) return;
     const id = raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    if (!id || SITES.some(s => s.id === id)) { toast('Invalid or duplicate site', { type:'error' }); return; }
-    SITES.push({ id, name:raw });
+    if (!id || SITES.some(s => s.id === id)) { toast('Invalid or duplicate site', { type: 'error' }); return; }
+    SITES.push({ id, name: raw });
     audit('site.add', id, raw);
     $('#newSiteName').value = ''; renderSiteSettingsList();
-    toast('Site added', { msg:raw, type:'ok' });
+    toast('Site added', { msg: raw, type: 'ok' });
   });
   $('#exportBtn').addEventListener('click', () => {
-    const backup = { exported_at:new Date().toISOString(), version:1, schedules:SCHEDULES, scenes:SCENES, favorites:state.favorites, widgetLayout:state.widgetLayout, devMode:state.devMode };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+    const backup = {
+      exported_at: new Date().toISOString(),
+      version: 3,
+      automationTasks: LADDER_RULES,
+      scenes: SCENES,
+      favorites: state.favorites,
+      widgetLayout: state.widgetLayout,
+      devMode: state.devMode,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `electrix-backup-${Date.now()}.json`;
     a.click(); URL.revokeObjectURL(a.href);
-    toast('Backup exported', { type:'ok' });
+    toast('Backup exported', { type: 'ok' });
   });
   $('#importBtn').addEventListener('click', () => $('#importInput').click());
   $('#importInput').addEventListener('change', e => {
@@ -101,23 +110,29 @@ function renderSettings(main) {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (Array.isArray(data.schedules)) { SCHEDULES = data.schedules; saveSchedules(); }
+        if (Array.isArray(data.automationTasks)) {
+          LADDER_RULES = data.automationTasks;
+          saveLadderRules();
+        }
         if (Array.isArray(data.scenes)) { SCENES = data.scenes; saveScenes(); }
         if (Array.isArray(data.favorites)) { state.favorites = data.favorites; lsSet('electrix_favorites', state.favorites); }
         if (Array.isArray(data.widgetLayout)) { state.widgetLayout = data.widgetLayout; lsSet('electrix_widget_layout', state.widgetLayout); }
         if (typeof data.devMode === 'boolean') { state.devMode = data.devMode; lsSet('electrix_devmode', state.devMode); }
-        toast('Backup restored', { type:'ok' }); renderMain();
-      } catch { toast('Import failed', { msg:'Invalid JSON', type:'error' }); }
+        toast('Backup restored', { type: 'ok' });
+        renderMain();
+      } catch { toast('Import failed', { msg: 'Invalid JSON', type: 'error' }); }
     };
     reader.readAsText(file); e.target.value = '';
   });
 }
+
 function renderUserList() {
   $('#userList').innerHTML = DASH_USERS.map(u => `<div class="config-row" style="padding:10px 0;border-bottom:1px solid var(--border);">
     <span>${esc(u.display)} <span class="mono" style="color:var(--content-faint);font-size:11px;">@${esc(u.username)}</span></span>
     <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:${u.role === 'admin' ? 'var(--accent)' : 'var(--content-dim)'};">${ROLE_LABEL[u.role]}</span>
   </div>`).join('');
 }
+
 function renderSiteSettingsList() {
   $('#siteSettingsList').innerHTML = SITES.map(s => {
     const n = DEVICES.filter(d => d.site_id === s.id).length;
