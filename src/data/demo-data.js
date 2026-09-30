@@ -122,6 +122,7 @@ const sceneIconHTML = name => {
 const DEFAULT_LAYOUT = ['fleet_status','active_alarms','quick_controls','recent_activity','site_overview'];
 let state = {
   user: lsGet('electrix_user', null),
+  language: lsGet('electrix_language', 'en'),
   view: 'dashboard',
   deviceTab: 'overview',
   selectedSite: lsGet('electrix_site', 'all'),

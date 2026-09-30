@@ -198,7 +198,7 @@ function renderDrawer() {
     <div class="section-title">Capabilities</div>${caps}
     <div class="section-title">Quick actions</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn" data-nav="#/device/${d.device_id}">${icon('external-link')}Open</button>
+      <button class="btn" data-nav="${deviceRoute(d.device_id)}">${icon('external-link')}Open</button>
       <button class="btn" data-act="query-state" ${controllable ? '' : 'disabled'}>${icon('refresh-cw')}Query</button>
       <button class="btn danger" data-act="reboot" ${controllable ? '' : 'disabled'}>${icon('rotate-cw')}Reboot</button>
     </div>

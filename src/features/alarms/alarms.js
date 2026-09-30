@@ -53,6 +53,10 @@ function renderAlarmList() {
     const d = deviceById(a.device_id), shelved = isShelved(a);
     const sevCls = a.priority === 'critical' ? 'critical' : a.priority === 'low' ? 'info' : 'warn';
     const stateCls = a.state === 'UNACK_ALARM' ? 'unack' : a.state === 'ACK_ALARM' ? 'ack' : 'rtn';
+    const deviceRouteHash = d ? deviceRoute(d.device_id) : null;
+    const deviceContext = d
+      ? `<a href="${deviceRouteHash}" data-nav="${deviceRouteHash}">${esc(d.site_id)} → ${esc(d.name)}</a>`
+      : esc(a.device_id);
     return `<div class="alarm-item sev-${sevCls} ${shelved ? 'shelved' : ''}">
       <span class="alarm-sev sev-${sevCls}">${a.priority}</span>
       <div class="alarm-body">
@@ -61,7 +65,7 @@ function renderAlarmList() {
           <span class="state-chip st-${stateCls}">${a.state}</span>
           ${shelved ? `<span class="shelve-tag">${fmtAgo(Math.floor((a.shelved_until - Date.now()) / 1000))} left</span>` : ''}
         </div>
-        <div class="alarm-meta">${esc(a.code)} · ${esc(d ? d.name : a.device_id)} · since ${fmtSince(a.since)}${a.acked ? ' · acked' : ''}</div>
+        <div class="alarm-meta">${esc(a.code)} · ${deviceContext} · since ${fmtSince(a.since)}${a.acked ? ' · acked' : ''}</div>
         ${a.note ? `<div class="alarm-note">“${esc(a.note)}”</div>` : ''}
       </div>
       ${state.alarmFilter !== 'history' && canAct ? `<div class="alarm-actions">

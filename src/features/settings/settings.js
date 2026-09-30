@@ -10,6 +10,15 @@ function renderSettings(main) {
   main.innerHTML = `
     <div class="main-head"><h1>Settings</h1></div>
     <div style="max-width:720px;">
+      <div class="panel language-settings" style="margin-bottom:14px;">
+        <h4>${icon('languages')}Language</h4>
+        <div class="config-row">
+          <label for="languageSelect">Choose interface language</label>
+          <select id="languageSelect" style="min-width:160px;padding:10px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+            ${LANGUAGES.map(language => `<option value="${language.code}" ${getLanguage() === language.code ? 'selected' : ''}>${language.name}</option>`).join('')}
+          </select>
+        </div>
+      </div>
       <div class="panel" style="margin-bottom:14px;">
         <h4>${icon('users')}Users</h4>
         <div id="userList"></div>
@@ -54,6 +63,11 @@ function renderSettings(main) {
     </div>`;
   refreshIcons(main);
   renderUserList(); renderSiteSettingsList();
+  $('#languageSelect').addEventListener('change', event => {
+    setLanguage(event.target.value);
+    renderMain();
+    translateNode(document.body);
+  });
   $('#addUserBtn').addEventListener('click', () => {
     const name = $('#newUserName').value.trim(); if (!name) return;
     const role = $('#newUserRole').value;

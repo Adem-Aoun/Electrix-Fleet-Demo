@@ -208,7 +208,7 @@ function paletteItems() {
   SCHEDULES.forEach(s => items.push({ group:'Schedules', icon:'clock', label:s.name, meta:s.time, run: () => location.hash = '#/automation' }));
   SCENES.forEach(s => items.push({ group:'Scenes', icon:s.icon && !/[^\x00-\x7F]/.test(s.icon) ? s.icon : 'sparkles', label:s.name, meta:`${s.actions.length} actions`, run: () => runScene(s) }));
   SITES.forEach(s => items.push({ group:'Sites', icon:'map-pin', label:s.name, meta:s.id, run: () => location.hash = `#/devices/${s.id}` }));
-  DEVICES.forEach(d => items.push({ group:isFavorite(d.device_id) ? '★ Favorites' : 'Devices', icon:'plug', label:d.name, meta:d.device_id, run: () => location.hash = `#/device/${d.device_id}` }));
+  DEVICES.forEach(d => items.push({ group:isFavorite(d.device_id) ? '★ Favorites' : 'Devices', icon:'plug', label:d.name, meta:d.device_id, run: () => location.hash = deviceRoute(d.device_id) }));
   if (!q) return items;
   return items.filter(i => (i.label + ' ' + (i.meta || '')).toLowerCase().includes(q));
 }
@@ -347,13 +347,27 @@ function enterApp() {
 
 function applyRoute() {
   const h = (location.hash || '#/dashboard').slice(2);
-  const [seg, param, sub] = h.split('/');
-  state.view = seg || 'dashboard';
-  if (state.view === 'devices') state.selectedSite = param || 'all';
-  if (state.view === 'device')  {
-    state.openDeviceId = param;
-    state.deviceTab = sub === 'interlocks' ? 'overview' : sub || 'overview';
-    if (sub === 'interlocks' && param) history.replaceState(null, '', `#/device/${encodeURIComponent(param)}/overview`);
+  const parts = h.split('/');
+  const [seg, param, sub] = parts;
+  if (seg === 'sites' && parts[2] === 'devices') {
+    const siteId = param, deviceId = parts[3], device = deviceById(deviceId);
+    if (device && device.site_id === siteId) {
+      state.view = 'device';
+      state.openDeviceId = deviceId;
+      state.deviceTab = parts[4] === 'interlocks' ? 'overview' : parts[4] || 'overview';
+      state.selectedSite = siteId;
+    } else {
+      state.view = 'devices';
+      state.selectedSite = SITES.some(site => site.id === siteId) ? siteId : 'all';
+    }
+  } else {
+    state.view = seg || 'dashboard';
+    if (state.view === 'devices') state.selectedSite = param || 'all';
+    if (state.view === 'device')  {
+      state.openDeviceId = param;
+      state.deviceTab = sub === 'interlocks' ? 'overview' : sub || 'overview';
+      if (sub === 'interlocks' && param) history.replaceState(null, '', `#/device/${encodeURIComponent(param)}/overview`);
+    }
   }
   if (state.view === 'alarms') state.alarmDeviceFilter = param || null;
   if (state.view === 'settings' && state.user?.role !== 'admin') state.view = 'dashboard';
@@ -374,6 +388,11 @@ function applyRoute() {
 function nav(hash) {
   if (location.hash === hash) applyRoute();
   else location.hash = hash;
+}
+function deviceRoute(deviceId, tab = 'overview') {
+  const device = deviceById(deviceId);
+  if (!device) return `#/device/${deviceId}${tab === 'overview' ? '' : `/${tab}`}`;
+  return `#/sites/${device.site_id}/devices/${device.device_id}${tab === 'overview' ? '' : `/${tab}`}`;
 }
 function renderBreadcrumbs() {
   const bc = $('#breadcrumbs');
@@ -502,21 +521,6 @@ function deviceTypeIcon(type) {
   return 'cpu';
 }
 const fmtSince = s => s === 0 ? 'unknown' : fmtAgo(s);
-function sparkline(key, { width = 200, height = 24 } = {}) {
-  const s = TELEMETRY[key];
-  if (!s || !s.history.length) return '';
-  const vals = s.history.slice(-60).map(p => p.v);
-  const lo = Math.min(...vals, s.threshold ?? Infinity) * 0.98;
-  const hi = Math.max(...vals, s.threshold ?? -Infinity) * 1.02 || 1;
-  const range = hi - lo || 1;
-  const step = width / Math.max(1, vals.length - 1);
-  const pts = vals.map((v, i) => `${(i*step).toFixed(1)},${(height - ((v-lo)/range)*(height-4) - 2).toFixed(1)}`).join(' ');
-  const thY = s.threshold != null ? (height - ((s.threshold - lo)/range)*(height-4) - 2) : null;
-  return `<svg class="spark" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-    ${thY != null ? `<line x1="0" y1="${thY}" x2="${width}" y2="${thY}" class="spark-th"/>` : ''}
-    <polyline points="${pts}" class="spark-line"/>
-  </svg>`;
-}
 function lineChart(key, { height = 180, width = 640, windowMs = null } = {}) {
   const s = TELEMETRY[key];
   if (!s || !s.history.length) return '<div class="empty">No telemetry yet.</div>';

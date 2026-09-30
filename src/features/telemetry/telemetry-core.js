@@ -27,41 +27,15 @@ function renderTelemetryGaugeGrid(keys) {
 function renderDevTelemetry(d) {
   const keys = Object.keys(TELEMETRY).filter(key => key.startsWith(d.device_id + '/'));
   if (!keys.length) return `<div class="empty">No telemetry series.</div>`;
-  const mode = state.deviceTeleMode, range = telemetryRange();
-  const focusKey = keys.includes(state.teleFocusKey) ? state.teleFocusKey : keys[0];
-  if (mode === 'charts') state.teleFocusKey = focusKey;
-  const focused = TELEMETRY[focusKey], focusedValue = focused?.history.at(-1);
-  const chartKeys = mode === 'charts' ? [focusKey] : [];
   return `<div class="tele-device-view">
-    ${renderTelemetryTabs(mode)}
-    ${mode === 'overview' ? `
-      <div class="tele-device-meta">
-        <span>Device <span class="mono">${esc(telemetryStatusLabel(telemetryDeviceStatus(d, keys)))}</span></span>
-        <span>Sampling <span class="mono">${d.config.sensor_publish_period_ms} ms</span></span>
-        <span>Heartbeat <span class="mono">${d.config.heartbeat_period_ms} ms</span></span>
-        <span>LWT <span class="mono">${esc(d.lwt)}</span></span>
-        <span>Seen <span class="mono">${esc(fmtAgo(d.last_seen_s))}</span></span>
-      </div>
-      ${renderTelemetryGaugeGrid(keys)}
-    ` : `
-      <div class="tele-chart-tools">
-        <div><label for="deviceTeleMetric">Signal</label><select id="deviceTeleMetric">
-          ${keys.map(key => `<option value="${esc(key)}" ${key === focusKey ? 'selected' : ''}>${esc(key.split('/')[1])}</option>`).join('')}
-        </select></div>
-        <div><label for="deviceTeleWindow">Time range</label>${telemetryWindowSelect('deviceTeleWindow')}</div>
-        <button class="btn sm" id="deviceTeleExport">${icon('download')}Export CSV</button>
-        ${range.selected ? '<button class="btn sm" data-clear-tele-selection>Clear selection</button>' : ''}
-        <span class="tele-selection-status">${range.selected ? 'Selected range' : 'Drag across the chart to inspect or select a range'}</span>
-      </div>
-      ${focused ? renderTelemetryMetricDetails(focusKey, range.start, range.end) : ''}
-      ${renderTelemetryStack(chartKeys, range.start, range.windowMs)}
-      <div class="tele-config-context">
-        <span>Sample period <span class="mono">${d.config.sensor_publish_period_ms} ms</span></span>
-        <span>Heartbeat period <span class="mono">${d.config.heartbeat_period_ms} ms</span></span>
-        <span>LWT <span class="mono">${esc(d.lwt)}</span></span>
-        <span>Last heartbeat <span class="mono">${esc(fmtAgo(d.last_seen_s))}</span></span>
-      </div>
-    `}
+    <div class="tele-device-meta">
+      <span>Device <span class="mono">${esc(telemetryStatusLabel(telemetryDeviceStatus(d, keys)))}</span></span>
+      <span>Sampling <span class="mono">${d.config.sensor_publish_period_ms} ms</span></span>
+      <span>Heartbeat <span class="mono">${d.config.heartbeat_period_ms} ms</span></span>
+      <span>LWT <span class="mono">${esc(d.lwt)}</span></span>
+      <span>Seen <span class="mono">${esc(fmtAgo(d.last_seen_s))}</span></span>
+    </div>
+    ${renderTelemetryGaugeGrid(keys)}
   </div>`;
 }
 

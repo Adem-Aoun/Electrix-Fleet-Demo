@@ -42,6 +42,7 @@ function logTraffic(dir, topic, payload, opts) {
 }
 
 function boot() {
+  initLanguage();
   refreshIcons();
   $('#loginBtn').addEventListener('click', attemptLogin);
   $('#loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); });
@@ -120,12 +121,14 @@ function boot() {
     pill.classList.remove('down');
     pill.setAttribute('aria-label', 'Broker status: connected');
     $('#wsLabel').textContent = 'connected';
+    translateNode(pill);
   });
   mqtt.on('disconnected', () => {
     const pill = $('#wsPill');
     pill.classList.add('down');
     pill.setAttribute('aria-label', 'Broker status: disconnected');
     $('#wsLabel').textContent = 'disconnected';
+    translateNode(pill);
   });
   mqtt.on('message', (topic, payload, opts) => logTraffic('in', topic, payload, opts));
   const origPublish = mqtt.publish;

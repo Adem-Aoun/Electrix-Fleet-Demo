@@ -45,7 +45,7 @@ document.addEventListener('click', e => {
       const input = document.querySelector(`.cap-label-edit[data-cap-id="${CSS.escape(suggestion.dataset.capability)}"]`);
       input?.focus(); input?.select();
     } else if (action === 'match-config') matchSiblingConfig(d, suggestion.dataset.configKey);
-    else if (action === 'diagnostics') nav(`#/device/${d.device_id}/diagnostics`);
+    else if (action === 'diagnostics') nav(deviceRoute(d.device_id, 'diagnostics'));
     else if (action === 'ota') nav('#/ota');
     return;
   }
@@ -81,7 +81,7 @@ document.addEventListener('click', e => {
   if (tab) {
     e.preventDefault();
     state.deviceTab = tab.dataset.devtab;
-    const targetHash = `#/device/${state.openDeviceId}/${state.deviceTab}`;
+    const targetHash = deviceRoute(state.openDeviceId, state.deviceTab);
     if (location.hash === targetHash) renderMain();
     else location.hash = targetHash;
     return;

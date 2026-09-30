@@ -73,8 +73,6 @@ function renderDeviceGrid() {
     const st = deriveStatus(d), cls = statusClass(st);
     const caps = d.capabilities.slice(0, 4).map(c =>
       `<span class="cap-chip ${c.kind === 'relay' && c.value ? 'on' : ''}">${icon(capIcon(c.kind))}${esc(c.label)}</span>`).join('');
-    const currentKey = `${d.device_id}/current`;
-    const currentVal = TELEMETRY[currentKey]?.history.at(-1)?.v;
     const alarms = ALARMS.filter(a => a.device_id === d.device_id && !a.cleared);
     const fav = isFavorite(d.device_id);
     const selected = state.bulkSelected.has(d.device_id);
@@ -95,10 +93,9 @@ function renderDeviceGrid() {
         </div>
       </div>
       <div class="card-caps">${caps}</div>
-      <div class="card-spark">${sparkline(currentKey)}</div>
       <div class="card-meta">
         <span class="mono">${d.device_id}</span>
-        <span style="display:inline-flex;align-items:center;gap:5px;">${icon('zap')}${currentVal != null ? `${currentVal}A · ` : ''}${st === 'offline' ? 'offline ' + fmtAgo(d.last_seen_s) : 'seen ' + fmtAgo(d.last_seen_s)}</span>
+        <span>${st === 'offline' ? 'offline ' + fmtAgo(d.last_seen_s) : 'seen ' + fmtAgo(d.last_seen_s)}</span>
       </div>
     </div>`;
   }).join('');

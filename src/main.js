@@ -7,6 +7,7 @@
     'core/runtime.js',
     'services/mqtt-simulator.js',
     'data/demo-data.js',
+    'core/i18n.js',
     'core/app-state.js',
     'features/dashboard/dashboard.js',
     'features/devices/device-list.js',

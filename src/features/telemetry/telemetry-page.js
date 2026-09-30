@@ -250,7 +250,7 @@ function navigateTelemetryEvent(event) {
     nav(`#/alarms/${event.device_id}`);
   } else {
     const tab = event.type === 'command' ? 'commands' : event.type === 'config' ? 'config' : 'diagnostics';
-    nav(`#/device/${event.device_id}/${tab}`);
+    nav(deviceRoute(event.device_id, tab));
   }
 }
 function toggleTeleRateOfChange(key) {

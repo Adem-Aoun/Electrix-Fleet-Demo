@@ -51,7 +51,7 @@ function renderDashboard(main) {
       age: alarm.type === 'device_offline' && device
         ? fmtAgo(device.last_seen_s)
         : alarm.since > 0 ? fmtAgo(alarm.since) : 'Duration unknown',
-      route: device ? `#/device/${device.device_id}` : '#/alarms',
+      route: device ? deviceRoute(device.device_id) : '#/alarms',
       alarm,
     };
   });
@@ -64,7 +64,7 @@ function renderDashboard(main) {
     site: siteName(device.site_id),
     status: deriveStatus(device),
     age: fmtAgo(device.last_seen_s),
-    route: `#/device/${device.device_id}`,
+    route: deviceRoute(device.device_id),
   }));
 
   const siteRows = SITES.map(site => {
