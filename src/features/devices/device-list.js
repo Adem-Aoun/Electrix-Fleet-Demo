@@ -8,15 +8,6 @@ function renderDevices(main) {
       <div class="main-head-actions">
         <span class="count" id="mainCount"></span>
         ${isMobile() ? `<button class="btn sm" id="mobileSiteFilter">${icon('filter')}<span>Sites</span></button>` : ''}
-        <select class="sortsel device-filter" id="deviceStatusFilter" aria-label="Filter by status">
-          <option value="all">All statuses</option><option value="online">Online</option><option value="warn">Warning</option><option value="offline">Offline</option>
-        </select>
-        <select class="sortsel device-filter" id="deviceAlarmFilter" aria-label="Filter by alarms">
-          <option value="all">All alarms</option><option value="alarms">With alarms</option><option value="clear">No alarms</option>
-        </select>
-        <select class="sortsel device-filter" id="deviceTypeFilter" aria-label="Filter by device type">
-          <option value="all">All types</option>${[...new Set(DEVICES.map(d => d.device_type))].sort().map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join('')}
-        </select>
         <button class="btn sm" id="deviceViewToggle">${state.deviceView === 'grid' ? icon('list') + 'List' : icon('grid-2x2') + 'Grid'}</button>
         <button class="btn sm ${state.bulkMode ? 'active' : ''}" id="bulkToggle">${state.bulkMode ? 'Done' : 'Select'}</button>
       </div>
@@ -28,15 +19,6 @@ function renderDevices(main) {
     if (!state.bulkMode) state.bulkSelected.clear();
     renderMain();
   });
-  ['deviceStatusFilter','deviceAlarmFilter','deviceTypeFilter'].forEach(id => {
-    $(`#${id}`).addEventListener('change', e => {
-      state[{ deviceStatusFilter:'deviceStatusFilter', deviceAlarmFilter:'deviceAlarmFilter', deviceTypeFilter:'deviceTypeFilter' }[id]] = e.target.value;
-      renderDeviceGrid();
-    });
-  });
-  $('#deviceStatusFilter').value = state.deviceStatusFilter;
-  $('#deviceAlarmFilter').value = state.deviceAlarmFilter;
-  $('#deviceTypeFilter').value = state.deviceTypeFilter;
   $('#deviceViewToggle').addEventListener('click', () => { state.deviceView = state.deviceView === 'grid' ? 'list' : 'grid'; renderMain(); });
   const msf = $('#mobileSiteFilter'); if (msf) msf.addEventListener('click', openMobileSiteSheet);
 }
@@ -57,15 +39,6 @@ function renderSitesAside() {
 function visibleDevices() {
   let list = DEVICES.slice();
   if (state.selectedSite !== 'all') list = list.filter(d => d.site_id === state.selectedSite);
-  if (state.deviceStatusFilter !== 'all') list = list.filter(d => {
-    const status = d.lwt === 'offline' ? 'offline' : deriveStatus(d) === 'alarm' ? 'warn' : deriveStatus(d);
-    return status === state.deviceStatusFilter;
-  });
-  if (state.deviceTypeFilter !== 'all') list = list.filter(d => d.device_type === state.deviceTypeFilter);
-  if (state.deviceAlarmFilter !== 'all') list = list.filter(d => {
-    const hasAlarm = ALARMS.some(a => a.device_id === d.device_id && !a.cleared);
-    return state.deviceAlarmFilter === 'alarms' ? hasAlarm : !hasAlarm;
-  });
   if (state.search.trim()) {
     const q = state.search.trim().toLowerCase();
     list = list.filter(d =>
