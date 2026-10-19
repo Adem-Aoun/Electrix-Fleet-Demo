@@ -1,6 +1,12 @@
 'use strict';
 
 (async function bootstrap() {
+  if (window.__electrix_bootstrapped) {
+    console.warn('[main] duplicate bootstrap detected — ignoring');
+    return;
+  }
+  window.__electrix_bootstrapped = true;
+
   const entrypointUrl = document.currentScript.src;
   const assetVersion = new URL(entrypointUrl).searchParams.get('v');
   const scripts = [

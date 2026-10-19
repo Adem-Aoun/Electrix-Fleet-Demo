@@ -12,7 +12,9 @@
 <meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="src/styles.css?v=20260930.8">
+<link rel="stylesheet" href="src/styles.css?v=20261009.8">
+
+
 </head>
 <body>
 
@@ -27,12 +29,6 @@
     <div class="field"><label>Username</label><input id="loginUser" autocomplete="username" placeholder="admin" autocapitalize="off"></div>
     <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="login-btn" id="loginBtn"><i data-lucide="log-in"></i><span>Sign in</span></button>
-    <div class="login-hint">
-      Demo accounts:<br>
-      <span class="mono">admin / admin123</span> — full access<br>
-      <span class="mono">operator / operator123</span> — control + ack<br>
-      <span class="mono">viewer / viewer123</span> — read-only
-    </div>
   </div>
 </div>
 
@@ -69,7 +65,7 @@
       </div>
       <div class="search" id="searchWrap"><input id="search" type="search" placeholder="Search devices, sites…" autocomplete="off" enterkeyhint="search"></div>
       <div class="header-right">
-        <span class="ws-pill down" id="wsPill" role="status" aria-label="Broker status: connecting"><span class="dot"></span><span id="wsLabel">connecting</span></span>
+        <span class="ws-pill down" id="wsPill" role="status" aria-label="Backend status: connecting"><span class="dot"></span><span id="wsLabel">Backend</span></span>
 
         <div class="alarm-pill-wrap">
           <button class="alarm-pill empty" id="alarmPill" aria-haspopup="true" aria-expanded="false" aria-label="Unacknowledged alarms">
@@ -157,6 +153,6 @@
 <div id="paletteRoot"></div>
 
 
-<script src="src/main.js?v=20260930.8"></script>
+  <script src="./src/main.js?v=20261009.8"></script>
 </body>
 </html>

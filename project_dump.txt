@@ -1,88 +1,5 @@
-]633;E;echo "===== PROJECT TREE =====";bfadf3f8-771c-42a2-b70c-ecf2d7151c29]633;C===== PROJECT TREE =====
-.
-├── firmware
-│   └── firmware.js
-├── index.html
-├── project_dump.txt
-├── README.md
-└── src
-    ├── core
-    │   ├── actions.js
-    │   ├── app-state.js
-    │   ├── events.js
-    │   ├── i18n.js
-    │   ├── lifecycle.js
-    │   └── runtime.js
-    ├── data
-    │   └── demo-data.js
-    ├── features
-    │   ├── alarms
-    │   │   └── alarms.js
-    │   ├── automation
-    │   │   └── automation.js
-    │   ├── dashboard
-    │   │   └── dashboard.js
-    │   ├── devices
-    │   │   ├── device-detail.js
-    │   │   └── device-list.js
-    │   ├── interlocks
-    │   │   └── interlocks.js
-    │   ├── settings
-    │   │   └── settings.js
-    │   └── telemetry
-    │       ├── telemetry-core.js
-    │       └── telemetry-page.js
-    ├── main.js
-    ├── services
-    │   └── mqtt-simulator.js
-    └── styles.css
-
-14 directories, 23 files
-
-===== SOURCE FILES =====
-
 ============================================================
-FILE: ./firmware/firmware.js
-============================================================
-'use strict';
-
-const OTA_NOT_LIVE_BANNER = `
-  <div class="not-live">
-    <div class="nl-icon">${icon('alert-triangle')}</div>
-    <div class="nl-body">
-      <b>Not available yet</b>
-      The firmware does not publish <span class="mono">ota/available</span> or
-      <span class="mono">ota/status</span>. Nothing on this screen is a real
-      update pipeline. When OTA lands on-device, this banner disappears.
-    </div>
-  </div>`;
-function renderOTA(main) {
-  main.innerHTML = `
-    <div class="main-head">
-      <h1>Firmware / OTA</h1>
-      <div class="main-head-actions"><span class="count">not live</span></div>
-    </div>
-    ${OTA_NOT_LIVE_BANNER}
-    <div class="panel" style="padding:0;overflow:hidden;">
-      <div style="padding:48px 24px;text-align:center;color:var(--content-faint);">
-        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--surface-2);color:var(--content-dim);margin-bottom:16px;">
-          ${icon('upload-cloud')}
-        </div>
-        <div style="font-size:14px;font-weight:600;color:var(--content);margin-bottom:6px;">Nothing to show yet</div>
-        <div style="font-size:12.5px;max-width:440px;margin:0 auto;line-height:1.55;">
-          Once <span class="mono">electrix/{device_id}/ota/available</span> and
-          <span class="mono">.../ota/status</span> exist on the firmware side,
-          this screen lists per-device current/target version, rollout progress,
-          and lets an admin trigger a staged rollout.
-        </div>
-      </div>
-    </div>`;
-    refreshIcons(main);
-}
-
-
-============================================================
-FILE: ./index.html
+FILE: index.html
 ============================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -98,7 +15,9 @@ FILE: ./index.html
 <meta name="description" content="Electrix Command — fleet control for MQTT-connected relay and sensor devices.">
 <title>Electrix Command — Fleet</title>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="src/styles.css?v=20260930.8">
+<link rel="stylesheet" href="src/styles.css?v=20261008.4">
+
+
 </head>
 <body>
 
@@ -243,12 +162,12 @@ FILE: ./index.html
 <div id="paletteRoot"></div>
 
 
-<script src="src/main.js?v=20260930.8"></script>
+<script src="src/main.js?v=20261008.4"></script>
 </body>
 </html>
 
 ============================================================
-FILE: ./README.md
+FILE: README.md
 ============================================================
 # Electrix-Fleet-Demo
 
@@ -282,7 +201,7 @@ As the backend is introduced, define explicit interfaces for fleet/device data a
 
 
 ============================================================
-FILE: ./src/core/actions.js
+FILE: src/core/actions.js
 ============================================================
 'use strict';
 
@@ -493,9 +412,222 @@ function renderDrawer() {
   $('#drawerClose').addEventListener('click', closeDrawer);
 }
 
+// ---------------------------------------------------------------------------
+// Device onboarding — assign a newly discovered device to a site.
+// ---------------------------------------------------------------------------
+
+async function openDeviceOnboarding(deviceOrId) {
+  const device = typeof deviceOrId === 'string'
+    ? deviceById(deviceOrId)
+    : deviceOrId;
+  if (!device) { toast('Device not found', { type: 'error' }); return; }
+
+  try { await mqtt.refreshSites(); } catch {}
+
+  const siteRows = SITES.map(s =>
+    `<option value="${esc(s.id)}" ${device.site_id === s.id ? 'selected' : ''}>${esc(s.name)}</option>`
+  ).join('');
+
+  const capSummary = device.capabilities.map(c =>
+    `<span class="auto-tag-type" style="margin-right:4px;">${esc(c.kind)}:${esc(c.id)}</span>`
+  ).join('') || '<span class="muted">none reported yet</span>';
+
+  openSheet({
+    title: 'Assign device to a site',
+    bodyHtml: `
+      <div class="m-row">
+        <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);">
+          <span class="cap-icon" style="width:40px;height:40px;background:var(--surface);">${icon(deviceTypeIcon(device.device_type))}</span>
+          <div style="min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${esc(device.name || device.device_id)}</div>
+            <div class="mono" style="font-size:11px;color:var(--content-faint);">${esc(device.device_id)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-row">
+        <label class="field-label">Reported capabilities</label>
+        <div style="line-height:1.9;">${capSummary}</div>
+      </div>
+
+      <div class="m-row">
+        <label class="field-label">Site</label>
+        <select id="onboardSite" style="width:100%;padding:11px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+          <option value="">— Unassigned —</option>
+          ${siteRows}
+          <option value="__new__">+ Create new site…</option>
+        </select>
+      </div>
+
+      <div class="m-row" id="onboardNewSiteRow" style="display:none;">
+        <label class="field-label">New site name</label>
+        <input type="text" id="onboardNewSiteName" placeholder="e.g. Warehouse C"
+               style="width:100%;padding:11px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="onboardCancel">Cancel</button>
+        <button class="btn primary" id="onboardSave">${icon('check')}Assign</button>
+      </div>`,
+    onMount: (wrap, close) => {
+      const select  = wrap.querySelector('#onboardSite');
+      const newRow  = wrap.querySelector('#onboardNewSiteRow');
+      const newInput= wrap.querySelector('#onboardNewSiteName');
+
+      select.addEventListener('change', () => {
+        const isNew = select.value === '__new__';
+        newRow.style.display = isNew ? '' : 'none';
+        if (isNew) setTimeout(() => newInput.focus(), 30);
+      });
+      if (device.site_id) select.value = device.site_id;
+
+      wrap.querySelector('#onboardCancel').addEventListener('click', () => close());
+
+      wrap.querySelector('#onboardSave').addEventListener('click', async () => {
+        const val = select.value;
+        const btn = wrap.querySelector('#onboardSave');
+        btn.disabled = true;
+        try {
+          let siteId = val;
+          if (val === '__new__') {
+            const name = newInput.value.trim();
+            if (!name) { toast('New site name required', { type: 'error' }); btn.disabled = false; return; }
+            const site = await mqtt.createSite(name);
+            siteId = site.id;
+          } else if (val === '') {
+            siteId = null;
+          }
+
+          await mqtt.assignDeviceSite(device.device_id, siteId);
+
+          const siteNameVal = siteId ? (SITES.find(s => s.id === siteId)?.name || siteId) : null;
+          audit('device.assign_site', device.device_id, siteNameVal || '(unassigned)');
+          toast('Device assigned',
+                { msg: `${device.device_id} → ${siteNameVal || 'Unassigned'}`, type: 'ok' });
+          close(true);
+          if (typeof renderMain === 'function') renderMain();
+        } 
+        catch (e) {
+          toast('Assign failed', { msg: e.message, type: 'error' });
+          btn.disabled = false;
+        }
+      });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Device onboarding — assign a newly discovered device to a site.
+// ---------------------------------------------------------------------------
+
+async function openDeviceOnboarding(deviceOrId) {
+  const device = typeof deviceOrId === 'string'
+    ? deviceById(deviceOrId)
+    : deviceOrId;
+  if (!device) { toast('Device not found', { type: 'error' }); return; }
+
+  try { await mqtt.refreshSites(); } catch {}
+
+  const siteRows = SITES.map(s =>
+    `<option value="${esc(s.id)}" ${device.site_id === s.id ? 'selected' : ''}>${esc(s.name)}</option>`
+  ).join('');
+
+  const capSummary = device.capabilities.map(c =>
+    `<span class="auto-tag-type" style="margin-right:4px;">${esc(c.kind)}:${esc(c.id)}</span>`
+  ).join('') || '<span class="muted" style="color:var(--content-faint)">none reported yet</span>';
+
+  openSheet({
+    title: device.site_id ? 'Change site' : 'Assign device to a site',
+    bodyHtml: `
+      <div class="m-row">
+        <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);">
+          <span class="cap-icon" style="width:40px;height:40px;background:var(--surface);">${icon(deviceTypeIcon(device.device_type))}</span>
+          <div style="min-width:0;">
+            <div style="font-weight:600;font-size:14px;">${esc(device.name || device.device_id)}</div>
+            <div class="mono" style="font-size:11px;color:var(--content-faint);">${esc(device.device_id)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-row">
+        <label class="field-label">Reported capabilities</label>
+        <div style="line-height:1.9;">${capSummary}</div>
+      </div>
+
+      <div class="m-row">
+        <label class="field-label">Site</label>
+        <select id="onboardSite" style="width:100%;padding:11px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+          <option value="">— Unassigned —</option>
+          ${siteRows}
+          <option value="__new__">+ Create new site…</option>
+        </select>
+      </div>
+
+      <div class="m-row" id="onboardNewSiteRow" style="display:none;">
+        <label class="field-label">New site name</label>
+        <input type="text" id="onboardNewSiteName" placeholder="e.g. Warehouse C"
+               style="width:100%;padding:11px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="onboardCancel" type="button">Cancel</button>
+        <button class="btn primary" id="onboardSave" type="button">${icon('check')}Assign</button>
+      </div>`,
+    onMount: (wrap, close) => {
+      const select   = wrap.querySelector('#onboardSite');
+      const newRow   = wrap.querySelector('#onboardNewSiteRow');
+      const newInput = wrap.querySelector('#onboardNewSiteName');
+
+      select.addEventListener('change', () => {
+        const isNew = select.value === '__new__';
+        newRow.style.display = isNew ? '' : 'none';
+        if (isNew) setTimeout(() => newInput.focus(), 30);
+      });
+      if (device.site_id) select.value = device.site_id;
+
+      wrap.querySelector('#onboardCancel').addEventListener('click', () => close());
+
+      wrap.querySelector('#onboardSave').addEventListener('click', async () => {
+        const val = select.value;
+        const btn = wrap.querySelector('#onboardSave');
+        btn.disabled = true;
+        try {
+          let siteId = val;
+          if (val === '__new__') {
+            const name = newInput.value.trim();
+            if (!name) { toast('New site name required', { type: 'error' }); btn.disabled = false; return; }
+            const site = await mqtt.createSite(name);
+            siteId = site.id;
+          } else if (val === '') {
+            siteId = null;
+          }
+
+          await mqtt.assignDeviceSite(device.device_id, siteId);
+
+          const newSiteName = siteId ? (SITES.find(s => s.id === siteId)?.name || siteId) : null;
+          audit('device.assign_site', device.device_id, newSiteName || '(unassigned)');
+          toast('Device assigned',
+                { msg: `${device.device_id} → ${newSiteName || 'Unassigned'}`, type: 'ok' });
+          close(true);
+
+          // Assignment already succeeded server-side; a UI refresh
+          // failure must not surface as "Assign failed".
+          try {
+            if (typeof renderMain === 'function') renderMain();
+          } catch (renderErr) {
+            console.error('[onboarding] renderMain failed after successful assign:', renderErr);
+          }
+        } catch (err) {
+          toast('Assign failed', { msg: err.message, type: 'error' });
+          btn.disabled = false;
+        }
+      });
+    },
+  });
+}
 
 ============================================================
-FILE: ./src/core/app-state.js
+FILE: src/core/app-state.js
 ============================================================
 'use strict';
 
@@ -518,14 +650,22 @@ function toggleFavorite(id) {
 }
 
 const TOAST_ICON = { ok:'check-circle', error:'x-circle', warn:'alert-triangle', info:'info' };
-function toast(title, { msg = '', type = 'info', timeout = 3200 } = {}) {
+function toast(title, { msg = '', type = 'info', timeout = 3200, onClick = null, actionLabel = null } = {}) {
   const el = document.createElement('div');
-  el.className = `toast ${type}`;
+  el.className = `toast ${type}${onClick ? ' clickable' : ''}`;
   el.innerHTML = `<div class="ti">${icon(TOAST_ICON[type] || 'info')}</div>
     <div class="tb"><div class="ttl">${esc(title)}</div>${msg ? `<div class="msg">${esc(msg)}</div>` : ''}</div>
+    ${actionLabel ? `<button class="ta">${esc(actionLabel)}</button>` : ''}
     <button class="tx" aria-label="Dismiss">${icon('x')}</button>`;
   const kill = () => { el.style.opacity = '0'; setTimeout(() => el.remove(), 180); };
-  el.querySelector('.tx').onclick = kill;
+  el.querySelector('.tx').onclick = (e) => { e.stopPropagation(); kill(); };
+  if (onClick) {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.tx')) return;
+      kill();
+      onClick();
+    });
+  }
   $('#toastStack').appendChild(el);
   refreshIcons(el);
   if (timeout) setTimeout(kill, timeout);
@@ -629,12 +769,14 @@ function openMobileMoreSheet() {
 }
 function openMobileSiteSheet() {
   const counts = {};
-  DEVICES.forEach(d => counts[d.site_id] = (counts[d.site_id] || 0) + 1);
+  DEVICES.forEach(d => { if (d.site_id) counts[d.site_id] = (counts[d.site_id] || 0) + 1; });
+  const unassignedCount = DEVICES.filter(d => !d.site_id).length;
   const btnStyle = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 12px;border:none;background:none;width:100%;text-align:left;font-size:15px;color:var(--content);cursor:pointer;border-radius:8px;min-height:52px;';
   openSheet({
     title: 'Sites & sort',
     bodyHtml: `<div>
       <button data-sheet-site="all" style="${btnStyle}${state.selectedSite === 'all' ? 'color:var(--accent);font-weight:600;' : ''}"><span>All sites</span><span class="site-count">${DEVICES.length}</span></button>
+      ${unassignedCount ? `<button data-sheet-site="__unassigned__" style="${btnStyle}${state.selectedSite === '__unassigned__' ? 'color:var(--warn);font-weight:600;' : 'color:var(--warn);'}"><span>Unassigned</span><span class="site-count">${unassignedCount}</span></button>` : ''}
       ${SITES.map(s => `<button data-sheet-site="${s.id}" style="${btnStyle}${state.selectedSite === s.id ? 'color:var(--accent);font-weight:600;' : ''}"><span>${esc(s.name)}</span><span class="site-count">${counts[s.id] || 0}</span></button>`).join('')}
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
         <label class="field-label" style="display:block;font-size:11.5px;color:var(--content-faint);margin-bottom:6px;">Sort by</label>
@@ -650,8 +792,14 @@ function openMobileSiteSheet() {
     onMount: (wrap, close) => {
       wrap.querySelectorAll('[data-sheet-site]').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.sheetSite;
-        state.selectedSite = id; lsSet('electrix_site', id); close();
-        nav(id === 'all' ? '#/devices' : `#/devices/${id}`);
+        state.selectedSite = id; close();
+        if (id === 'all') nav('#/devices');
+        else if (id === '__unassigned__') {
+          if (location.hash === '#/devices') renderMain();
+          else location.hash = '#/devices';
+        } else {
+          nav(`#/devices/${id}`);
+        }
       }));
       const sel = wrap.querySelector('#mobileSortSel');
       sel.addEventListener('change', () => {
@@ -703,12 +851,12 @@ function paletteItems() {
   items.push({ group:'Actions', icon:'terminal', label:'Toggle topic inspector', run: () => toggleInspector() });
   items.push({ group:'Actions', icon:'log-out',  label:'Sign out', run: () => logout() });
   LADDER_RULES.forEach(task => items.push({
-  group: 'Automation tasks',
-  icon: 'git-branch',
-  label: task.name,
-  meta: `${task.rungs.length} rung${task.rungs.length === 1 ? '' : 's'}`,
-  run: () => location.hash = '#/automation',
-}));
+    group: 'Automation tasks',
+    icon: 'git-branch',
+    label: task.name,
+    meta: `${task.rungs.length} rung${task.rungs.length === 1 ? '' : 's'}`,
+    run: () => location.hash = '#/automation',
+  }));
   SCENES.forEach(s => items.push({ group:'Scenes', icon:s.icon && !/[^\x00-\x7F]/.test(s.icon) ? s.icon : 'sparkles', label:s.name, meta:`${s.actions.length} actions`, run: () => runScene(s) }));
   SITES.forEach(s => items.push({ group:'Sites', icon:'map-pin', label:s.name, meta:s.id, run: () => location.hash = `#/devices/${s.id}` }));
   DEVICES.forEach(d => items.push({ group:isFavorite(d.device_id) ? '★ Favorites' : 'Devices', icon:'plug', label:d.name, meta:d.device_id, run: () => location.hash = deviceRoute(d.device_id) }));
@@ -840,9 +988,6 @@ function enterApp() {
   applyTheme(localStorage.getItem('electrix_theme') || null, false);
   applySidebarState();
   $('#devModeBtn').classList.toggle('active', state.devMode);
-  // FIX: do NOT auto-open the inspector on login. It stays closed until the
-  // user explicitly opens it via the toolbar button, the palette, or the I key.
-  // (Previously it would appear whenever devMode was persisted as true.)
   if (!location.hash || location.hash === '#') location.hash = '#/dashboard';
   applyRoute();
   refreshIcons();
@@ -897,7 +1042,7 @@ function nav(hash) {
 }
 function deviceRoute(deviceId, tab = 'overview') {
   const device = deviceById(deviceId);
-  if (!device) return `#/device/${deviceId}${tab === 'overview' ? '' : `/${tab}`}`;
+  if (!device || !device.site_id) return `#/device/${deviceId}${tab === 'overview' ? '' : `/${tab}`}`;
   return `#/sites/${device.site_id}/devices/${device.device_id}${tab === 'overview' ? '' : `/${tab}`}`;
 }
 function renderBreadcrumbs() {
@@ -906,12 +1051,18 @@ function renderBreadcrumbs() {
   const parts = [`<a href="#/dashboard">Electrix</a>`];
   if (state.view === 'devices') {
     parts.push(`<span class="sep">/</span><a href="#/devices">Devices</a>`);
-    if (state.selectedSite !== 'all') parts.push(`<span class="sep">/</span><span class="cur">${esc(siteName(state.selectedSite))}</span>`);
+    if (state.selectedSite !== 'all') {
+      parts.push(`<span class="sep">/</span><span class="cur">${esc(siteName(state.selectedSite))}</span>`);
+    }
   } else if (state.view === 'device') {
     const d = deviceById(state.openDeviceId);
     if (d) {
       parts.push(`<span class="sep">/</span><a href="#/devices">Devices</a>`);
-      parts.push(`<span class="sep">/</span><a href="#/devices/${d.site_id}">${esc(siteName(d.site_id))}</a>`);
+      if (d.site_id) {
+        parts.push(`<span class="sep">/</span><a href="#/devices/${d.site_id}">${esc(siteName(d.site_id))}</a>`);
+      } else {
+        parts.push(`<span class="sep">/</span><span style="color:var(--warn)">Unassigned</span>`);
+      }
       parts.push(`<span class="sep">/</span><span class="cur">${esc(d.name)}</span>`);
     }
   } else {
@@ -977,7 +1128,11 @@ function startTick() {
     }
   }, 1000);
 }
-const siteName = id => SITES.find(s => s.id === id)?.name || id;
+const siteName = id => {
+  if (!id) return '';
+  if (id === '__unassigned__') return 'Unassigned';
+  return SITES.find(s => s.id === id)?.name || id;
+};
 const deviceById = id => DEVICES.find(d => d.device_id === id);
 const priorityRank = p => ({ critical:0, high:1, medium:2, low:3 })[p] ?? 9;
 const deviceHasAlarm = d => ALARMS.some(a => a.device_id === d.device_id && !a.cleared);
@@ -1082,95 +1237,47 @@ function renderAlarmBadge() {
 }
 function updateBulkBar() {
   const bar = $('#bulkBar'); if (!bar) return;
+  if (!state || !state.bulkSelected) return;
   const n = state.bulkSelected.size;
   $('#bulkCount').textContent = n;
   bar.classList.toggle('show', state.bulkMode);
   document.body.classList.toggle('bulk-mode', state.bulkMode);
 }
 
-
 ============================================================
-FILE: ./src/core/events.js
+FILE: src/core/events.js
 ============================================================
 'use strict';
 
 document.addEventListener('click', e => {
   const t = e.target;
-  const telemetryView = t.closest('[data-tele-view]');
-  if (telemetryView) {
-    const modeKey = state.view === 'device' ? 'deviceTeleMode' : 'teleMode';
-    state[modeKey] = telemetryView.dataset.teleView;
-    if (state[modeKey] === 'charts' && !state.teleFocusKey) {
-      state.teleFocusKey = state.view === 'device'
-        ? Object.keys(TELEMETRY).find(key => key.startsWith(state.openDeviceId + '/')) || null
-        : Object.keys(TELEMETRY).find(key => state.teleDevice === 'all' || key.startsWith(state.teleDevice + '/')) || null;
-    }
-    renderMain();
-    return;
-  }
-  const gauge = t.closest('[data-gauge-key]');
-  if (gauge) {
-    state.teleFocusKey = gauge.dataset.gaugeKey;
-    state[state.view === 'device' ? 'deviceTeleMode' : 'teleMode'] = 'charts';
-    renderMain();
-    return;
-  }
-  const healthDevice = t.closest('[data-health-device]');
-  if (healthDevice) {
-    state.teleDevice = healthDevice.dataset.healthDevice;
-    state.teleSensor = 'all';
-    state.teleFocusKey = Object.keys(TELEMETRY).find(key =>
-      key.startsWith(state.teleDevice + '/') && ['alarm','warn','stale','offline'].includes(telemetryStatus(key))
-    ) || Object.keys(TELEMETRY).find(key => key.startsWith(state.teleDevice + '/')) || null;
-    state.teleMode = 'charts';
-    renderMain();
-    return;
-  }
-  const suggestion = t.closest('[data-suggestion]');
-  if (suggestion) {
-    const d = deviceById(state.openDeviceId);
-    if (!d || suggestion.disabled) return;
-    const action = suggestion.dataset.suggestion;
-    if (action === 'review-alarms') {
-      state.alarmFilter = 'active'; state.alarmPriorityFilter = 'all'; state.alarmTypeFilter = 'all';
-      nav(`#/alarms/${d.device_id}`);
-    } else if (action === 'automation') nav('#/automation');
-    else if (action === 'rename-capability') {
-      const input = document.querySelector(`.cap-label-edit[data-cap-id="${CSS.escape(suggestion.dataset.capability)}"]`);
-      input?.focus(); input?.select();
-    } else if (action === 'match-config') matchSiblingConfig(d, suggestion.dataset.configKey);
-    else if (action === 'diagnostics') nav(deviceRoute(d.device_id, 'diagnostics'));
-    else if (action === 'ota') nav('#/ota');
-    return;
-  }
-  const reference = t.closest('[data-device-reference]');
-  if (reference) {
-    toggleDeviceReference(reference.dataset.deviceId, reference.dataset.deviceReference);
-    return;
-  }
-  if (t.closest('[data-clear-alarm-device]')) {
-    state.alarmDeviceFilter = null;
-    nav('#/alarms');
-    return;
-  }
-  const cp = t.closest('[data-copy]');
-  if (cp) { e.preventDefault(); copyText(cp.dataset.copy); return; }
 
-  const pill = t.closest('#alarmPill');
-  if (pill) { e.preventDefault(); toggleAlarmPopover(); return; }
-  if (t.closest('#alarmPopoverClose')) { closeAlarmPopover(); return; }
-  const jump = t.closest('[data-alarm-jump]');
-  if (jump) {
-    const a = ALARMS.find(x => x.id === jump.dataset.alarmJump);
-    if (a) { state.alarmTypeFilter = a.type; state.alarmFilter = 'active'; state.alarmPriorityFilter = 'all'; }
-    closeAlarmPopover();
-    nav('#/alarms');
+  // ---- Device onboarding (before card click) ------------------------
+  const assignBtn = t.closest('[data-assign-device]');
+  if (assignBtn) {
+    e.stopPropagation();
+    openDeviceOnboarding(assignBtn.dataset.assignDevice);
     return;
   }
-  if (!t.closest('.alarm-pill-wrap')) closeAlarmPopover();
+  const reassign = t.closest('[data-reassign-device]');
+  if (reassign) {
+    e.preventDefault();
+    openDeviceOnboarding(reassign.dataset.reassignDevice);
+    return;
+  }
 
-  if (t.closest('#railToggle')) { toggleSidebar(); return; }
+  // ---- Card click ---------------------------------------------------
+  const card = t.closest('.card[data-device]');
+  if (card && !t.closest('button') && !t.closest('input')) {
+    if (state.bulkMode) {
+      const id = card.dataset.device;
+      if (state.bulkSelected.has(id)) state.bulkSelected.delete(id); else state.bulkSelected.add(id);
+      renderMain();
+    } else openDrawer(card.dataset.device);
+    return;
+  }
 
+  // ---- Tabs, nav, favourites ---------------------------------------
   const tab = t.closest('[data-devtab]');
   if (tab) {
     e.preventDefault();
@@ -1191,6 +1298,8 @@ document.addEventListener('click', e => {
   }
   const routeEl = t.closest('[data-route]');
   if (routeEl) { e.preventDefault(); nav(routeEl.dataset.route); return; }
+  const navEl = t.closest('[data-nav]');
+  if (navEl) { e.preventDefault(); nav(navEl.dataset.nav); return; }
   const drawerNav = t.closest('#drawer [data-nav]');
   if (drawerNav) {
     e.preventDefault();
@@ -1199,40 +1308,31 @@ document.addEventListener('click', e => {
     nav(route);
     return;
   }
-  const navEl = t.closest('[data-nav]');
-  if (navEl) { e.preventDefault(); nav(navEl.dataset.nav); return; }
   const siteEl = t.closest('[data-site]');
   if (siteEl) {
     state.selectedSite = siteEl.dataset.site;
-    const h = siteEl.dataset.site === 'all' ? '#/devices' : `#/devices/${siteEl.dataset.site}`;
-    if (location.hash === h) renderMain(); else location.hash = h;
+    if (siteEl.dataset.site === 'all') nav('#/devices');
+    else if (siteEl.dataset.site === '__unassigned__') {
+      if (location.hash === '#/devices') renderMain();
+      else location.hash = '#/devices';
+    } else {
+      nav(`#/devices/${siteEl.dataset.site}`);
+    }
     return;
   }
+
+  // ---- Actuator toggles ---------------------------------------------
   const toggle = t.closest('[data-toggle-device]');
   if (toggle && !toggle.disabled) { e.stopPropagation(); toggleActuator(toggle.dataset.toggleDevice, toggle.dataset.toggleCap); return; }
+
+  // ---- Alarm actions ------------------------------------------------
   const ack = t.closest('[data-alarm-ack]'); if (ack) { ackAlarm(ack.dataset.alarmAck); return; }
   const shv = t.closest('[data-alarm-shelve]'); if (shv) { shelveAlarm(shv.dataset.alarmShelve); return; }
   const usv = t.closest('[data-alarm-unshelve]'); if (usv) { unshelveAlarm(usv.dataset.alarmUnshelve); return; }
-  const ann = t.closest('[data-ann-type]');
-  if (ann) {
-    const type = ann.dataset.annType;
-    state.alarmTypeFilter = (state.alarmTypeFilter === type) ? 'all' : type;
-    state.alarmFilter = 'active';
-    state.alarmPriorityFilter = 'all';
-    nav('#/alarms');
-    return;
-  }
-  const card = t.closest('.card[data-device]');
-  if (card && !t.closest('button') && !t.closest('input')) {
-    if (state.bulkMode) {
-      const id = card.dataset.device;
-      if (state.bulkSelected.has(id)) state.bulkSelected.delete(id); else state.bulkSelected.add(id);
-      renderMain();
-    } else openDrawer(card.dataset.device);
-    return;
-  }
   const af = t.closest('[data-alarm-filter]');
   if (af) { state.alarmFilter = af.dataset.alarmFilter; renderMain(); return; }
+
+  // ---- Device-page actions ------------------------------------------
   if (state.view === 'device' && state.openDeviceId) {
     const d = deviceById(state.openDeviceId);
     if (d) {
@@ -1242,95 +1342,11 @@ document.addEventListener('click', e => {
         if (a === 'reboot') { rebootDevice(d); return; }
         if (a === 'factory-reset') { factoryReset(d); return; }
         if (a === 'query-state') { queryState(d); return; }
-        if (a === 'save-config') { saveConfig(d); return; }
-        if (a === 'load-config') { toast('Reloaded from device', { type:'info' }); return; }
-        if (a === 'toggle-inspector') { toggleInspector(); return; }
-      }
-      const cmd = t.closest('[data-cmd-set]');
-      if (cmd) {
-        const c = d.capabilities.find(x => x.id === cmd.dataset.cmdSet);
-        if (c) {
-          const want = cmd.dataset.cmdVal === 'on';
-          if (c.value === want) { toast('Already in that state', { type:'info', timeout:1500 }); return; }
-          toggleActuator(d.device_id, c.id);
-        }
-        return;
-      }
-    }
-  }
-  const bulk = t.closest('[data-bulk]');
-  if (bulk) {
-    const action = bulk.dataset.bulk;
-    if (action === 'exit') { state.bulkMode = false; state.bulkSelected.clear(); renderMain(); return; }
-    if (action === 'clear') { state.bulkSelected.clear(); renderMain(); return; }
-    if (!state.bulkSelected.size) { toast('Select devices first', { type:'info' }); return; }
-    if (action === 'fav') {
-      state.bulkSelected.forEach(id => { if (!isFavorite(id)) state.favorites.push(id); });
-      lsSet('electrix_favorites', state.favorites);
-      audit('bulk.favorite', [...state.bulkSelected].join(','));
-      toast('Favorites updated', { msg:`${state.bulkSelected.size} devices`, type:'ok' });
-      renderMain(); return;
-    }
-    if (action === 'alarms') {
-      const ids = [...state.bulkSelected];
-      const alarm = ALARMS.find(a => ids.includes(a.device_id) && !a.cleared);
-      if (alarm) { state.alarmFilter = 'active'; state.alarmDeviceFilter = alarm.device_id; nav(`#/alarms/${alarm.device_id}`); }
-      else toast('No active alarms', { type:'info' });
-      return;
-    }
-    if (action === 'export') {
-      const rows = [['device_id','name','site','status','last_seen_seconds'].join(',')];
-      state.bulkSelected.forEach(id => {
-        const d = deviceById(id); if (!d) return;
-        rows.push([d.device_id, d.name, siteName(d.site_id), deriveStatus(d), d.last_seen_s].map(v => `"${String(v).replaceAll('"','""')}"`).join(','));
-      });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(new Blob([rows.join('\n')], { type:'text/csv' }));
-      link.download = `electrix-devices-${Date.now()}.csv`; link.click(); URL.revokeObjectURL(link.href);
-      toast('Devices exported', { msg:`${rows.length - 1} devices`, type:'ok' });
-      return;
-    }
-    if (action === 'reboot') {
-      if (!can('toggle')) { toast('Permission denied', { type:'error' }); return; }
-      const targets = [...state.bulkSelected].map(deviceById).filter(Boolean);
-      (async () => {
-        for (const d of targets) await rebootDevice(d);
-        toast('Reboot commands sent', { msg:`${targets.length} devices`, type:'ok' });
-      })();
-      return;
-    }
-    if (action === 'on' || action === 'off') {
-      const want = action === 'on';
-      const targets = [];
-      state.bulkSelected.forEach(id => {
-        const d = deviceById(id); if (!d) return;
-        d.capabilities.forEach(c => { if (c.kind === 'relay' && c.value !== want) targets.push({ d, c }); });
-      });
-      if (!targets.length) { toast('Nothing to change', { type:'info' }); return; }
-      (async () => {
-        let ok = 0, fail = 0;
-        for (const { d, c } of targets) {
-          const r = await executeAction(d.device_id, c.id, want, 'human');
-          if (r.ok) ok++; else fail++;
-        }
-        audit('bulk.' + action, [...state.bulkSelected].join(','), `${ok} ok, ${fail} failed`);
-        toast(`Bulk ${action}`, { msg:`${ok} applied${fail ? `, ${fail} blocked` : ''}`, type: fail ? 'warn' : 'ok' });
-        renderMain();
-      })();
-      return;
-    }
-  }
-  if (state.drawerDeviceId) {
-    const d = deviceById(state.drawerDeviceId);
-    if (d) {
-      const act = t.closest('[data-act]');
-      if (act) {
-        if (act.dataset.act === 'query-state') { queryState(d); return; }
-        if (act.dataset.act === 'reboot') { rebootDevice(d); return; }
       }
     }
   }
 });
+
 document.addEventListener('change', e => {
   const inp = e.target;
   if (inp.matches && inp.matches('.cap-label-edit[data-cap-id]')) {
@@ -1341,9 +1357,8 @@ document.addEventListener('change', e => {
   }
 });
 
-
 ============================================================
-FILE: ./src/core/i18n.js
+FILE: src/core/i18n.js
 ============================================================
 'use strict';
 
@@ -1680,7 +1695,7 @@ function initLanguage() {
 
 
 ============================================================
-FILE: ./src/core/lifecycle.js
+FILE: src/core/lifecycle.js
 ============================================================
 'use strict';
 
@@ -1833,16 +1848,40 @@ function boot() {
       }
     }
   });
+    mqtt.on('new-device', (device) => {
+    audit('device.discovered', device.device_id);
+    toast('New device discovered', {
+      msg: `${device.device_id} — click Assign to put it on a site`,
+      type: 'info',
+      timeout: 15000,
+      actionLabel: 'Assign',
+      onClick: () => openDeviceOnboarding(device),
+    });
+  });
   mqtt.connect();
   startTick();
   if (state.user) enterApp();
   else applyTheme(localStorage.getItem('electrix_theme') || null, false);
+    // New-device notification. Fires once per device_id, only when the
+  // backend reports the device has no site yet — i.e. it hasn't been
+  // onboarded. Devices already assigned on a previous session don't
+  // re-notify.
+  mqtt.on('new-device', (device) => {
+    audit('device.discovered', device.device_id);
+    toast('New device discovered', {
+      msg: `${device.device_id} — click Assign to put it on a site`,
+      type: 'info',
+      timeout: 15000,
+      actionLabel: 'Assign',
+      onClick: () => openDeviceOnboarding(device),
+    });
+  });
 }
 boot();
 
 
 ============================================================
-FILE: ./src/core/runtime.js
+FILE: src/core/runtime.js
 ============================================================
 'use strict';
 
@@ -1912,11 +1951,14 @@ async function copyText(text) {
   catch { toast('Copy failed', { type:'error' }); }
 }
 
-
 ============================================================
-FILE: ./src/data/demo-data.js
+FILE: src/data/demo-data.js
 ============================================================
 'use strict';
+
+// ---------------------------------------------------------------------
+// Static configuration — real, not demo.
+// ---------------------------------------------------------------------
 
 const USERS = [
   { username: 'admin',    password: 'admin123',    role: 'admin',    display: 'Admin' },
@@ -1924,210 +1966,45 @@ const USERS = [
   { username: 'viewer',   password: 'viewer123',   role: 'viewer',   display: 'Viewer' },
 ];
 const ROLE_LABEL = { admin: 'Admin', operator: 'Operator', viewer: 'Viewer' };
-const SITES = [
-  { id: 'villa-nord',  name: 'Villa Nord' },
-  { id: 'warehouse-b', name: 'Warehouse B' },
-  { id: 'office-hq',   name: 'Office HQ' },
-];
-const DEVICES = [
-  { device_id: 'f42dc971c624', site_id: 'villa-nord', name: 'Living Room Controller', device_type: 'relay-4ch', hw_rev: 'rev-b', fw_version: '1.2.0', mac: 'f4:2d:c9:71:c6:24', lwt: 'online', last_seen_s: 8,
-    config: { sensor_publish_period_ms: 1000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-    capabilities: [
-      { id: 'relay0', kind: 'relay', label: 'Ceiling Light', value: true,  online: true },
-      { id: 'relay1', kind: 'relay', label: 'Floor Lamp',    value: false, online: true },
-      { id: 'relay2', kind: 'relay', label: 'relay2',        value: false, online: true },
-      { id: 'relay3', kind: 'relay', label: 'Garden Pump',   value: true,  online: true },
-    ] },
-  { device_id: 'a13bd220e901', site_id: 'villa-nord', name: 'Garage Controller', device_type: 'relay-2ch', hw_rev: 'rev-a', fw_version: '1.1.4', mac: 'a1:3b:d2:20:e9:01', lwt: 'offline', last_seen_s: 7380,
-    config: { sensor_publish_period_ms: 1000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: false, feature_threshold_events_enabled: false },
-    capabilities: [
-      { id: 'relay0', kind: 'relay', label: 'Garage Door', value: false, online: false },
-      { id: 'relay1', kind: 'relay', label: 'relay1',      value: false, online: false },
-    ] },
-  { device_id: '88c4a01f3d7e', site_id: 'warehouse-b', name: 'Loading Dock Panel', device_type: 'relay-4ch', hw_rev: 'rev-b', fw_version: '1.2.0', mac: '88:c4:a0:1f:3d:7e', lwt: 'online', last_seen_s: 3,
-    config: { sensor_publish_period_ms: 500, heartbeat_period_ms: 15000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-    capabilities: [
-      { id: 'relay0', kind: 'relay', label: 'Dock Door A', value: true, online: true },
-      { id: 'relay1', kind: 'relay', label: 'Conveyor',    value: true, online: true },
-    ] },
-  { device_id: '55e9012bca44', site_id: 'warehouse-b', name: 'Cold Storage Monitor', device_type: 'sensor-pir', hw_rev: 'rev-a', fw_version: '0.9.1', mac: '55:e9:01:2b:ca:44', lwt: 'online', last_seen_s: 21,
-    config: { sensor_publish_period_ms: 5000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-    capabilities: [ { id: 'pir0', kind: 'sensor', label: 'Bay 3 Motion', value: 'clear', online: true } ] },
-  { device_id: '2f0b7a5df318', site_id: 'office-hq', name: 'Reception Lighting', device_type: 'relay-2ch', hw_rev: 'rev-b', fw_version: '1.2.0', mac: '2f:0b:7a:5d:f3:18', lwt: 'online', last_seen_s: 15,
-    config: { sensor_publish_period_ms: 1000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-    capabilities: [
-      { id: 'relay0', kind: 'relay', label: 'Front Desk', value: true,  online: true },
-      { id: 'relay1', kind: 'relay', label: 'relay1',     value: false, online: true },
-    ] },
-  { device_id: '9d1c44e0ab27', site_id: 'office-hq', name: 'Server Room Sensor', device_type: 'sensor-pir', hw_rev: 'rev-a', fw_version: '0.9.1', mac: '9d:1c:44:e0:ab:27', lwt: 'online', last_seen_s: 4,
-    config: { sensor_publish_period_ms: 5000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-    capabilities: [ { id: 'pir0', kind: 'sensor', label: 'Server Room Motion', value: 'clear', online: true } ] },
-];
-DEVICES.forEach(d => d.capabilities.forEach(c => {
-  if (!Number.isFinite(c.since)) c.since = Date.now() - (c.value === true ? 4 * 60 * 60 * 1000 : 0);
-}));
 
-const CONFIG_DEFAULTS = {
-  'relay-4ch': { sensor_publish_period_ms: 1000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-  'relay-2ch': { sensor_publish_period_ms: 1000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-  'sensor-pir': { sensor_publish_period_ms: 5000, heartbeat_period_ms: 30000, feature_agg_telemetry_enabled: true, feature_threshold_events_enabled: true },
-};
+// Sites start empty. The user creates them in Settings or when assigning
+// a newly-discovered device. Persisted to localStorage so they survive
+// reloads; the backend would eventually own this.
+let SITES = lsGet('electrix_sites', []);
 
-const ALARMS = [
-  { id: 'a1', device_id: '88c4a01f3d7e', type: 'relay_stuck', priority: 'critical', state: 'UNACK_ALARM', code: 'FEEDBACK_MISMATCH', msg: 'Conveyor — feedback mismatch, possible stuck contact', since: 210, latched: true, acked: false, ack_by: null, cleared: false, note: null, shelved_until: null },
-  { id: 'a2', device_id: '55e9012bca44', type: 'low_battery', priority: 'high', state: 'ACK_ALARM', code: 'LOW_BATTERY', msg: 'Cold Storage Monitor — backup battery below 15%', since: 5400, latched: false, acked: true, ack_by: 'operator', cleared: false, note: 'Replacement ordered', shelved_until: null },
-  { id: 'a3', device_id: 'a13bd220e901', type: 'device_offline', priority: 'medium', state: 'UNACK_ALARM', code: 'MQTT_UNREACHABLE', msg: 'Garage Controller — offline for over 2 hours', since: 0, latched: false, acked: false, ack_by: null, cleared: false, note: null, shelved_until: null },
-  { id: 'a4', device_id: 'f42dc971c624', type: 'threshold', priority: 'low', state: 'RTN_UNACK', code: 'THRESHOLD_EVENT', msg: 'Garden Pump — runtime exceeded 2h continuous', since: 900, latched: false, acked: true, ack_by: 'admin', cleared: true, note: null, shelved_until: null },
-];
+// ---------------------------------------------------------------------
+// Runtime data — populated by the backend adapter (mqtt-simulator.js).
+// All of these start empty. The adapter mutates them in place; nothing
+// else populates them.
+// ---------------------------------------------------------------------
 
+const DEVICES = [];
+const ALARMS = [];
+const ACTIVITY = [];
 const TELEMETRY = {};
 const LWT_LOG = [];
-function seedSeries(key, { unit, base, noise, threshold = null, window_s = 2, points = 120 }) {
-  const now = Date.now(), history = [];
-  for (let i = points; i >= 0; i--) history.push({ t: now - i * window_s * 1000, v: +(base + (Math.random() - 0.5) * noise).toFixed(2) });
-  TELEMETRY[key] = { unit, threshold, window_s, history };
-}
-DEVICES.forEach(d => {
-  const baseCurrent = d.lwt === 'offline' ? 0 : (d.device_type.includes('relay') ? 1.5 + Math.random() * 2.5 : 0.3 + Math.random() * 0.6);
-  seedSeries(`${d.device_id}/current`, { unit: 'A', base: baseCurrent, noise: 0.5, threshold: 6 });
-  seedSeries(`${d.device_id}/power`,   { unit: 'W', base: baseCurrent * 230, noise: 40, threshold: 1500 });
-  if (d.device_type.includes('sensor')) {
-    seedSeries(`${d.device_id}/temp`,    { unit: '°C', base: 22 + Math.random() * 3, noise: 0.8, threshold: 35 });
-    seedSeries(`${d.device_id}/battery`, { unit: '%',  base: d.device_id === '55e9012bca44' ? 12 + Math.random() * 2 : 82 - Math.random() * 15, noise: 0.4, threshold: 15 });
-  }
-});
+const COMMAND_HISTORY = [];
 
-const ACTIVITY = [
-  { t: 40,   text: 'admin toggled Front Desk → on' },
-  { t: 300,  text: 'operator acknowledged LOW_BATTERY' },
-  { t: 900,  text: 'Living Room Controller published config/current' },
-  { t: 2100, text: 'Garage Controller went offline (LWT)' },
-  { t: 5400, text: 'alarm raised: LOW_BATTERY' },
-];
-
-const DEFAULT_SCHEDULES = [
-  { id: 'sch1', name: 'Garden pump off at night', enabled: true, device_id: 'f42dc971c624', capability: 'relay3', value: false, time: '22:00', days: [0,1,2,3,4,5,6], last_run: null },
-  { id: 'sch2', name: 'Reception lights on at 07:30', enabled: true, device_id: '2f0b7a5df318', capability: 'relay0', value: true, time: '07:30', days: [1,2,3,4,5], last_run: null },
-];
-let SCHEDULES = lsGet('electrix_schedules', DEFAULT_SCHEDULES);
+// Automation tasks and scenes: user-created content, persisted in the
+// browser until a backend takes over.
+let SCHEDULES = lsGet('electrix_schedules', []);
 const saveSchedules = () => lsSet('electrix_schedules', SCHEDULES);
 
-const DEFAULT_SCENES = [
-  { id: 'sc1', name: 'Evening mode', icon: 'moon', enabled: true, actions: [
-    { device_id: 'f42dc971c624', capability: 'relay0', value: true },
-    { device_id: 'f42dc971c624', capability: 'relay1', value: true },
-    { device_id: '2f0b7a5df318', capability: 'relay0', value: false },
-  ] },
-  { id: 'sc2', name: 'Away mode', icon: 'door-closed', enabled: true, actions: [
-    { device_id: 'f42dc971c624', capability: 'relay0', value: false },
-    { device_id: 'f42dc971c624', capability: 'relay1', value: false },
-    { device_id: 'f42dc971c624', capability: 'relay3', value: false },
-    { device_id: '2f0b7a5df318', capability: 'relay0', value: false },
-  ] },
-];
-let SCENES = lsGet('electrix_scenes', DEFAULT_SCENES);
+let SCENES = lsGet('electrix_scenes', []);
 const saveScenes = () => lsSet('electrix_scenes', SCENES);
 
-/* =====================================================================
- * Automation Tasks
- * --------------------------------------------------------------------
- * Stored under LADDER_RULES for backward compatibility with existing
- * call sites (app-state.js, settings.js, device-detail.js). The shape
- * of an entry is an Automation Task:
- *   { id, name, description, enabled, author, created_at, tags[], rungs[] }
- * ===================================================================== */
+// ---------------------------------------------------------------------
+// Automation Task storage — unchanged from before, just without defaults.
+// ---------------------------------------------------------------------
 
 const AUTOMATION_TASKS_VERSION = 2;
-
-const DEFAULT_AUTOMATION_TASKS = [
-  {
-    id: 'task-pump',
-    name: 'Pump Control',
-    description: 'Tank fill control with auto mode and high-level cutoff.',
-    enabled: true,
-    author: 'admin',
-    created_at: Date.now() - 86400_000 * 7,
-    tags: [
-      { name: 'Auto_Mode',     type: 'BOOL', bind: 'device', device_id: 'f42dc971c624', capability: 'relay0' },
-      { name: 'Start_Command', type: 'BOOL', bind: 'device', device_id: 'f42dc971c624', capability: 'relay1' },
-      { name: 'Pump_Run',      type: 'BOOL', bind: 'device', device_id: 'f42dc971c624', capability: 'relay3' },
-      { name: 'Pump',          type: 'BOOL', bind: 'device', device_id: 'f42dc971c624', capability: 'relay2' },
-      { name: 'Tank_Level',    type: 'REAL', bind: 'virtual', value: 45.0 },
-      { name: 'High_Level',    type: 'REAL', bind: 'virtual', value: 90.0 },
-      { name: 'Low_Level',     type: 'REAL', bind: 'virtual', value: 20.0 },
-    ],
-    rungs: [
-      {
-        id: 'rung-pump-1', number: 1,
-        comment: 'Latch Pump_Run when Auto_Mode and Start_Command are active.',
-        enabled: true,
-        elements: [
-          { id: 'e-p1-1', type: 'contact', variant: 'no', tag: 'Auto_Mode' },
-          { id: 'e-p1-2', type: 'contact', variant: 'no', tag: 'Start_Command' },
-          { id: 'e-p1-3', type: 'coil',    variant: 'set', tag: 'Pump_Run' },
-        ],
-      },
-      {
-        id: 'rung-pump-2', number: 2,
-        comment: 'Run the pump while the tank is below the low-level setpoint.',
-        enabled: true,
-        elements: [
-          { id: 'e-p2-1', type: 'contact',    variant: 'no', tag: 'Pump_Run' },
-          { id: 'e-p2-2', type: 'comparator', op: '<', tagA: 'Tank_Level', tagB: 'Low_Level' },
-          { id: 'e-p2-3', type: 'coil',       variant: 'normal', tag: 'Pump' },
-        ],
-      },
-      {
-        id: 'rung-pump-3', number: 3,
-        comment: 'Stop when the tank reaches the high-level setpoint.',
-        enabled: true,
-        elements: [
-          { id: 'e-p3-1', type: 'comparator', op: '>', tagA: 'Tank_Level', tagB: 'High_Level' },
-          { id: 'e-p3-2', type: 'coil',       variant: 'reset', tag: 'Pump_Run' },
-        ],
-      },
-      {
-        id: 'rung-pump-4', number: 4,
-        comment: 'Pump start delay.',
-        enabled: true,
-        elements: [
-          { id: 'e-p4-1', type: 'contact', variant: 'no', tag: 'Pump_Run' },
-          { id: 'e-p4-2', type: 'timer',   variant: 'ton', name: 'T_PumpStart', preset: 5 },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'task-lighting',
-    name: 'Reception Lighting',
-    description: 'Reception lights follow the front-desk state.',
-    enabled: true,
-    author: 'operator',
-    created_at: Date.now() - 86400_000 * 3,
-    tags: [
-      { name: 'Reception_On', type: 'BOOL', bind: 'device', device_id: '2f0b7a5df318', capability: 'relay0' },
-      { name: 'FrontDesk',    type: 'BOOL', bind: 'device', device_id: '2f0b7a5df318', capability: 'relay0' },
-    ],
-    rungs: [
-      {
-        id: 'rung-light-1', number: 1,
-        comment: 'Turn on reception lighting.',
-        enabled: true,
-        elements: [
-          { id: 'e-l1-1', type: 'contact', variant: 'no', tag: 'Reception_On' },
-          { id: 'e-l1-2', type: 'coil',    variant: 'normal', tag: 'FrontDesk' },
-        ],
-      },
-    ],
-  },
-];
 
 let LADDER_RULES = (() => {
   const stored = lsGet('electrix_automation_tasks', null);
   if (stored && stored.version === AUTOMATION_TASKS_VERSION && Array.isArray(stored.tasks)) {
     return stored.tasks;
   }
-  return DEFAULT_AUTOMATION_TASKS.map(t => JSON.parse(JSON.stringify(t)));
+  return [];
 })();
 const saveLadderRules = () => lsSet('electrix_automation_tasks', { version: AUTOMATION_TASKS_VERSION, tasks: LADDER_RULES });
 
@@ -2139,53 +2016,10 @@ const sceneIconHTML = name => {
 };
 
 const DEFAULT_LAYOUT = ['fleet_status', 'active_alarms', 'quick_controls', 'recent_activity', 'site_overview'];
-let state = {
-  user: lsGet('electrix_user', null),
-  language: lsGet('electrix_language', 'en'),
-  view: 'dashboard',
-  deviceTab: 'overview',
-  selectedSite: lsGet('electrix_site', 'all'),
-  sortBy: lsGet('electrix_sort', 'site'),
-  search: '',
-  devMode: lsGet('electrix_devmode', false),
-  sidebarCollapsed: lsGet('electrix_sidebar_collapsed', false),
-  drawerDeviceId: null,
-  openDeviceId: null,
-  widgetLayout: lsGet('electrix_widget_layout', DEFAULT_LAYOUT.slice()),
-  widgetReorderMode: false,
-  alarmFilter: 'active',
-  alarmDeviceFilter: null,
-  alarmPriorityFilter: 'all',
-  alarmTypeFilter: 'all',
-  favorites: lsGet('electrix_favorites', []),
-  bulkMode: false,
-  bulkSelected: new Set(),
-  deviceView: 'grid',
-  teleDevice: 'all',
-  teleSensor: 'all',
-  teleMode: 'overview',
-  deviceTeleMode: 'overview',
-  teleFocusKey: null,
-  teleWindow: '5m',
-  teleSort: lsGet('electrix_tele_sort', 'device'),
-  teleRateOfChange: lsGet('electrix_tele_rate_of_change', {}),
-  teleSelection: lsGet('electrix_tele_selection', null),
-  telePinned: lsGet('electrix_tele_pinned', {}),
-  deviceReferenceOpen: lsGet('electrix_device_reference_open', {}),
-  // Automation Task editor
-  autoTaskId: lsGet('electrix_auto_task', null),
-  autoTab: 'ladder',
-  autoActiveRungId: null,
-  autoSelectedElId: null,
-  autoClipboard: null,
-  inspectorOpen: false,
-  paletteOpen: false,
-  paletteQuery: '',
-  paletteSel: 0,
-};
+let state = { /* ... same as before ... */ };
 
 ============================================================
-FILE: ./src/features/alarms/alarms.js
+FILE: src/features/alarms/alarms.js
 ============================================================
 'use strict';
 
@@ -2267,7 +2101,7 @@ function renderAlarmList() {
 
 
 ============================================================
-FILE: ./src/features/automation/automation.js
+FILE: src/features/automation/automation.js
 ============================================================
 'use strict';
 
@@ -3730,7 +3564,7 @@ function openSceneEditor(sceneId = null) {
 }
 
 ============================================================
-FILE: ./src/features/dashboard/dashboard.js
+FILE: src/features/dashboard/dashboard.js
 ============================================================
 'use strict';
 
@@ -3740,8 +3574,75 @@ const deriveConnectivityStatus = device => {
   const staleAfterSeconds = (device.config.heartbeat_period_ms / 1000) * 2;
   return device.last_seen_s > staleAfterSeconds ? 'warn' : 'online';
 };
+function renderFirstRun() {
+  const hasSites = SITES.length > 0;
+  return `
+    <div class="overview-dashboard">
+      <header class="overview-heading">
+        <div>
+          <div class="overview-eyebrow">WELCOME</div>
+          <h1>Set up your fleet</h1>
+          <p>No devices are connected yet. Start by naming a site, then power on your first device.</p>
+        </div>
+      </header>
+
+      <section class="overview-panel">
+        <div class="overview-section-heading">
+          <div><span class="overview-section-kicker">STEP 1</span><h2>Sites</h2></div>
+          <span class="overview-section-count">${SITES.length}</span>
+        </div>
+        ${hasSites
+          ? `<div class="first-run-sites">${SITES.map(s => `
+              <div class="first-run-site">
+                <span>${esc(s.name)}</span>
+                <span class="muted">${esc(s.id)}</span>
+              </div>`).join('')}</div>`
+          : '<div class="empty">No sites defined yet. Add one to get started.</div>'}
+        <div class="config-row" style="margin-top:14px;gap:8px;">
+          <input type="text" id="firstSiteName" placeholder="Site name (e.g. Warehouse B)"
+                 style="flex:1;min-width:0;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+          <button class="btn primary" id="firstSiteAdd">${icon('plus')}Add site</button>
+        </div>
+      </section>
+
+      <section class="overview-panel">
+        <div class="overview-section-heading">
+          <div><span class="overview-section-kicker">STEP 2</span><h2>Power on a device</h2></div>
+        </div>
+        <p class="muted" style="margin:0;font-size:12.5px;line-height:1.55;">
+          Power up an Electrix device. It will publish a retained
+          <span class="mono">who_am_i</span> message to the broker. This page will
+          notify you within a few seconds of the device appearing.
+        </p>
+        <div class="muted" style="margin-top:12px;font-size:11.5px;">
+          Broker: <span class="mono" style="color:var(--content);">${esc(BACKEND_URL)}</span>
+        </div>
+      </section>
+    </div>`;
+}
+
+function wireFirstRun() {
+  $('#firstSiteAdd')?.addEventListener('click', () => {
+    const raw = $('#firstSiteName').value.trim();
+    if (!raw) return;
+    const id = raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    if (!id) { toast('Invalid name', { type: 'error' }); return; }
+    if (SITES.some(s => s.id === id)) { toast('Site already exists', { type: 'warn' }); return; }
+    SITES.push({ id, name: raw });
+    lsSet('electrix_sites', SITES);
+    toast('Site added', { msg: raw, type: 'ok' });
+    renderMain();
+  });
+}
 
 function renderDashboard(main) {
+  if (DEVICES.length === 0) {
+    main.innerHTML = renderFirstRun();
+    refreshIcons(main);
+    wireFirstRun();
+    return;
+  }
+
   const counts = { online:0, warn:0, offline:0 };
   DEVICES.forEach(device => counts[deriveConnectivityStatus(device)]++);
 
@@ -3885,15 +3786,131 @@ function renderDashboard(main) {
 
 
 ============================================================
-FILE: ./src/features/devices/device-detail.js
+FILE: src/features/devices/device-detail.js
+============================================================
+'use strict';
+
+const DEVICE_TABS = [
+  { id:'overview',    label:'Overview',    icon:'gauge' },
+  { id:'telemetry',   label:'Telemetry',   icon:'activity' },
+  { id:'automation',  label:'Automation',  icon:'zap' },
+  { id:'commands',    label:'Activity',    icon:'terminal-square' },
+  { id:'config',      label:'Config',      icon:'settings-2' },
+  { id:'events',      label:'Events',      icon:'list' },
+  { id:'diagnostics', label:'Diagnostics', icon:'stethoscope' },
+];
+
+function renderDevicePage(main) {
+  const d = deviceById(state.openDeviceId);
+  if (!d) { main.innerHTML = `<div class="empty">Device not found.<div class="cta"><button class="btn" data-nav="#/devices">Back</button></div></div>`; refreshIcons(main); return; }
+  const st = deriveStatus(d), cls = statusClass(st);
+  const editable = can('rename'), controllable = can('toggle');
+  main.innerHTML = `
+    <div class="dev-page-head">
+      <div>
+        <h1 class="dev-page-title">
+          <span class="cap-icon" style="width:32px;height:32px;background:var(--surface-2);">${icon(deviceTypeIcon(d.device_type))}</span>
+          <span>${esc(d.name)}</span>
+          <span class="status-dot ${cls}"></span>
+          <button class="fav-btn ${isFavorite(d.device_id) ? 'on' : ''}" data-fav="${d.device_id}" style="position:static;display:inline-flex;vertical-align:middle;">${icon('star')}</button>
+        </h1>
+        <div class="dev-page-sub">
+          <button class="site-chip" data-reassign-device="${d.device_id}" type="button" title="Change site">
+            ${icon('map-pin')}
+            <span>${d.site_id ? esc(siteName(d.site_id)) : 'Unassigned'}</span>
+            ${icon('pencil')}
+          </button>
+          <span>·</span>
+          <span class="mono">${d.device_id}</span>
+          <span>·</span>
+          <span>fw ${esc(d.fw_version)}</span>
+          <span>·</span>
+          <span id="deviceSeenTicker" style="color:${deviceFreshnessTextColor(d)}">seen ${fmtAgo(d.last_seen_s)}</span>
+          ${freshnessHTML(d)}
+        </div>
+      </div>
+      <div class="dev-page-actions">
+        <button class="btn" data-act="reboot" ${can('toggle') ? '' : 'disabled'}>${icon('rotate-cw')}<span>Reboot</span></button>
+        <button class="btn" data-act="query-state" ${can('toggle') ? '' : 'disabled'}>${icon('refresh-cw')}<span>Query</span></button>
+        <button class="btn danger" data-act="factory-reset" ${can('toggle') ? '' : 'disabled'}>${icon('trash-2')}<span>Reset</span></button>
+      </div>
+    </div>
+    <div class="tabs" id="deviceTabs">
+      ${DEVICE_TABS.map(t => `<button class="tab ${state.deviceTab === t.id ? 'active' : ''}" data-devtab="${t.id}" type="button">${icon(t.icon)}<span>${t.label}</span></button>`).join('')}
+    </div>
+    <div id="devTabBody">${renderDeviceTab(d, state.deviceTab, { editable, controllable })}</div>`;
+  refreshIcons(main);
+  if (state.deviceTab === 'telemetry') wireDeviceTelemetry(main, d);
+  if (state.deviceTab === 'automation') wireLadderControls(main);
+}
+
+function renderDeviceTab(d, tab, opts) {
+  if (tab === 'overview') return renderDevOverview(d, opts);
+  if (tab === 'telemetry') return renderDevTelemetry(d);
+  if (tab === 'automation') return renderDeviceAutomation(d);
+  if (tab === 'commands') return renderDevCommands ? renderDevCommands(d, opts) : '<div class="empty">Activity tab not implemented yet.</div>';
+  if (tab === 'config') return renderDevConfig ? renderDevConfig(d, opts) : '<div class="empty">Config tab not implemented yet.</div>';
+  if (tab === 'events') return renderDevEvents ? renderDevEvents(d) : '<div class="empty">Events tab not implemented yet.</div>';
+  if (tab === 'diagnostics') return renderDevDiagnostics ? renderDevDiagnostics(d) : '<div class="empty">Diagnostics tab not implemented yet.</div>';
+  return '';
+}
+
+function renderDevOverview(d, { editable, controllable }) {
+  const caps = d.capabilities.map(c => {
+    const isRelay = c.kind === 'relay';
+    const block = isBlocked(d.device_id, c.id);
+    const toggleHtml = isRelay
+      ? `<button class="toggle ${c.value ? 'on' : ''} ${c.pending ? 'pending' : ''}"
+          data-toggle-device="${d.device_id}" data-toggle-cap="${c.id}"
+          ${controllable && c.online && !block ? '' : 'disabled'}
+          aria-pressed="${c.value}"
+          title="${block ? 'Blocked: ' + esc(block.rule.name) : ''}"></button>`
+      : `<span class="mono" style="font-size:12px;color:var(--content-dim);">${esc(c.value)}</span>`;
+    return `<div class="cap-row">
+      <div class="cap-icon">${icon(capIcon(c.kind))}</div>
+      <div class="cap-info">
+        <input class="cap-label-edit" value="${esc(c.label)}" data-cap-id="${c.id}" ${editable ? '' : 'disabled'}>
+        <div class="cap-id mono">${c.id}</div>
+      </div>${toggleHtml}
+    </div>`;
+  }).join('') || '<div class="empty">No capabilities.</div>';
+
+  return `<div class="dev-grid">
+    <div class="panel"><h4>${icon('toggle-right')}Capabilities</h4>${caps}</div>
+    <div class="panel"><h4>${icon('info')}Status</h4>
+      <dl class="kv">
+        <dt>LWT</dt><dd>${d.lwt}</dd>
+        <dt>Last heartbeat</dt><dd>${fmtAgo(d.last_seen_s)}</dd>
+        <dt>Heartbeat period</dt><dd>${d.config.heartbeat_period_ms} ms</dd>
+        <dt>Firmware</dt><dd>${d.fw_version}</dd>
+        <dt>HW rev</dt><dd>${d.hw_rev}</dd>
+        <dt>MAC</dt><dd>${d.mac}</dd>
+        <dt>Site</dt><dd>${d.site_id ? esc(siteName(d.site_id)) : '<span style="color:var(--warn)">Unassigned</span>'}</dd>
+      </dl>
+    </div>
+  </div>`;
+}
+
+============================================================
+FILE: src/features/devices/device-list.js
 ============================================================
 'use strict';
 
 function renderDevices(main) {
   renderSitesAside();
+
+  const unassigned = DEVICES.filter(d => !d.site_id);
+  const visibleUnassigned = state.selectedSite === 'all'
+    ? unassigned
+    : (state.selectedSite === '__unassigned__' ? unassigned : []);
+
   main.innerHTML = `
     <div class="main-head">
-      <h1 id="mainTitle">${state.selectedSite === 'all' ? 'All sites' : esc(siteName(state.selectedSite))}</h1>
+      <h1 id="mainTitle">${state.selectedSite === 'all'
+        ? 'All sites'
+        : state.selectedSite === '__unassigned__'
+          ? 'Unassigned devices'
+          : esc(siteName(state.selectedSite))}</h1>
       <div class="main-head-actions">
         <span class="count" id="mainCount"></span>
         ${isMobile() ? `<button class="btn sm" id="mobileSiteFilter">${icon('filter')}<span>Sites</span></button>` : ''}
@@ -3901,28 +3918,73 @@ function renderDevices(main) {
         <button class="btn sm ${state.bulkMode ? 'active' : ''}" id="bulkToggle">${state.bulkMode ? 'Done' : 'Select'}</button>
       </div>
     </div>
+
+    ${unassigned.length && state.selectedSite !== '__unassigned__' ? `<div class="unassigned-banner">
+      ${icon('alert-triangle')}
+      <div>
+        <strong>${unassigned.length} unassigned device${unassigned.length === 1 ? '' : 's'}</strong>
+        <span>New devices won't be grouped under a site until they're assigned.</span>
+      </div>
+      <button class="btn sm" id="showUnassigned">Show only</button>
+      <button class="btn sm primary" id="assignAllBtn">Assign next</button>
+    </div>` : ''}
+
     <div class="grid" id="grid"></div>`;
+
   renderDeviceGrid();
+
   $('#bulkToggle').addEventListener('click', () => {
     state.bulkMode = !state.bulkMode;
     if (!state.bulkMode) state.bulkSelected.clear();
     renderMain();
   });
-  $('#deviceViewToggle').addEventListener('click', () => { state.deviceView = state.deviceView === 'grid' ? 'list' : 'grid'; renderMain(); });
-  const msf = $('#mobileSiteFilter'); if (msf) msf.addEventListener('click', openMobileSiteSheet);
+  $('#deviceViewToggle').addEventListener('click', () => {
+    state.deviceView = state.deviceView === 'grid' ? 'list' : 'grid';
+    renderMain();
+  });
+  const msf = $('#mobileSiteFilter');
+  if (msf) msf.addEventListener('click', openMobileSiteSheet);
+
+  const showBtn = $('#showUnassigned');
+  if (showBtn) showBtn.addEventListener('click', () => {
+    state.selectedSite = '__unassigned__';
+    location.hash = '#/devices';
+    renderMain();
+  });
+  const assignBtn = $('#assignAllBtn');
+  if (assignBtn) assignBtn.addEventListener('click', () => {
+    if (unassigned[0]) openDeviceOnboarding(unassigned[0]);
+  });
 }
 
 function renderSitesAside() {
   const list = $('#siteList'); if (!list) return;
   const counts = {};
-  DEVICES.forEach(d => counts[d.site_id] = (counts[d.site_id] || 0) + 1);
-  const row = (id, name, count) =>
-    `<button class="site-item ${state.selectedSite === id ? 'selected' : ''}" data-site="${id}">
-      <span>${esc(name)}</span><span class="site-count">${count}</span></button>`;
-  list.innerHTML = row('all','All sites',DEVICES.length) + SITES.map(s => row(s.id, s.name, counts[s.id] || 0)).join('');
+  DEVICES.forEach(d => { if (d.site_id) counts[d.site_id] = (counts[d.site_id] || 0) + 1; });
+  const unassignedCount = DEVICES.filter(d => !d.site_id).length;
+
+  const row = (id, name, count, extraCls = '') =>
+    `<button class="site-item ${state.selectedSite === id ? 'selected' : ''} ${extraCls}" data-site="${id}">
+      <span>${esc(name)}</span><span class="site-count">${count}</span>
+    </button>`;
+
+  list.innerHTML =
+    row('all', 'All sites', DEVICES.length) +
+    (unassignedCount
+      ? row('__unassigned__', 'Unassigned', unassignedCount, 'unassigned-row')
+      : '') +
+    SITES.map(s => row(s.id, s.name, counts[s.id] || 0)).join('');
+
   list.querySelectorAll('.site-item').forEach(el => el.addEventListener('click', () => {
     state.selectedSite = el.dataset.site;
-    nav(el.dataset.site === 'all' ? '#/devices' : `#/devices/${el.dataset.site}`);
+    if (el.dataset.site === 'all') nav('#/devices');
+    else if (el.dataset.site === '__unassigned__') {
+      // Unassigned isn't a real site; keep the URL clean and just re-render.
+      if (location.hash === '#/devices') renderMain();
+      else location.hash = '#/devices';
+    } else {
+      nav(`#/devices/${el.dataset.site}`);
+    }
   }));
   const sel = $('#sortSel'); if (sel) sel.value = state.sortBy;
 }
@@ -3954,10 +4016,12 @@ function visibleDevices() {
   });
   return list;
 }
-
 function renderDeviceGrid() {
   const grid = $('#grid'); if (!grid) return;
-  const list = visibleDevices();
+  let list = visibleDevices();
+  if (state.selectedSite === '__unassigned__') {
+    list = list.filter(d => !d.site_id);
+  }
   $('#mainCount').textContent = list.length + (list.length === 1 ? ' device' : ' devices');
   if (!list.length) {
     grid.innerHTML = `<div class="empty">No devices match.<div class="cta"><button class="btn" data-nav="#/devices">Clear filter</button></div></div>`;
@@ -3969,6 +4033,8 @@ function renderDeviceGrid() {
     const displayStatus = d.lwt === 'offline' ? 'offline' : st === 'alarm' ? 'warn' : st;
     const alarms = ALARMS.filter(a => a.device_id === d.device_id && !a.cleared);
     const selected = state.bulkSelected.has(d.device_id);
+    const siteLabel = d.site_id ? siteName(d.site_id) : null;
+
     return `<div class="card ${cls} ${selected ? 'selected' : ''}" data-device="${d.device_id}">
       <div class="sel-check" data-sel-device="${d.device_id}">${icon('check')}</div>
       <div class="card-top">
@@ -3976,7 +4042,11 @@ function renderDeviceGrid() {
           <span class="cap-icon" style="width:28px;height:28px;background:var(--surface-2);">${icon(deviceTypeIcon(d.device_type))}</span>
           <div style="min-width:0;">
             <div class="card-name">${esc(d.name)}</div>
-            <div class="card-site">${esc(siteName(d.site_id))}</div>
+            <div class="card-site">
+              ${siteLabel
+                ? `<span class="site-badge">${icon('map-pin')}${esc(siteLabel)}</span>`
+                : `<span class="site-badge unassigned">${icon('alert-circle')}Unassigned</span>`}
+            </div>
           </div>
         </div>
         <div class="card-right">
@@ -3988,117 +4058,18 @@ function renderDeviceGrid() {
         <span class="mono card-id">${d.device_id}</span>
         <span>${st === 'offline' ? 'offline ' + fmtAgo(d.last_seen_s) : 'seen ' + fmtAgo(d.last_seen_s)}</span>
       </div>
+      ${!d.site_id ? `<button class="card-assign-btn" data-assign-device="${d.device_id}">${icon('map-pin')}Assign to a site</button>` : ''}
       <span class="card-open">Open device ${icon('arrow-up-right')}</span>
     </div>`;
   }).join('');
   refreshIcons(grid);
-}
 
-============================================================
-FILE: ./src/features/devices/device-list.js
-============================================================
-'use strict';
-
-function renderDevices(main) {
-  renderSitesAside();
-  main.innerHTML = `
-    <div class="main-head">
-      <h1 id="mainTitle">${state.selectedSite === 'all' ? 'All sites' : esc(siteName(state.selectedSite))}</h1>
-      <div class="main-head-actions">
-        <span class="count" id="mainCount"></span>
-        ${isMobile() ? `<button class="btn sm" id="mobileSiteFilter">${icon('filter')}<span>Sites</span></button>` : ''}
-        <button class="btn sm" id="deviceViewToggle">${state.deviceView === 'grid' ? icon('list') + 'List' : icon('grid-2x2') + 'Grid'}</button>
-        <button class="btn sm ${state.bulkMode ? 'active' : ''}" id="bulkToggle">${state.bulkMode ? 'Done' : 'Select'}</button>
-      </div>
-    </div>
-    <div class="grid" id="grid"></div>`;
-  renderDeviceGrid();
-  $('#bulkToggle').addEventListener('click', () => {
-    state.bulkMode = !state.bulkMode;
-    if (!state.bulkMode) state.bulkSelected.clear();
-    renderMain();
+  grid.querySelectorAll('[data-assign-device]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openDeviceOnboarding(btn.dataset.assignDevice);
+    });
   });
-  $('#deviceViewToggle').addEventListener('click', () => { state.deviceView = state.deviceView === 'grid' ? 'list' : 'grid'; renderMain(); });
-  const msf = $('#mobileSiteFilter'); if (msf) msf.addEventListener('click', openMobileSiteSheet);
-}
-function renderSitesAside() {
-  const list = $('#siteList'); if (!list) return;
-  const counts = {};
-  DEVICES.forEach(d => counts[d.site_id] = (counts[d.site_id] || 0) + 1);
-  const row = (id, name, count) =>
-    `<button class="site-item ${state.selectedSite === id ? 'selected' : ''}" data-site="${id}">
-      <span>${esc(name)}</span><span class="site-count">${count}</span></button>`;
-  list.innerHTML = row('all','All sites',DEVICES.length) + SITES.map(s => row(s.id, s.name, counts[s.id] || 0)).join('');
-  list.querySelectorAll('.site-item').forEach(el => el.addEventListener('click', () => {
-    state.selectedSite = el.dataset.site;
-    nav(el.dataset.site === 'all' ? '#/devices' : `#/devices/${el.dataset.site}`);
-  }));
-  const sel = $('#sortSel'); if (sel) sel.value = state.sortBy;
-}
-function visibleDevices() {
-  let list = DEVICES.slice();
-  if (state.selectedSite !== 'all') list = list.filter(d => d.site_id === state.selectedSite);
-  if (state.search.trim()) {
-    const q = state.search.trim().toLowerCase();
-    list = list.filter(d =>
-      d.name.toLowerCase().includes(q) ||
-      d.device_id.toLowerCase().includes(q) ||
-      siteName(d.site_id).toLowerCase().includes(q) ||
-      d.capabilities.some(c => c.label.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
-    );
-  }
-  const rank = { alarm:0, warn:1, online:2, offline:3 };
-  list.sort((a, b) => {
-    if (state.sortBy === 'favorite') {
-      const fav = (isFavorite(b.device_id) ? 1 : 0) - (isFavorite(a.device_id) ? 1 : 0);
-      if (fav) return fav;
-    }
-    switch (state.sortBy) {
-      case 'name': return a.name.localeCompare(b.name);
-      case 'status': return (rank[deriveStatus(a)] ?? 9) - (rank[deriveStatus(b)] ?? 9) || a.name.localeCompare(b.name);
-      case 'last_seen': return a.last_seen_s - b.last_seen_s;
-      default: return siteName(a.site_id).localeCompare(siteName(b.site_id)) || a.name.localeCompare(b.name);
-    }
-  });
-  return list;
-}
-function renderDeviceGrid() {
-  const grid = $('#grid'); if (!grid) return;
-  const list = visibleDevices();
-  $('#mainCount').textContent = list.length + (list.length === 1 ? ' device' : ' devices');
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty">No devices match.<div class="cta"><button class="btn" data-nav="#/devices">Clear filter</button></div></div>`;
-    refreshIcons(grid); return;
-  }
-  grid.classList.toggle('list-view', state.deviceView === 'list');
-  grid.innerHTML = list.map(d => {
-    const st = deriveStatus(d), cls = statusClass(st);
-    const displayStatus = d.lwt === 'offline' ? 'offline' : st === 'alarm' ? 'warn' : st;
-    const alarms = ALARMS.filter(a => a.device_id === d.device_id && !a.cleared);
-    const selected = state.bulkSelected.has(d.device_id);
-    return `<div class="card ${cls} ${selected ? 'selected' : ''}" data-device="${d.device_id}">
-      <div class="sel-check" data-sel-device="${d.device_id}">${icon('check')}</div>
-      <div class="card-top">
-        <div style="min-width:0;flex:1;display:flex;gap:9px;align-items:flex-start;">
-          <span class="cap-icon" style="width:28px;height:28px;background:var(--surface-2);">${icon(deviceTypeIcon(d.device_type))}</span>
-          <div style="min-width:0;">
-            <div class="card-name">${esc(d.name)}</div>
-            <div class="card-site">${esc(siteName(d.site_id))}</div>
-          </div>
-        </div>
-        <div class="card-right">
-          <span class="device-status status-${displayStatus === 'warn' ? 'warn' : displayStatus}">${displayStatus === 'warn' ? 'Warning' : displayStatus === 'offline' ? 'Offline' : 'Online'}</span>
-        </div>
-      </div>
-      ${alarms.length ? `<div class="card-alarm-row"><span class="alarm-label ${alarms.some(a => a.priority === 'critical') ? 'critical' : ''}">${alarms.length} alarm${alarms.length === 1 ? '' : 's'}</span><button class="card-alarm-action" data-nav="#/alarms/${d.device_id}">View alarm${alarms.length === 1 ? '' : 's'} ${icon('arrow-up-right')}</button></div>` : ''}
-      <div class="card-meta">
-        <span class="mono card-id">${d.device_id}</span>
-        <span>${st === 'offline' ? 'offline ' + fmtAgo(d.last_seen_s) : 'seen ' + fmtAgo(d.last_seen_s)}</span>
-      </div>
-      <span class="card-open">Open device ${icon('arrow-up-right')}</span>
-    </div>`;
-  }).join('');
-  refreshIcons(grid);
 }
 
 const DEVICE_TABS = [
@@ -4315,7 +4286,47 @@ ${esc(whoPayload)}</div>
 
 
 ============================================================
-FILE: ./src/features/interlocks/interlocks.js
+FILE: src/features/firmware/firmware.js
+============================================================
+'use strict';
+
+const OTA_NOT_LIVE_BANNER = `
+  <div class="not-live">
+    <div class="nl-icon">${icon('alert-triangle')}</div>
+    <div class="nl-body">
+      <b>Not available yet</b>
+      The firmware does not publish <span class="mono">ota/available</span> or
+      <span class="mono">ota/status</span>. Nothing on this screen is a real
+      update pipeline. When OTA lands on-device, this banner disappears.
+    </div>
+  </div>`;
+function renderOTA(main) {
+  main.innerHTML = `
+    <div class="main-head">
+      <h1>Firmware / OTA</h1>
+      <div class="main-head-actions"><span class="count">not live</span></div>
+    </div>
+    ${OTA_NOT_LIVE_BANNER}
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="padding:48px 24px;text-align:center;color:var(--content-faint);">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;background:var(--surface-2);color:var(--content-dim);margin-bottom:16px;">
+          ${icon('upload-cloud')}
+        </div>
+        <div style="font-size:14px;font-weight:600;color:var(--content);margin-bottom:6px;">Nothing to show yet</div>
+        <div style="font-size:12.5px;max-width:440px;margin:0 auto;line-height:1.55;">
+          Once <span class="mono">electrix/{device_id}/ota/available</span> and
+          <span class="mono">.../ota/status</span> exist on the firmware side,
+          this screen lists per-device current/target version, rollout progress,
+          and lets an admin trigger a staged rollout.
+        </div>
+      </div>
+    </div>`;
+    refreshIcons(main);
+}
+
+
+============================================================
+FILE: src/features/interlocks/interlocks.js
 ============================================================
 'use strict';
 
@@ -4519,7 +4530,7 @@ function openRuleEditor(ruleId = null, scopedDeviceId = null) {
 
 
 ============================================================
-FILE: ./src/features/settings/settings.js
+FILE: src/features/settings/settings.js
 ============================================================
 'use strict';
 
@@ -4667,7 +4678,7 @@ function renderSiteSettingsList() {
 }
 
 ============================================================
-FILE: ./src/features/telemetry/telemetry-core.js
+FILE: src/features/telemetry/telemetry-core.js
 ============================================================
 'use strict';
 
@@ -4869,7 +4880,7 @@ function renderTelemetryStack(keys, start, windowMs) {
 
 
 ============================================================
-FILE: ./src/features/telemetry/telemetry-page.js
+FILE: src/features/telemetry/telemetry-page.js
 ============================================================
 'use strict';
 
@@ -5234,7 +5245,7 @@ function exportTelemetryCSV(keys, windowMs, start = Date.now() - windowMs, end =
 
 
 ============================================================
-FILE: ./src/main.js
+FILE: src/main.js
 ============================================================
 'use strict';
 
@@ -5286,16 +5297,35 @@ FILE: ./src/main.js
 
 
 ============================================================
-FILE: ./src/services/mqtt-simulator.js
+FILE: src/services/mqtt-simulator.js
 ============================================================
 'use strict';
+if (window.__mqtt_adapter_installed) {
+  console.warn('[mqtt-adapter] duplicate load detected — using existing instance');
+  // Stop parsing this script. The IIFE below would create a second
+  // `const mqtt`, shadowing the working one.
+  throw new Error('[mqtt-adapter] already loaded');
+}
+window.__mqtt_adapter_installed = true;
+
+
+const BACKEND_URL = (localStorage.getItem('electrix_backend_url') || 'http://localhost:8000').replace(/\/$/, '');
+const USE_DEMO    = localStorage.getItem('electrix_use_demo') === '1';
 
 const mqtt = (() => {
-  const subs = [], listeners = { connected:[], disconnected:[], message:[] }, pendingAcks = new Map();
+  const subs = [];
+  const listeners = { connected: [], disconnected: [], message: [], 'new-device': [] };
+  const pendingAcks = new Map();
+  const seenDeviceIds = new Set();
   let connected = false;
-  const emit = (ev, ...a) => listeners[ev].forEach(cb => cb(...a));
+  let pollHandle = null;
+  let firstSnapshot = true;
+
+  const emit = (ev, ...a) => (listeners[ev] || []).forEach(cb => cb(...a));
+
   const topicMatch = (pattern, topic) => {
-    const p = pattern.split('/'), t = topic.split('/');
+    const p = pattern.split('/');
+    const t = topic.split('/');
     for (let i = 0; i < p.length; i++) {
       if (p[i] === '#') return true;
       if (p[i] === '+') continue;
@@ -5303,36 +5333,262 @@ const mqtt = (() => {
     }
     return p.length === t.length;
   };
-  const fanout = (topic, payload) => subs.forEach(s => { if (topicMatch(s.pattern, topic)) s.cb(topic, payload); });
-  subs.push({ pattern:'electrix/#', cb: topic => {
-    const m = topic.match(/\/ack\/([^/]+)$/); if (!m) return;
-    const cb = pendingAcks.get(m[1]); if (cb) { pendingAcks.delete(m[1]); cb(); }
+
+  const fanout = (topic, payload, opts = {}) =>
+    subs.forEach(s => { if (topicMatch(s.pattern, topic)) s.cb(topic, payload, opts); });
+
+  subs.push({ pattern: 'electrix/#', cb: topic => {
+    const m = topic.match(/\/ack\/([^/]+)$/);
+    if (!m) return;
+    const cb = pendingAcks.get(m[1]);
+    if (cb) { pendingAcks.delete(m[1]); cb(); }
   }});
+
+  function clearDemoFixtures() {
+    if (typeof DEVICES  !== 'undefined' && Array.isArray(DEVICES))  DEVICES.length  = 0;
+    if (typeof ALARMS   !== 'undefined' && Array.isArray(ALARMS))   ALARMS.length   = 0;
+    if (typeof ACTIVITY !== 'undefined' && Array.isArray(ACTIVITY)) ACTIVITY.length = 0;
+    if (typeof LWT_LOG  !== 'undefined' && Array.isArray(LWT_LOG))  LWT_LOG.length  = 0;
+    if (typeof SITES    !== 'undefined' && Array.isArray(SITES))    SITES.length    = 0;
+    if (typeof TELEMETRY !== 'undefined' && TELEMETRY) {
+      for (const k of Object.keys(TELEMETRY)) delete TELEMETRY[k];
+    }
+    console.info('[mqtt-adapter] demo fixtures cleared');
+  }
+
+  async function hydrateSites() {
+    try {
+      const r = await fetch(`${BACKEND_URL}/sites`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const sites = await r.json();
+      if (typeof SITES !== 'undefined' && Array.isArray(SITES)) {
+        SITES.length = 0;
+        sites.forEach(s => SITES.push({ id: s.id, name: s.name }));
+      }
+    } catch (e) {
+      console.warn('[mqtt-adapter] sites fetch failed:', e.message);
+    }
+  }
+
+  function hydrateDevice(d) {
+    let dev = DEVICES.find(x => x.device_id === d.device_id);
+    if (!dev) {
+      dev = {
+        device_id: d.device_id,
+        site_id: d.site_id || null,
+        name: d.device_type ? `${d.device_type} ${d.device_id.slice(-4)}` : d.device_id,
+        device_type: d.device_type || 'generic',
+        hw_rev: d.hw_rev || 'unknown',
+        fw_version: d.fw_version || '0.0.0',
+        mac: d.mac || d.device_id,
+        lwt: 'offline',
+        last_seen_s: 0,
+        first_seen_ms: d.first_seen || Date.now(),
+        config: {
+          sensor_publish_period_ms: 1000,
+          heartbeat_period_ms: 30000,
+          feature_agg_telemetry_enabled: true,
+          feature_threshold_events_enabled: true,
+        },
+        capabilities: [],
+      };
+      DEVICES.push(dev);
+    }
+
+    dev.site_id      = d.site_id;
+    dev.device_type  = d.device_type || dev.device_type;
+    dev.hw_rev       = d.hw_rev      || dev.hw_rev;
+    dev.fw_version   = d.fw_version  || dev.fw_version;
+    dev.mac          = d.mac         || dev.mac;
+    dev.first_seen_ms = d.first_seen || dev.first_seen_ms;
+    dev.last_seen_s  = Math.max(0, Math.floor((Date.now() - (d.last_seen || Date.now())) / 1000));
+
+    const lwt = d.latest_state['status/lwt'];
+    dev.lwt = (lwt === 'online' || lwt === undefined) ? 'online' : 'offline';
+    if (Object.keys(d.latest_state).length > 0) dev.last_seen_s = 0;
+
+    const caps = new Map();
+    for (const [tail, payload] of Object.entries(d.latest_state)) {
+      const stateMatch = tail.match(/^state\/(.+)$/);
+      if (stateMatch) {
+        const id = stateMatch[1];
+        const cls = (payload && payload.class) || 'relay';
+        caps.set(id, {
+          id, kind: cls, label: id,
+          value: !!(payload && payload.value),
+          online: true,
+          since: Date.now() - 3600000,
+        });
+        continue;
+      }
+      const teleMatch = tail.match(/^telemetry\/(.+)\/raw$/);
+      if (teleMatch) {
+        const id = teleMatch[1];
+        caps.set(id, {
+          id, kind: 'sensor', label: id,
+          value: payload && payload.value,
+          online: true,
+        });
+      }
+    }
+    for (const [id, cap] of caps.entries()) {
+      const existing = dev.capabilities.find(c => c.id === id);
+      if (existing) cap.label = existing.label;
+    }
+    dev.capabilities = [...caps.values()];
+  }
+
+  function hydrateSnapshot(snapshot) {
+    if (firstSnapshot && !USE_DEMO) clearDemoFixtures();
+    firstSnapshot = false;
+
+    // Track which devices this session has never seen.
+    const newDevices = [];
+    for (const d of snapshot) {
+      if (!seenDeviceIds.has(d.device_id)) {
+        seenDeviceIds.add(d.device_id);
+        if (!d.site_id) newDevices.push(d);
+      }
+    }
+
+    for (const d of snapshot) hydrateDevice(d);
+
+    for (const dev of DEVICES) {
+      if (!snapshot.find(s => s.device_id === dev.device_id)) dev.lwt = 'offline';
+    }
+
+    for (const d of snapshot) {
+      for (const [tail, payload] of Object.entries(d.latest_state)) {
+        const full = `electrix/${d.device_id}/${tail}`;
+        const opts = { qos: 1, retain: true };
+        fanout(full, payload, opts);
+        emit('message', full, payload, opts);
+      }
+    }
+
+    for (const d of newDevices) {
+      const dev = DEVICES.find(x => x.device_id === d.device_id);
+      if (dev) emit('new-device', dev);
+    }
+  }
+
+  async function pollOnce() {
+    try {
+      const r = await fetch(`${BACKEND_URL}/snapshot`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const snapshot = await r.json();
+      hydrateSnapshot(snapshot);
+      if (!connected) {
+        connected = true;
+        emit('connected');
+        console.info(`[mqtt-adapter] live: ${snapshot.length} device(s) from ${BACKEND_URL}`);
+      }
+    } catch (e) {
+      if (connected) { connected = false; emit('disconnected'); }
+      console.warn('[mqtt-adapter] snapshot fetch failed:', e.message);
+    }
+  }
+
+  function startPolling() {
+    if (pollHandle) return;
+    hydrateSites().finally(() => {
+      pollOnce();
+      pollHandle = setInterval(pollOnce, 2000);
+    });
+  }
+
   return {
     isConnected: () => connected,
-    on(ev, cb) { listeners[ev]?.push(cb); },
-    connect() { setTimeout(() => { connected = true; emit('connected'); }, 120); },
-    subscribe(p, cb) { subs.push({ pattern:p, cb }); },
+    backendUrl: () => BACKEND_URL,
+
+    on(ev, cb) { (listeners[ev] ||= []).push(cb); },
+    connect() { startPolling(); },
+    subscribe(pattern, cb) { subs.push({ pattern, cb }); },
+
     waitForAck(id, ms = 5000) {
       return new Promise((res, rej) => {
         const t = setTimeout(() => { pendingAcks.delete(id); rej(new Error('ack timeout')); }, ms);
         pendingAcks.set(id, () => { clearTimeout(t); res(); });
       });
     },
+
     async publish(topic, payload, opts = {}) {
-      if (!connected) throw new Error('MQTT not connected');
-      await sleep(40 + Math.random() * 70);
-      fanout(topic, payload); emit('message', topic, payload, opts);
-      return { ok:true, topic, opts };
+      const m = topic.match(/^electrix\/([^/]+)\/cmd\/([^/]+)\/set$/);
+      if (m) {
+        const [, device_id, actuator] = m;
+        const value = payload && payload.value;
+        const request_id = payload && payload.request_id;
+        emit('message', topic, payload, opts);
+        try {
+          const r = await fetch(
+            `${BACKEND_URL}/devices/${device_id}/actuators/${actuator}/set`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ value: !!value }),
+            });
+          const result = await r.json();
+          const ackTopic = `electrix/${device_id}/ack/${request_id}`;
+          const ackPayload = result.ack_payload
+            || { status: result.status === 'ok' ? 'ok' : 'error', echoed_value: !!value };
+          setTimeout(() => {
+            fanout(ackTopic, ackPayload, { qos: 1 });
+            emit('message', ackTopic, ackPayload, { qos: 1 });
+          }, 30);
+          return result;
+        } catch (e) {
+          const ackTopic = `electrix/${device_id}/ack/${request_id}`;
+          const ackPayload = { status: 'error', message: e.message };
+          setTimeout(() => {
+            fanout(ackTopic, ackPayload, { qos: 1 });
+            emit('message', ackTopic, ackPayload, { qos: 1 });
+          }, 30);
+          return { status: 'error', message: e.message };
+        }
+      }
+      emit('message', topic, payload, opts);
+      return { ok: true };
     },
-    inject(topic, payload) { fanout(topic, payload); emit('message', topic, payload, {}); },
+
+    inject(topic, payload) {
+      fanout(topic, payload, {});
+      emit('message', topic, payload, {});
+    },
+
+    async createSite(name) {
+      const r = await fetch(`${BACKEND_URL}/sites`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`);
+      const site = await r.json();
+      if (typeof SITES !== 'undefined' && !SITES.find(s => s.id === site.id)) {
+        SITES.push({ id: site.id, name: site.name });
+      }
+      return site;
+    },
+
+    async assignDeviceSite(deviceId, siteId) {
+      const r = await fetch(`${BACKEND_URL}/devices/${deviceId}/site`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site_id: siteId }),
+      });
+      if (!r.ok) throw new Error((await r.json()).detail || `HTTP ${r.status}`);
+      const dev = typeof deviceById === 'function' ? deviceById(deviceId) : null;
+      if (dev) dev.site_id = siteId;
+      return r.json();
+    },
+
+    async refreshSites() { return hydrateSites(); },
   };
 })();
+
 const waitForAck = (id, ms) => mqtt.waitForAck(id, ms);
 
-
 ============================================================
-FILE: ./src/styles.css
+FILE: src/styles.css
 ============================================================
 :root{
   --bg:#F4F5F7;--bg-deep:#E9EBEF;--surface:#FFF;--surface-2:#F7F8FA;
@@ -7208,3 +7464,48 @@ button.overview-metric:hover .overview-metric-label{color:var(--accent)}
 .lad-ctx button:disabled{opacity:.4;cursor:not-allowed}
 .lad-ctx button.danger{color:var(--alarm)}
 .lad-ctx button .lucide{width:14px;height:14px}
+
+.first-run-sites { display: grid; gap: 4px; }
+.first-run-site {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface-2); font-size: 13px;
+}
+.first-run-site .muted { font-family: var(--mono); font-size: 11px; color: var(--content-faint); }
+
+.unassigned-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:14px;background:color-mix(in srgb,var(--warn) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 45%,var(--border));border-left:3px solid var(--warn);border-radius:8px;font-size:12.5px}
+.unassigned-banner .lucide{width:18px;height:18px;color:var(--warn);flex-shrink:0}
+.unassigned-banner>div{flex:1;min-width:0;display:grid;gap:2px}
+.unassigned-banner strong{color:var(--content);font-size:13px}
+.unassigned-banner span{color:var(--content-dim)}
+.toast.clickable{cursor:pointer}
+.toast.clickable:hover{border-color:var(--accent)}
+.toast .ta{margin-left:auto;align-self:center;background:var(--accent);color:var(--accent-fg);border:0;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer}
+
+/* --- Unassigned devices + site chips ------------------------------ */
+.site-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--content-dim)}
+.site-badge .lucide{width:11px;height:11px}
+.site-badge.unassigned{color:var(--warn)}
+.site-item.unassigned-row{color:var(--warn)}
+.site-item.unassigned-row.selected{color:var(--warn)}
+.site-item.unassigned-row .site-count{color:var(--warn);opacity:.8}
+
+.unassigned-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:14px;background:color-mix(in srgb,var(--warn) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 45%,var(--border));border-left:3px solid var(--warn);border-radius:8px;font-size:12.5px}
+.unassigned-banner>.lucide{width:18px;height:18px;color:var(--warn);flex-shrink:0}
+.unassigned-banner>div{flex:1;min-width:0;display:grid;gap:2px}
+.unassigned-banner strong{color:var(--content);font-size:13px}
+.unassigned-banner span{color:var(--content-dim)}
+
+.card-assign-btn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:6px 10px;border:1px dashed color-mix(in srgb,var(--warn) 55%,var(--border));border-radius:6px;background:color-mix(in srgb,var(--warn) 8%,var(--surface));color:var(--warn);font-size:11.5px;font-weight:600;cursor:pointer}
+.card-assign-btn:hover{border-style:solid;background:color-mix(in srgb,var(--warn) 14%,var(--surface))}
+.card-assign-btn .lucide{width:13px;height:13px}
+
+.site-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface-2);color:var(--content-dim);font-size:11.5px;cursor:pointer;font-family:inherit}
+.site-chip:hover{border-color:var(--accent);color:var(--accent)}
+.site-chip .lucide{width:12px;height:12px}
+
+.toast.clickable{cursor:pointer}
+.toast.clickable:hover{border-color:var(--accent)}
+.toast .ta{margin-left:auto;align-self:center;background:var(--accent);color:var(--accent-fg);border:0;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer}
+
+

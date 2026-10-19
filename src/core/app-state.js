@@ -19,14 +19,22 @@ function toggleFavorite(id) {
 }
 
 const TOAST_ICON = { ok:'check-circle', error:'x-circle', warn:'alert-triangle', info:'info' };
-function toast(title, { msg = '', type = 'info', timeout = 3200 } = {}) {
+function toast(title, { msg = '', type = 'info', timeout = 3200, onClick = null, actionLabel = null } = {}) {
   const el = document.createElement('div');
-  el.className = `toast ${type}`;
+  el.className = `toast ${type}${onClick ? ' clickable' : ''}`;
   el.innerHTML = `<div class="ti">${icon(TOAST_ICON[type] || 'info')}</div>
     <div class="tb"><div class="ttl">${esc(title)}</div>${msg ? `<div class="msg">${esc(msg)}</div>` : ''}</div>
+    ${actionLabel ? `<button class="ta">${esc(actionLabel)}</button>` : ''}
     <button class="tx" aria-label="Dismiss">${icon('x')}</button>`;
   const kill = () => { el.style.opacity = '0'; setTimeout(() => el.remove(), 180); };
-  el.querySelector('.tx').onclick = kill;
+  el.querySelector('.tx').onclick = (e) => { e.stopPropagation(); kill(); };
+  if (onClick) {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.tx')) return;
+      kill();
+      onClick();
+    });
+  }
   $('#toastStack').appendChild(el);
   refreshIcons(el);
   if (timeout) setTimeout(kill, timeout);
@@ -130,12 +138,14 @@ function openMobileMoreSheet() {
 }
 function openMobileSiteSheet() {
   const counts = {};
-  DEVICES.forEach(d => counts[d.site_id] = (counts[d.site_id] || 0) + 1);
+  DEVICES.forEach(d => { if (d.site_id) counts[d.site_id] = (counts[d.site_id] || 0) + 1; });
+  const unassignedCount = DEVICES.filter(d => !d.site_id).length;
   const btnStyle = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 12px;border:none;background:none;width:100%;text-align:left;font-size:15px;color:var(--content);cursor:pointer;border-radius:8px;min-height:52px;';
   openSheet({
     title: 'Sites & sort',
     bodyHtml: `<div>
       <button data-sheet-site="all" style="${btnStyle}${state.selectedSite === 'all' ? 'color:var(--accent);font-weight:600;' : ''}"><span>All sites</span><span class="site-count">${DEVICES.length}</span></button>
+      ${unassignedCount ? `<button data-sheet-site="__unassigned__" style="${btnStyle}${state.selectedSite === '__unassigned__' ? 'color:var(--warn);font-weight:600;' : 'color:var(--warn);'}"><span>Unassigned</span><span class="site-count">${unassignedCount}</span></button>` : ''}
       ${SITES.map(s => `<button data-sheet-site="${s.id}" style="${btnStyle}${state.selectedSite === s.id ? 'color:var(--accent);font-weight:600;' : ''}"><span>${esc(s.name)}</span><span class="site-count">${counts[s.id] || 0}</span></button>`).join('')}
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
         <label class="field-label" style="display:block;font-size:11.5px;color:var(--content-faint);margin-bottom:6px;">Sort by</label>
@@ -151,8 +161,14 @@ function openMobileSiteSheet() {
     onMount: (wrap, close) => {
       wrap.querySelectorAll('[data-sheet-site]').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.sheetSite;
-        state.selectedSite = id; lsSet('electrix_site', id); close();
-        nav(id === 'all' ? '#/devices' : `#/devices/${id}`);
+        state.selectedSite = id; close();
+        if (id === 'all') nav('#/devices');
+        else if (id === '__unassigned__') {
+          if (location.hash === '#/devices') renderMain();
+          else location.hash = '#/devices';
+        } else {
+          nav(`#/devices/${id}`);
+        }
       }));
       const sel = wrap.querySelector('#mobileSortSel');
       sel.addEventListener('change', () => {
@@ -204,12 +220,12 @@ function paletteItems() {
   items.push({ group:'Actions', icon:'terminal', label:'Toggle topic inspector', run: () => toggleInspector() });
   items.push({ group:'Actions', icon:'log-out',  label:'Sign out', run: () => logout() });
   LADDER_RULES.forEach(task => items.push({
-  group: 'Automation tasks',
-  icon: 'git-branch',
-  label: task.name,
-  meta: `${task.rungs.length} rung${task.rungs.length === 1 ? '' : 's'}`,
-  run: () => location.hash = '#/automation',
-}));
+    group: 'Automation tasks',
+    icon: 'git-branch',
+    label: task.name,
+    meta: `${task.rungs.length} rung${task.rungs.length === 1 ? '' : 's'}`,
+    run: () => location.hash = '#/automation',
+  }));
   SCENES.forEach(s => items.push({ group:'Scenes', icon:s.icon && !/[^\x00-\x7F]/.test(s.icon) ? s.icon : 'sparkles', label:s.name, meta:`${s.actions.length} actions`, run: () => runScene(s) }));
   SITES.forEach(s => items.push({ group:'Sites', icon:'map-pin', label:s.name, meta:s.id, run: () => location.hash = `#/devices/${s.id}` }));
   DEVICES.forEach(d => items.push({ group:isFavorite(d.device_id) ? '★ Favorites' : 'Devices', icon:'plug', label:d.name, meta:d.device_id, run: () => location.hash = deviceRoute(d.device_id) }));
@@ -313,15 +329,23 @@ function closeAlarmPopover() {
 
 function attemptLogin() {
   const u = $('#loginUser').value.trim(), p = $('#loginPass').value;
-  const m = USERS.find(x => x.username === u && x.password === p);
-  if (!m) { $('#loginError').style.display = 'block'; return; }
+  $('#loginBtn').disabled = true;
   $('#loginError').style.display = 'none';
-  state.user = { username:m.username, role:m.role, display:m.display };
-  lsSet('electrix_user', state.user);
-  audit('login', state.user.username);
-  enterApp();
+  mqtt.login(u, p).then(result => {
+    localStorage.setItem('electrix_token', result.token);
+    state.user = result.user;
+    lsSet('electrix_user', state.user);
+    audit('login', state.user.username);
+    enterApp();
+  }).catch(error => {
+    $('#loginError').textContent = error.message;
+    $('#loginError').style.display = 'block';
+  }).finally(() => {
+    $('#loginBtn').disabled = false;
+  });
 }
 function logout() {
+  localStorage.removeItem('electrix_token');
   audit('logout', state.user?.username);
   state.user = null; lsSet('electrix_user', null);
   $('#shell').classList.remove('active');
@@ -341,9 +365,7 @@ function enterApp() {
   applyTheme(localStorage.getItem('electrix_theme') || null, false);
   applySidebarState();
   $('#devModeBtn').classList.toggle('active', state.devMode);
-  // FIX: do NOT auto-open the inspector on login. It stays closed until the
-  // user explicitly opens it via the toolbar button, the palette, or the I key.
-  // (Previously it would appear whenever devMode was persisted as true.)
+  mqtt.connect();
   if (!location.hash || location.hash === '#') location.hash = '#/dashboard';
   applyRoute();
   refreshIcons();
@@ -398,7 +420,7 @@ function nav(hash) {
 }
 function deviceRoute(deviceId, tab = 'overview') {
   const device = deviceById(deviceId);
-  if (!device) return `#/device/${deviceId}${tab === 'overview' ? '' : `/${tab}`}`;
+  if (!device || !device.site_id) return `#/device/${deviceId}${tab === 'overview' ? '' : `/${tab}`}`;
   return `#/sites/${device.site_id}/devices/${device.device_id}${tab === 'overview' ? '' : `/${tab}`}`;
 }
 function renderBreadcrumbs() {
@@ -407,12 +429,18 @@ function renderBreadcrumbs() {
   const parts = [`<a href="#/dashboard">Electrix</a>`];
   if (state.view === 'devices') {
     parts.push(`<span class="sep">/</span><a href="#/devices">Devices</a>`);
-    if (state.selectedSite !== 'all') parts.push(`<span class="sep">/</span><span class="cur">${esc(siteName(state.selectedSite))}</span>`);
+    if (state.selectedSite !== 'all') {
+      parts.push(`<span class="sep">/</span><span class="cur">${esc(siteName(state.selectedSite))}</span>`);
+    }
   } else if (state.view === 'device') {
     const d = deviceById(state.openDeviceId);
     if (d) {
       parts.push(`<span class="sep">/</span><a href="#/devices">Devices</a>`);
-      parts.push(`<span class="sep">/</span><a href="#/devices/${d.site_id}">${esc(siteName(d.site_id))}</a>`);
+      if (d.site_id) {
+        parts.push(`<span class="sep">/</span><a href="#/devices/${d.site_id}">${esc(siteName(d.site_id))}</a>`);
+      } else {
+        parts.push(`<span class="sep">/</span><span style="color:var(--warn)">Unassigned</span>`);
+      }
       parts.push(`<span class="sep">/</span><span class="cur">${esc(d.name)}</span>`);
     }
   } else {
@@ -452,20 +480,15 @@ function startTick() {
         d.last_seen_s += 1;
       }
     });
-    if (tickCount % 2 === 0) {
-      Object.entries(TELEMETRY).forEach(([key, s]) => {
-        const [deviceId] = key.split('/');
-        const d = deviceById(deviceId);
-        if (!d || d.lwt !== 'online') return;
-        const last = s.history[s.history.length - 1].v;
-        const base = s.history.slice(0, 20).reduce((a, b) => a + b.v, 0) / Math.min(20, s.history.length);
-        const jitter = (Math.random() - 0.5) * 0.6;
-        const pull = (base - last) * 0.15;
-        const v = +Math.max(0, last + jitter + pull).toFixed(2);
-        s.history.push({ t: Date.now(), v });
-        if (s.history.length > 240) s.history.shift();
-      });
-    }
+
+    // The TELEMETRY simulation loop that used to live here has been
+    // removed. It was written for the demo-data era when every series
+    // was a seeded random walk. Now that the backend adapter populates
+    // TELEMETRY from real device events, simulating jitter would
+    // corrupt real readings — that is why boolean inputs were showing
+    // as 1.9 / 0.5 / 0.2 instead of 1 / 0. The adapter is the only
+    // source of truth for TELEMETRY.
+
     tickLadderRules();
     if (tickCount % 2 === 0) { try { tickInterlocks(); } catch {} }
     if (tickCount % 2 === 0) {
@@ -474,11 +497,15 @@ function startTick() {
       const selectingTelemetry = (state.view === 'telemetry' || (state.view === 'device' && state.deviceTab === 'telemetry')) && telemetryPointerActive;
       const viewingAutomation = state.view === 'automation' || (state.view === 'device' && state.deviceTab === 'automation');
       if (viewingAutomation) refreshLadderIndicators();
-      else if (!inForm && !selectingTelemetry) renderMain(true);
+      else if (!inForm && !selectingTelemetry && state.view !== 'settings') renderMain(true);
     }
   }, 1000);
 }
-const siteName = id => SITES.find(s => s.id === id)?.name || id;
+const siteName = id => {
+  if (!id) return '';
+  if (id === '__unassigned__') return 'Unassigned';
+  return SITES.find(s => s.id === id)?.name || id;
+};
 const deviceById = id => DEVICES.find(d => d.device_id === id);
 const priorityRank = p => ({ critical:0, high:1, medium:2, low:3 })[p] ?? 9;
 const deviceHasAlarm = d => ALARMS.some(a => a.device_id === d.device_id && !a.cleared);
@@ -583,6 +610,7 @@ function renderAlarmBadge() {
 }
 function updateBulkBar() {
   const bar = $('#bulkBar'); if (!bar) return;
+  if (!state || !state.bulkSelected) return;
   const n = state.bulkSelected.size;
   $('#bulkCount').textContent = n;
   bar.classList.toggle('show', state.bulkMode);

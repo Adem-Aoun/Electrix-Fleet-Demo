@@ -55,11 +55,19 @@ function telemetryWindowSelect(id) {
     <option value="1h" ${state.teleWindow === '1h' ? 'selected' : ''}>Last 1 hour</option>
   </select>`;
 }
+
 function telemetryStatus(key, d = deviceById(key.split('/')[0])) {
   if (!d || d.lwt === 'offline') return 'offline';
   const series = TELEMETRY[key], latest = series?.history.at(-1), value = latest?.v;
   if (!latest) return 'no-data';
   if (Date.now() - latest.t > Math.max(10, series.window_s * 3) * 1000) return 'stale';
+
+  // Boolean sensors have no threshold. A `true` reading is a fact, not
+  // a fault. Only offline / stale / device-warn propagate here.
+  if (series.unit === 'bool') {
+    return deriveStatus(d) === 'warn' ? 'warn' : 'ok';
+  }
+
   if (series?.threshold != null && value != null) {
     const lowThreshold = series.unit === '%';
     if (lowThreshold && value <= series.threshold) return 'alarm';
@@ -69,9 +77,17 @@ function telemetryStatus(key, d = deviceById(key.split('/')[0])) {
   }
   return deriveStatus(d) === 'warn' ? 'warn' : 'ok';
 }
+
 function telemetryGauge(key, compact = false) {
-  const series = TELEMETRY[key], value = series?.history.at(-1)?.v;
-  if (!series || value == null) return '';
+  const series = TELEMETRY[key];
+  if (!series || !series.history.length) return '';
+
+  // Boolean sensors get a dedicated card, not a numeric gauge.
+  if (series.unit === 'bool') {
+    return telemetryBoolCard(key);
+  }
+
+  const value = series.history.at(-1).v;
   const unit = series.unit, percent = unit === '%';
   const threshold = series.threshold;
   const maxValue = percent ? 100 : threshold != null ? Math.max(threshold * 1.25, value * 1.05, 1) : Math.max(value * 1.2, 1);
@@ -112,10 +128,40 @@ function telemetryGauge(key, compact = false) {
     <span class="tele-gauge-footer"><span>View chart &amp; details</span>${icon('arrow-up-right')}</span>
   </button>`;
 }
+
 function lowThresholdLabel(unit) { return unit === '%' ? 'Low limit ' : 'Limit '; }
 function renderTelemetryMetricDetails(key, start, end) {
   const series = TELEMETRY[key], device = deviceById(key.split('/')[0]);
   if (!series) return '';
+
+  // Boolean variant — no min/max/avg, just current + transition counts.
+  if (series.unit === 'bool') {
+    const points = series.history.filter(p => p.t >= start && p.t <= end);
+    const latest = series.history.at(-1);
+    const active = latest && latest.v >= 0.5;
+    const trueCount  = points.filter(p => p.v >= 0.5).length;
+    const falseCount = points.length - trueCount;
+    const status = telemetryStatus(key);
+    const lastSample = latest ? fmtAgo(Math.max(0, Math.floor((Date.now() - latest.t) / 1000))) : '—';
+    return `<section class="tele-chart-detail tele-chart-detail-bool" aria-label="Signal details">
+      <div class="tele-chart-detail-head">
+        <div>
+          <div class="tele-chart-detail-title">${esc(device?.name || key.split('/')[0])} · ${esc(key.split('/')[1])}</div>
+          <div class="tele-chart-detail-sub">${esc(telemetryStatusLabel(status))} · last sample ${esc(lastSample)}</div>
+        </div>
+        <div class="tele-chart-detail-current">
+          <span class="label">Current</span>
+          <span style="color:${active ? 'var(--ok)' : 'var(--content-faint)'}">${active ? 'TRUE' : 'FALSE'}</span>
+        </div>
+      </div>
+      <div class="tele-chart-stats">
+        <div class="tele-chart-stat"><span class="label">True</span><span class="value">${trueCount}</span></div>
+        <div class="tele-chart-stat"><span class="label">False</span><span class="value">${falseCount}</span></div>
+        <div class="tele-chart-stat"><span class="label">Samples</span><span class="value">${points.length}</span></div>
+      </div>
+    </section>`;
+  }
+
   const points = series.history.filter(point => point.t >= start && point.t <= end);
   const values = points.map(point => point.v);
   const min = values.length ? Math.min(...values) : null, max = values.length ? Math.max(...values) : null;
@@ -164,7 +210,9 @@ function renderTelemetryStack(keys, start, windowMs) {
         const previous = raw[i], elapsed = (point.t - previous.t) / 1000;
         return elapsed > 0 ? [{ t:point.t, v:(point.v - previous.v) / elapsed }] : [];
       }) : raw;
-      const last = data.at(-1)?.v, unit = rate ? `${s.unit}/s` : s.unit;
+      const isBool = s.unit === 'bool';
+      const last = data.at(-1)?.v;
+      const unit = rate ? `${s.unit}/s` : s.unit;      
       const status = telemetryStatus(key), threshold = rate ? null : s.threshold;
       const eventsForDevice = events.filter(event => event.device_id === deviceId);
       return `<article class="tele-chart-panel status-${status}" data-series-key="${esc(key)}">
@@ -172,9 +220,13 @@ function renderTelemetryStack(keys, start, windowMs) {
           <span class="tele-chart-status status-${status}">${esc(telemetryStatusLabel(status))}</span>
           <span class="label">${esc(sensor)}</span><span class="id">${esc(s.unit)}</span>
           <button class="ts-toggle" type="button" data-pin-series="${esc(key)}" aria-pressed="${state.telePinned[key] != null}" title="Pin a horizontal value cursor">${state.telePinned[key] != null ? 'Unpin' : 'Pin value'}</button>
-          <button class="ts-toggle" type="button" data-rate-series="${esc(key)}" aria-pressed="${rate}" aria-label="Toggle rate of change">${rate ? 'Δ/Δt' : 'value'}</button>
-          <span class="reading">${last == null ? '—' : `${last.toFixed(2)} ${esc(unit)}`}</span>
-          <span class="ts-cursor-value" data-cursor-readout="${esc(key)}"></span>
+          ${!isBool ? `<button class="ts-toggle" type="button" data-rate-series="${esc(key)}" aria-pressed="${rate}" aria-label="Toggle rate of change">${rate ? 'Δ/Δt' : 'value'}</button>` : ''}
+          <span class="reading">${
+          last == null ? '—'
+            : isBool ? (last >= 0.5 ? 'TRUE' : 'FALSE')
+            : `${last.toFixed(2)} ${esc(unit)}`
+        }</span>          
+        <span class="ts-cursor-value" data-cursor-readout="${esc(key)}"></span>
         </div>
         ${telemetryChart(key, data, threshold, eventsForDevice, start, windowMs, d?.lwt === 'offline', state.telePinned[key])}
       </article>`;

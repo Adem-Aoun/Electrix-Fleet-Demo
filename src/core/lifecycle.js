@@ -1,5 +1,11 @@
 'use strict';
 
+if (window.__electrix_lifecycle_bound) {
+  console.warn('[lifecycle] duplicate load detected — skipping');
+  throw new Error('[lifecycle] already loaded');
+}
+window.__electrix_lifecycle_bound = true;
+
 function applyTheme(theme, persist = true) {
   const root = document.documentElement;
   if (theme) root.setAttribute('data-theme', theme);
@@ -119,15 +125,15 @@ function boot() {
   mqtt.on('connected', () => {
     const pill = $('#wsPill');
     pill.classList.remove('down');
-    pill.setAttribute('aria-label', 'Broker status: connected');
-    $('#wsLabel').textContent = 'connected';
+    pill.setAttribute('aria-label', 'Backend status: connected');
+    $('#wsLabel').textContent = 'Backend';
     translateNode(pill);
   });
   mqtt.on('disconnected', () => {
     const pill = $('#wsPill');
     pill.classList.add('down');
-    pill.setAttribute('aria-label', 'Broker status: disconnected');
-    $('#wsLabel').textContent = 'disconnected';
+    pill.setAttribute('aria-label', 'Backend status: disconnected');
+    $('#wsLabel').textContent = 'Backend offline';
     translateNode(pill);
   });
   mqtt.on('message', (topic, payload, opts) => logTraffic('in', topic, payload, opts));
@@ -149,9 +155,30 @@ function boot() {
       }
     }
   });
-  mqtt.connect();
+    mqtt.on('new-device', (device) => {
+    audit('device.discovered', device.device_id);
+    toast('New device discovered', {
+      msg: `${device.device_id} — click Assign to put it on a site`,
+      type: 'info',
+      timeout: 15000,
+      actionLabel: 'Assign',
+      onClick: () => openDeviceOnboarding(device),
+    });
+  });
+  const token = localStorage.getItem('electrix_token');
+  if (token) {
+    mqtt.getCurrentUser().then(result => {
+      state.user = result.user;
+      lsSet('electrix_user', state.user);
+      enterApp();
+    }).catch(() => {
+      localStorage.removeItem('electrix_token');
+      state.user = null;
+      lsSet('electrix_user', null);
+    });
+  }
   startTick();
-  if (state.user) enterApp();
-  else applyTheme(localStorage.getItem('electrix_theme') || null, false);
+  if (!token) applyTheme(localStorage.getItem('electrix_theme') || null, false);
+
 }
 boot();

@@ -6,8 +6,95 @@ const deriveConnectivityStatus = device => {
   const staleAfterSeconds = (device.config.heartbeat_period_ms / 1000) * 2;
   return device.last_seen_s > staleAfterSeconds ? 'warn' : 'online';
 };
+function renderFirstRun() {
+  const connectionError = mqtt.connectionError();
+  if (connectionError) {
+    return `
+      <div class="overview-dashboard">
+        <header class="overview-heading">
+          <div><div class="overview-eyebrow">BACKEND CONNECTION</div><h1>Devices are not loading</h1>
+            <p>The dashboard could not read fleet data from <span class="mono">${esc(BACKEND_URL)}</span>.</p>
+            <p class="inline-error">${esc(connectionError)}</p>
+          </div>
+        </header>
+        <section class="overview-panel"><h2>Check the connection</h2>
+          <p class="muted">On iPhone, localhost refers to the phone. Open this dashboard using the computer's LAN address, and make sure port 8000 is reachable on that network.</p>
+          <button class="btn" id="backendRetry">${icon('refresh-cw')}Retry</button>
+        </section>
+      </div>`;
+  }
+  const hasSites = SITES.length > 0;
+  return `
+    <div class="overview-dashboard">
+      <header class="overview-heading">
+        <div>
+          <div class="overview-eyebrow">WELCOME</div>
+          <h1>Set up your fleet</h1>
+          <p>No devices are connected yet. Start by naming a site, then power on your first device.</p>
+        </div>
+      </header>
+
+      <section class="overview-panel">
+        <div class="overview-section-heading">
+          <div><span class="overview-section-kicker">STEP 1</span><h2>Sites</h2></div>
+          <span class="overview-section-count">${SITES.length}</span>
+        </div>
+        ${hasSites
+          ? `<div class="first-run-sites">${SITES.map(s => `
+              <div class="first-run-site">
+                <span>${esc(s.name)}</span>
+                <span class="muted">${esc(s.id)}</span>
+              </div>`).join('')}</div>`
+          : '<div class="empty">No sites defined yet. Add one to get started.</div>'}
+        <div class="config-row" style="margin-top:14px;gap:8px;">
+          <input type="text" id="firstSiteName" placeholder="Site name (e.g. Warehouse B)"
+                 style="flex:1;min-width:0;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);font-size:14px;">
+          <button class="btn primary" id="firstSiteAdd">${icon('plus')}Add site</button>
+        </div>
+      </section>
+
+      <section class="overview-panel">
+        <div class="overview-section-heading">
+          <div><span class="overview-section-kicker">STEP 2</span><h2>Power on a device</h2></div>
+        </div>
+        <p class="muted" style="margin:0;font-size:12.5px;line-height:1.55;">
+          Power up an Electrix device. It will publish a retained
+          <span class="mono">who_am_i</span> message to the broker. This page will
+          notify you within a few seconds of the device appearing.
+        </p>
+        <div class="muted" style="margin-top:12px;font-size:11.5px;">
+          Backend: <span class="mono" style="color:var(--content);">${esc(BACKEND_URL)}</span>
+        </div>
+      </section>
+    </div>`;
+}
+
+function wireFirstRun() {
+  $('#backendRetry')?.addEventListener('click', () => mqtt.refresh());
+  $('#firstSiteAdd')?.addEventListener('click', async () => {
+    const raw = $('#firstSiteName').value.trim();
+    if (!raw) return;
+    const id = raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    if (!id) { toast('Invalid name', { type: 'error' }); return; }
+    if (SITES.some(s => s.id === id)) { toast('Site already exists', { type: 'warn' }); return; }
+    try {
+      await mqtt.createSite(raw);
+      toast('Site added', { msg: raw, type: 'ok' });
+      renderMain();
+    } catch (error) {
+      toast('Site could not be added', { msg: error.message, type: 'error' });
+    }
+  });
+}
 
 function renderDashboard(main) {
+  if (DEVICES.length === 0) {
+    main.innerHTML = renderFirstRun();
+    refreshIcons(main);
+    wireFirstRun();
+    return;
+  }
+
   const counts = { online:0, warn:0, offline:0 };
   DEVICES.forEach(device => counts[deriveConnectivityStatus(device)]++);
 
@@ -65,7 +152,7 @@ function renderDashboard(main) {
     ? device.capabilities.filter(capability => capability.kind === 'relay' && capability.online).map(capability => ({ device, capability }))
     : []
   ).slice(0, 4);
-  const activity = ACTIVITY.slice(0, 4);
+  const recentCommands = mqtt.recentCommands();
 
   main.innerHTML = `
     <div class="overview-dashboard">
@@ -126,10 +213,20 @@ function renderDashboard(main) {
       <div class="overview-secondary-grid">
         <section class="overview-panel">
           <div class="overview-section-heading">
-            <div><span class="overview-section-kicker">FLEET LOG</span><h2>Recent activity</h2></div>
+            <div><span class="overview-section-kicker">FLEET LOG</span><h2>Recent commands</h2></div>
           </div>
-          ${activity.length ? `<div class="overview-activity-list">${activity.map((entry, index) => `
-            <div class="overview-activity-item"><span class="overview-activity-marker ${index === 0 ? 'latest' : ''}"></span><span class="overview-activity-text">${esc(entry.text)}</span><time>${esc(fmtAgo(entry.t))}</time></div>`).join('')}</div>` : widgetEmpty('No recent activity')}
+          ${recentCommands.length ? `<div class="overview-activity-list">${recentCommands.slice(0, 6).map((command, index) => {
+            const device = deviceById(command.device_id);
+            const outcome = command.status === 'ok' ? 'Succeeded' : command.status === 'pending' ? 'Pending' : command.status === 'timeout' ? 'Timed out' : 'Failed';
+            const action = command.actuator === 'system'
+              ? (command.topic || '').split('/').at(-1) || 'system command'
+              : `${command.actuator} ${command.value ? 'ON' : 'OFF'}`;
+            return `<div class="overview-activity-item">
+              <span class="overview-activity-marker ${index === 0 ? 'latest' : ''}"></span>
+              <span class="overview-activity-text"><strong>${esc(action)}</strong> · ${esc(device?.name || command.device_id)} · ${command.connected ? 'Connected' : 'Offline'} · by ${esc(command.actor || 'system')} · ${outcome}</span>
+              <time>${esc(fmtAgo(Math.max(0, Math.floor((Date.now() - command.issued_at) / 1000))))}</time>
+            </div>`;
+          }).join('')}</div>` : widgetEmpty('No commands recorded yet')}
         </section>
         <section class="overview-panel">
           <div class="overview-section-heading">
@@ -144,7 +241,7 @@ function renderDashboard(main) {
             </div>`).join('')}</div>` : widgetEmpty('No controllable relays online')}
         </section>
       </div>
-      <footer class="overview-footer">${icon('radio-tower')}Demo fleet data · refreshes as device state changes</footer>
+      <footer class="overview-footer">${icon('radio-tower')}${DEVICES.filter(device => device.lwt === 'online').length} connected to backend · ${DEVICES.length} known devices</footer>
     </div>`;
   refreshIcons(main);
 }
